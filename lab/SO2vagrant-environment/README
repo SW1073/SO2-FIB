@@ -1,0 +1,99 @@
+This README explains the necessary steps to prepare a local environment similar
+to the laboratories using Vagrant [1].
+
+Vagrant is a utility that creates and configures a virtual machine (VM)
+following a configuration file (similar to a cooking recipe).
+
+The provided configuration files 'Vagrantfile' and 'bootstrap.sh' will
+download a virtual machine (VM) and configure it with all the tools needed
+at the laboratory.
+
+At least you need a virtual machine provider, like Virtualbox[4] or VMWare[5].
+NOTE: Windows(TM) hosts may require installing some additional software like a SSH
+client [2] and a minimal X server [3], and following specific configuration[6]
+instructions to make it work.
+
+After the required tools are installed, we may proceed to configure the
+environment for our laboratory:
+
+0. Create a directory where you want to work:
+
+	yourmachine:~ $ mkdir X
+
+
+1. Copy the configuration files to this working directory X:
+
+	yourmachine:~ $ cp Vagrantfile bootstrap.sh X/
+
+
+2. By default directory X will be shared with the VM at the
+   directory '/vagrant' inside the VM. Therefore, you can
+   put your ZeOS code here in order to access it from inside
+   the VM:
+
+	yourmachine:~ $ cp zeos.tar.gz  X/
+
+
+3. Change to this working  directory X:
+
+	yourmachine:~ $ cd X/
+
+
+4. Start vagrant. The first time will download, start and configure the VM,
+   ...it will take some time...  after this configuration finishes,
+   following start ups will be quicker (as the download and configuration
+   phase will be already done):
+
+	yourmachine:X $ vagrant up
+
+
+5. Secure shell into the virtual machine:
+NOTE: On Windows(TM) machines use the SSH client[2].
+
+	yourmachine:X $ vagrant ssh
+		# (it will start a shell into the VM, similar to the labs)
+	VM:~ $
+
+
+6. Inside the VM you can copy your zeos code from the /vagrant directory:
+NOTE: This is a specially important in systems that are not case-sensitive
+(like Windows(TM) or some installation of Macs)
+
+	VM:~$ cp /vagrant/zeos.tar.gz .
+	VM:~$ tar zxf zeos.tar.gz
+	VM:~$ cd zeos
+	VM:~/zeos$
+		(modify, compile, run, debug....)
+
+7. To exit from the VM you can use the 'exit' command (or Ctrl-D) just like a
+normal shell:
+
+	VM:~ $ exit
+	yourmachine:X $
+
+8. And finally, stop the VM if you do want to free some resources:
+
+	yourmachine:X $ vagrant halt
+
+From now on you can repeat the steps 3-8 until the end of the semester.
+(Afterwards you may want to use a 'vagrant destroy' to erase the VM and all its
+data completely)
+
+Take a look at [1] for more information about Vagrant.
+
+REMINDER: The modifications that you make in this VM will remain in the VM,
+therefore, if you 'halt' the machine and start it up again, you will find all
+your code unharmed. This is different from the labs environment.
+
+That's all, thanks for reading,
+Juanjo
+
+
+References:
+===========
+[1] "Vagrant web page" <https://www.vagrantup.com/>
+[2] "Putty SSH client" <http://www.putty.org/>
+[3] "Xming: X11 server for windows" <https://sourceforge.net/projects/xming>
+[4] "Oracle VM Virtualbox" <https://www.virtualbox.org/>
+[5] "VMWare Open Source" <https://www.vmware.com/download/open_source.html>
+[6] "How to enable X11 Forwarding in windows 10 on a Vagrant Virtual Box Running Ubuntu. John Cook" <https://jcook0017.medium.com/how-to-enable-x11-forwarding-in-windows-10-on-a-vagrant-virtual-box-running-ubuntu-d5a7b34363f>
