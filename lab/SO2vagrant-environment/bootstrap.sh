@@ -1,18 +1,24 @@
 #!/usr/bin/env bash
 
-apt-get update
+#apt-get update
+dnf update
 
 # Needed tools to compile bochs...
-apt-get -y install build-essential
-apt-get -y install libx11-dev
-apt-get -y install libgtk2.0-dev
-apt-get -y install libreadline-dev
+# apt-get -y install build-essential
+dnf -y groupinstall "Development Tools"
+#apt-get -y install libx11-dev
+dnf -y install libXi-devel
+#apt-get -y install libgtk2.0-dev
+dnf -y install gtk2-devel
+#apt-get -y install libreadline-dev
+dnf -y install readline
 
 # Needed tools for Zeos
-apt-get -y install vim
-apt-get -y install bin86
-apt-get -y install gdb
-apt-get -y install git
+dnf -y install vim
+# apt-get -y install bin86
+dnf -y install dev86
+dnf -y install gdb
+dnf -y install git
 
 # Download BOCHS
 mkdir tmp
