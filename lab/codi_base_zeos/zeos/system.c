@@ -2,16 +2,17 @@
  * system.c - 
  */
 
-#include <segment.h>
-#include <types.h>
-#include <interrupt.h>
-#include <hardware.h>
-#include <system.h>
-#include <sched.h>
-#include <mm.h>
-#include <io.h>
-#include <utils.h>
-#include <zeos_mm.h> /* TO BE DELETED WHEN ADDED THE PROCESS MANAGEMENT CODE TO BECOME MULTIPROCESS */
+#include "include/segment.h"
+#include "include/types.h"
+#include "include/interrupt.h"
+#include "include/hardware.h"
+#include "include/system.h"
+#include "include/sched.h"
+#include "include/mm.h"
+#include "include/io.h"
+#include "include/utils.h"
+#include "include/zeos_mm.h"
+// #include <zeos_mm.h> /* TO BE DELETED WHEN ADDED THE PROCESS MANAGEMENT CODE TO BECOME MULTIPROCESS */
 
 
 int (*usr_main)(void) = (void *) (PAG_LOG_INIT_CODE*PAGE_SIZE);

@@ -2,9 +2,9 @@
  * sched.c - initializes struct for task 0 anda task 1
  */
 
-#include <sched.h>
-#include <mm.h>
-#include <io.h>
+#include "include/sched.h"
+#include "include/mm.h"
+#include "include/io.h"
 
 union task_union task[NR_TASKS]
   __attribute__((__section__(".data.task")));

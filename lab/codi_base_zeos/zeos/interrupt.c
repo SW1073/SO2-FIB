@@ -1,13 +1,13 @@
 /*
  * interrupt.c -
  */
-#include <types.h>
-#include <interrupt.h>
-#include <segment.h>
-#include <hardware.h>
-#include <io.h>
+#include "include/types.h"
+#include "include/interrupt.h"
+#include "include/segment.h"
+#include "include/hardware.h"
+#include "include/io.h"
 
-#include <zeos_interrupt.h>
+#include "include/zeos_interrupt.h"
 
 Gate idt[IDT_ENTRIES];
 Register    idtR;

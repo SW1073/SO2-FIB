@@ -5,7 +5,7 @@
 #ifndef __INTERRUPT_H__
 #define __INTERRUPT_H__
 
-#include <types.h>
+#include "types.h"
 
 #define IDT_ENTRIES 256
 
