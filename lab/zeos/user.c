@@ -8,6 +8,8 @@ int add(int par1,int par2) {
     return par1 + par2;
 }
 
+int addASM(int,int);
+
 int __attribute__ ((__section__(".text.main")))
   main(void)
 {
@@ -16,5 +18,6 @@ int __attribute__ ((__section__(".text.main")))
  
     while(1) {
         int local_var = add(0x42, 0x666);
+        int local_var_ASM = addASM(0x42, 0x666);
     }
 }
