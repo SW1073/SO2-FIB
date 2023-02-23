@@ -1,13 +1,13 @@
-*.o
-*.s
-bochsout.txt
-parport.out
-system.out
-system
-bootsect
-zeos.bin
-user
-user.out
+lab/zeos/*.o
+lab/zeos/*.s
+lab/zeos/bochsout.txt
+lab/zeos/parport.out
+lab/zeos/system.out
+lab/zeos/system
+lab/zeos/bootsect
+lab/zeos/zeos.bin
+lab/zeos/user
+lab/zeos/user.out
 *~ build 
 lab/compile_commands.json
 lab/.cache
