@@ -9,3 +9,5 @@ zeos.bin
 user
 user.out
 *~ build 
+lab/compile_commands.json
+lab/.cache
