@@ -15,11 +15,11 @@ Register    idtR;
 char char_map[] =
 {
   '\0','\0','1','2','3','4','5','6',
-  '7','8','9','0','\'','¡','\0','\0',
+  '7','8','9','0','\'','?','\0','\0',
   'q','w','e','r','t','y','u','i',
   'o','p','`','+','\0','\0','a','s',
-  'd','f','g','h','j','k','l','ñ',
-  '\0','º','\0','ç','z','x','c','v',
+  'd','f','g','h','j','k','l','?',
+  '\0','?','\0','?','z','x','c','v',
   'b','n','m',',','.','-','\0','*',
   '\0','\0','\0','\0','\0','\0','\0','\0',
   '\0','\0','\0','\0','\0','\0','\0','7',
@@ -87,3 +87,15 @@ void setIdt()
   set_idt_reg(&idtR);
 }
 
+void keyboard_interrupt_service_routine () {
+    char mb_mask = 0x80;
+    char scan_code_mask = 0x7F;
+
+    char key = inb(0x60); // Llegim el regisre
+    char mb = (key & mb_mask) >> 7; // Make = 0, Break = 1
+    if (!mb) {
+        int scan_code = key & scan_code_mask;
+        char c = char_map[scan_code];
+        printc_xy(0, 0, c);
+    }
+} 
