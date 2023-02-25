@@ -5,7 +5,7 @@
 #ifndef __HARDWARE_H__
 #define __HARDWARE_H__
 
-#include "types.h"
+#include <types.h>
 
 DWord get_eflags(void);
 void set_eflags(void);

@@ -1,17 +1,17 @@
 /*
  * sys.c - Syscalls implementation
  */
-#include "include/devices.h"
+#include <devices.h>
 
-#include "include/utils.h"
+#include <utils.h>
 
-#include "include/io.h"
+#include <io.h>
 
-#include "include/mm.h"
+#include <mm.h>
 
-#include "include/mm_address.h"
+#include <mm_address.h>
 
-#include "include/sched.h"
+#include <sched.h>
 
 #define LECTURA 0
 #define ESCRIPTURA 1

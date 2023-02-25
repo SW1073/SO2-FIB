@@ -5,9 +5,9 @@
 #ifndef __SCHED_H__
 #define __SCHED_H__
 
-#include "list.h"
-#include "types.h"
-#include "mm_address.h"
+#include <list.h>
+#include <types.h>
+#include <mm_address.h>
 
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024

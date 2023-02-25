@@ -1,4 +1,4 @@
-#include "include/list.h"
+#include <list.h>
 
 /* 
  * Initializes an empty list.

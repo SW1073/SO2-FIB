@@ -2,9 +2,9 @@
  * io.c - 
  */
 
-#include "include/io.h"
+#include <io.h>
 
-#include "include/types.h"
+#include <types.h>
 
 /**************/
 /** Screen  ***/

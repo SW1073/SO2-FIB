@@ -2,11 +2,11 @@
  * mm.c - Memory Management: Paging & segment memory management
  */
 
-#include "include/types.h"
-#include "include/mm.h"
-#include "include/segment.h"
-#include "include/hardware.h"
-#include "include/sched.h"
+#include <types.h>
+#include <mm.h>
+#include <segment.h>
+#include <hardware.h>
+#include <sched.h>
 
 Byte phys_mem[TOTAL_PAGES];
 

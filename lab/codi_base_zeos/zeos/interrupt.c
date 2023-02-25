@@ -1,13 +1,14 @@
 /*
  * interrupt.c -
  */
-#include "include/types.h"
-#include "include/interrupt.h"
-#include "include/segment.h"
-#include "include/hardware.h"
-#include "include/io.h"
+#include "include/entry.h"
+#include <types.h>
+#include <interrupt.h>
+#include <segment.h>
+#include <hardware.h>
+#include <io.h>
 
-#include "include/zeos_interrupt.h"
+#include <zeos_interrupt.h>
 
 Gate idt[IDT_ENTRIES];
 Register    idtR;
@@ -83,7 +84,30 @@ void setIdt()
   set_handlers();
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
+    setInterruptHandler(33, keyboard_handler, 0);
 
   set_idt_reg(&idtR);
 }
+
+
+//-------------------------------------------------------------
+
+void keyboard_routine(void) {
+    printk("aaaaaaaaaaaaaaaaaaaaaa");
+    // char make_mask = 0x80; // 0b 1000 0000
+    // char char_mask = 0x7F; // 0b 0111 1111
+    //
+    // char keyboard_data_register = inb(0x60);
+    // char key_break = (keyboard_data_register && make_mask);
+    //
+    // if (!key_break) {
+    //     int char_index = (keyboard_data_register && char_mask);
+    //     char c = char_map[char_index];
+    //     printc_xy(0, 0, c);
+    // }
+}
+
+
+
+
 

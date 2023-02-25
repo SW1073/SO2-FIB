@@ -5,9 +5,9 @@
 #ifndef __MM_H__
 #define __MM_H__
 
-#include "types.h"
-#include "mm_address.h"
-#include "sched.h"
+#include <types.h>
+#include <mm_address.h>
+#include <sched.h>
 
  
 #define FREE_FRAME 0

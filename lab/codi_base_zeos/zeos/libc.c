@@ -2,9 +2,9 @@
  * libc.c 
  */
 
-#include "include/libc.h"
+#include <libc.h>
 
-#include "include/types.h"
+#include <types.h>
 
 int errno;
 

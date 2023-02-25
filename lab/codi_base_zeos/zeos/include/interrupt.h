@@ -5,7 +5,7 @@
 #ifndef __INTERRUPT_H__
 #define __INTERRUPT_H__
 
-#include "types.h"
+#include <types.h>
 
 #define IDT_ENTRIES 256
 
@@ -16,5 +16,9 @@ void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
 void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL);
 
 void setIdt();
+
+//------------------------------------
+
+void keyboard_routine(void);
 
 #endif  /* __INTERRUPT_H__ */
