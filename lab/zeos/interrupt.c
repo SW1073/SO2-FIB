@@ -83,19 +83,25 @@ void setIdt()
   set_handlers();
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
+  setInterruptHandler(33, keyboard_handler, 0);
 
   set_idt_reg(&idtR);
 }
 
-void keyboard_interrupt_service_routine () {
+void keyboard_routine () {
+    int scan_code;
+    char key, mb, c;
     char mb_mask = 0x80;
     char scan_code_mask = 0x7F;
 
-    char key = inb(0x60); // Llegim el regisre
-    char mb = (key & mb_mask) >> 7; // Make = 0, Break = 1
-    if (!mb) {
-        int scan_code = key & scan_code_mask;
-        char c = char_map[scan_code];
-        printc_xy(0, 0, c);
+    key = inb(0x60); // Llegim el regisre
+    mb = (key & mb_mask) >> 7; // Make = 0, Break = 1
+    if (!mb) { //When the action of the keyboard is make ...
+        scan_code = key & scan_code_mask;
+        c = char_map[scan_code];
+        if (c > 127) // not ASCII
+            printc_xy(0, 0, 'C');
+        else // is ASCII
+            printc_xy(0, 0, c);
     }
 } 
