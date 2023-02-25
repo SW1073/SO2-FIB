@@ -93,6 +93,7 @@ void keyboard_routine () {
     char key, mb, c;
     char mb_mask = 0x80;
     char scan_code_mask = 0x7F;
+    const char not_ascii_char = 'C';
 
     key = inb(0x60); // Llegim el regisre
     mb = (key & mb_mask) >> 7; // Make = 0, Break = 1
@@ -100,7 +101,7 @@ void keyboard_routine () {
         scan_code = key & scan_code_mask;
         c = char_map[scan_code];
         if (c > 127) // not ASCII
-            printc_xy(0, 0, 'C');
+            printc_xy(0, 0, not_ascii_char);
         else // is ASCII
             printc_xy(0, 0, c);
     }
