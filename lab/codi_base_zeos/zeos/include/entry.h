@@ -6,5 +6,6 @@
 #define __ENTRY_H__
 
 void keyboard_handler();
+void clock_handler();
 
 #endif  /* __ENTRY_H__ */

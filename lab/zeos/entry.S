@@ -36,42 +36,46 @@
 /**************************************************/
 
 #define SAVE_ALL \
-    pushl %gs; \
-    pushl %fs; \
-    pushl %es; \
-    pushl %ds; \
-    pushl %eax; \
-    pushl %ebp; \
-    pushl %edi; \
-    pushl %esi; \
-    pushl %edx; \
-    pushl %ecx; \
-    pushl %ebx; \
-    movl $__KERNEL_DS, %edx;    \
-    movl %edx, %ds;           \
-    movl %edx, %es
+      pushl %gs; \
+      pushl %fs; \
+      pushl %es; \
+      pushl %ds; \
+      pushl %eax; \
+      pushl %ebp; \
+      pushl %edi; \
+      pushl %esi; \
+      pushl %edx; \
+      pushl %ecx; \
+      pushl %ebx; \
+      movl $__KERNEL_DS, %edx;    \
+      movl %edx, %ds;           \
+      movl %edx, %es;   \
 
-#define SAVE_ALL \
-    popl %ebx; \
-    popl %ecx; \
-    popl %edx; \
-    popl %esi; \
-    popl %edi; \
-    popl %ebp; \
-    popl %eax; \
-    popl %ds; \
-    popl %es; \
-    popl %fs; \
-    popl %gs; \
+#define RESTORE_ALL \
+      popl %ebx; \
+      popl %ecx; \
+      popl %edx; \
+      popl %esi; \
+      popl %edi; \
+      popl %ebp; \
+      popl %eax; \
+      popl %ds; \
+      popl %es; \
+      popl %fs; \
+      popl %gs; \
 
 #define EOI \
     movb $0x20, %al ; \
-    outb %al, $0x20 ; 
+    outb %al, $0x20; \
 
+ENTRY (clock_handler)
+    SAVE_ALL
+    EOI
+    call clock_routine
+    RESTORE_ALL
+    iret
 
-;----------------------------------------
-
-ENTRY(keyboard_handler)
+ENTRY (keyboard_handler)
     SAVE_ALL
     EOI
     call keyboard_routine

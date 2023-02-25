@@ -2,6 +2,7 @@
  * system.c - 
  */
 
+#include "include/entry.h"
 #include <segment.h>
 #include <types.h>
 #include <interrupt.h>
@@ -72,7 +73,6 @@ int __attribute__((__section__(".text.main")))
 
   /*** DO *NOT* ADD ANY CODE IN THIS ROUTINE BEFORE THIS POINT ***/
 
-  printk("Ole ole somo loh mejore B)     ");
   printk("Kernel Loaded!    ");
 
 

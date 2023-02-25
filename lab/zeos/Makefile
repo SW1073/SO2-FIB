@@ -17,8 +17,9 @@ OBJCOPY = objcopy -O binary -R .note -R .comment -S
 
 INCLUDEDIR = include
 
+OPT = -O2
 
-CFLAGS = -m32 -O2  -g -fno-omit-frame-pointer -ffreestanding -Wall -I$(INCLUDEDIR) -fno-PIC
+CFLAGS = -m32 $(OPT)  -g -fno-omit-frame-pointer -ffreestanding -Wall -I$(INCLUDEDIR) -fno-PIC
 ASMFLAGS = -I$(INCLUDEDIR)
 LDFLAGS = -g -melf_i386
 
@@ -40,7 +41,6 @@ LIBZEOS = -L . -l zeos
 #add to USROBJ any object files required to complete the user program
 USROBJ = \
 	libc.o \
-	suma.o \
 	# libjp.a \
 
 all:zeos.bin
@@ -61,9 +61,6 @@ bootsect.o: bootsect.s
 
 bootsect.s: bootsect.S
 	$(CPP) $(ASMFLAGS) -traditional $< -o $@
-
-suma.s: suma.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
-	$(CPP) $(ASMFLAGS) -o $@ $<
 
 entry.s: entry.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
