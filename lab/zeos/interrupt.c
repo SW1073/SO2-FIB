@@ -91,9 +91,9 @@ void setIdt()
 void keyboard_routine () {
     int scan_code;
     char key, mb, c;
-    char mb_mask = 0x80;
-    char scan_code_mask = 0x7F;
-    const char not_ascii_char = 'C';
+    const char  mb_mask = 0x80,
+                scan_code_mask = 0x7F,
+                not_ascii_char = 'C';
 
     key = inb(0x60); // Llegim el regisre
     mb = (key & mb_mask) >> 7; // Make = 0, Break = 1
