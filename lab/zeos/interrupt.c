@@ -90,14 +90,14 @@ void setIdt()
 
 void keyboard_routine () {
     int scan_code;
-    char key, mb, c;
-    const char  mb_mask = 0x80,
+    char key, is_break, c;
+    const char  msb_mask = 0x80,
                 scan_code_mask = 0x7F,
                 not_ascii_char = 'C';
 
     key = inb(0x60); // Llegim el regisre
-    mb = (key & mb_mask) >> 7; // Make = 0, Break = 1
-    if (!mb) { //When the action of the keyboard is make ...
+    is_break = (key & msb_mask) >> 7; // Make = 0, Break = 1
+    if (!is_break) { //When the action of the keyboard is Make
         scan_code = key & scan_code_mask;
         c = char_map[scan_code];
         if (c > 127) // not ASCII
