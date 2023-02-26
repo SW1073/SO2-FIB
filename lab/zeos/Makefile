@@ -12,7 +12,7 @@ HOSTCFLAGS = -Wall -Wstrict-prototypes -g
 HOSTCC = gcc
 CC = gcc
 AS = as --32
-LD = ld
+LD =ld
 OBJCOPY = objcopy -O binary -R .note -R .comment -S
 
 INCLUDEDIR = include
@@ -40,6 +40,7 @@ LIBZEOS = -L . -l zeos
 #add to USROBJ any object files required to complete the user program
 USROBJ = \
 	libc.o \
+	wrappers.o \
 	suma.o \
 	# libjp.a \
 
@@ -63,6 +64,9 @@ bootsect.s: bootsect.S
 	$(CPP) $(ASMFLAGS) -traditional $< -o $@
 
 suma.s: suma.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
+	$(CPP) $(ASMFLAGS) -o $@ $<
+
+wrappers.s: wrappers.S $(INCLUDEDIR)/asm.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 entry.s: entry.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
