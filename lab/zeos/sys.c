@@ -45,3 +45,28 @@ int sys_fork()
 void sys_exit()
 {  
 }
+
+/**
+ * write syscall implementation
+ */
+int sys_write(int fd, char * buffer, int size) {
+    int err;
+    // check if file descriptor is correct
+    if ((err = check_fd(fd, 1)) < 0)
+        return err;
+    // check if the buffer address is not a null pointer
+    if (buffer == NULL)
+        return -14; /*EFAULT(-14): Bad address || EINVAL(-22): Invalid argument*/
+    // check if the size is valid (>0)
+    if (size < 0)
+        return -22; /*EINVAL: Invalid argument*/
+
+    /* UNSURE IF NECESSARY
+    // copy user data segment to kernel address space, for the buffer to point to the correct data
+    // if this operation is not done, the pointer will not be accessing the correct data
+    if ((err = copy_from_user(buffer, buffer, size)) < 0)
+        return err;
+    */
+
+    return sys_write_console(buffer, size); // return number of bytes written
+}
