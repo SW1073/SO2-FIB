@@ -13,19 +13,21 @@
 
 #include <sched.h>
 
+#include <errno.h>
+
 #define LECTURA 0
 #define ESCRIPTURA 1
 
 int check_fd(int fd, int permissions)
 {
-  if (fd!=1) return -9; /*EBADF*/
-  if (permissions!=ESCRIPTURA) return -13; /*EACCES*/
+  if (fd!=1) return EBADF; /*EBADF*/
+  if (permissions!=ESCRIPTURA) return EACCES; /*EACCES*/
   return 0;
 }
 
 int sys_ni_syscall()
 {
-	return -38; /*ENOSYS*/
+	return ENOSYS; /*ENOSYS*/
 }
 
 int sys_getpid()
@@ -56,10 +58,10 @@ int sys_write(int fd, char * buffer, int size) {
         return err;
     // check if the buffer address is not a null pointer
     if (buffer == NULL)
-        return -14; /*EFAULT(-14): Bad address || EINVAL(-22): Invalid argument*/
+        return EFAULT; /*EFAULT(-14): Bad address || EINVAL(-22): Invalid argument*/
     // check if the size is valid (>0)
     if (size < 0)
-        return -22; /*EINVAL: Invalid argument*/
+        return EINVAL; /*EINVAL: Invalid argument*/
 
     /* UNSURE IF NECESSARY
     // copy user data segment to kernel address space, for the buffer to point to the correct data
