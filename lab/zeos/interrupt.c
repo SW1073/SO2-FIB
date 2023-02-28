@@ -15,6 +15,7 @@ Register    idtR;
 
 int x_pos = 0;
 int y_pos = 0;
+
 unsigned int ticks = 0;
 
 char char_map[] =
@@ -88,6 +89,7 @@ void setIdt()
   set_handlers();
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
+    setTrapHandler(0x80, system_call_handler, 3);
     setInterruptHandler(32, clock_handler, 0);
     setInterruptHandler(33, keyboard_handler, 0);
 
@@ -102,16 +104,19 @@ void keyboard_routine(void) {
     char char_mask = 0x7F; // 0b 0111 1111
 
     char keyboard_data_register = inb(0x60);
-    char key_break = (keyboard_data_register && make_mask) >> 7;
+    char key_break = (keyboard_data_register & make_mask) >> 7;
 
     if (!key_break) {
-        int char_index = (keyboard_data_register && char_mask);
+        int char_index = (keyboard_data_register & char_mask);
         char c = char_map[char_index];
 
-        if (c > 127) printc_xy(x_pos, y_pos, 'C');
-        else printc_xy(x_pos, y_pos, c);
+        if (c == '\0') {
+            printc_xy(x_pos, y_pos, 'C');
+        } else {
+            printc_xy(x_pos, y_pos, c);
+        }
 
-        x_pos++;
+        ++x_pos;
     }
 }
 

@@ -42,6 +42,18 @@ int sys_fork()
   return PID;
 }
 
+int sys_write(int fd, char *buffer, int size) {
+    int checkfd = check_fd(fd, ESCRIPTURA);
+    if (checkfd != 0) return checkfd;
+
+    return sys_write_console(buffer, size);
+}
+
+int sys_gettime() {
+
+    return 0;
+}
+
 void sys_exit()
 {  
 }

@@ -81,3 +81,27 @@ ENTRY (keyboard_handler)
     call keyboard_routine
     RESTORE_ALL
     iret
+
+// the wrapper for the syscall called this handler with the [int 0x80] instruction,
+// and saved in EBX, ECX, EDX, ESI, EDI the arguments of the syscall, and in EAX the
+// index of the syscall that wants to be executed.
+// sys_call_table behaves as an "array", where %eax is the index of the syscall.
+ENTRY (system_call_handler)
+    SAVE_ALL // Save the current context
+    cmpl $0, %eax // Is syscall number negative?
+    jl err // If it is, jump to return an error
+    cmpl $MAX_SYSCALL, %eax // Is syscall greater than MAX_SYSCALL?
+    jg err // If it is, jump to return an error
+    call *sys_call_table(, %eax, 0x04) // Call the corresponding service routine
+    jmp fin // Finish
+err:
+    movl $0xFFFFFFD6, %eax // Move to EAX the ENOSYS error
+
+fin:
+    // this guy overwrites the value in the stack, because otherwise EAX would have the value that it had
+    // before coming into this function (which is always the index to the syscall we want, so it dont matter we kill it).
+    // in the restore_all macro, eax takes the value of the one in the stack.
+    // essentially we hacked x86 into returning a value through eax while popping the stack ;)
+    movl %eax, 0x18(%esp) // Change the EAX value in the stack
+    RESTORE_ALL // Restore the context
+    iret
