@@ -85,6 +85,7 @@ void setIdt()
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
   setInterruptHandler(33, keyboard_handler, 0);
 
+
   set_idt_reg(&idtR);
 }
 
@@ -100,7 +101,7 @@ void keyboard_routine () {
     if (!is_break) { //When the action of the keyboard is Make
         scan_code = key & scan_code_mask;
         c = char_map[scan_code];
-        if (c > 127) // not ASCII
+        if (c == '\0') // not ASCII
             printc_xy(0, 0, not_ascii_char);
         else // is ASCII
             printc_xy(0, 0, c);
