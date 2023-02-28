@@ -1,6 +1,7 @@
 /*
  * interrupt.c -
  */
+#include <entry.h>
 #include <types.h>
 #include <interrupt.h>
 #include <segment.h>
@@ -83,6 +84,8 @@ void setIdt()
   set_handlers();
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
+  setTrapHandler(0x80, system_call_handler, 3);
+
   setInterruptHandler(33, keyboard_handler, 0);
 
 
