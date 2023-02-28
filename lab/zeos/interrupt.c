@@ -122,5 +122,6 @@ void keyboard_routine(void) {
 
 void clock_routine(void) {
     ++ticks;
+    zeos_show_clock();
 }
 

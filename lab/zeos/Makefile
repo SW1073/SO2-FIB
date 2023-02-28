@@ -25,7 +25,6 @@ LDFLAGS = -g -melf_i386
 
 SYSOBJ = \
 	interrupt.o \
-	wrappers.o \
 	entry.o \
 	sys_call_table.o \
 	io.o \

@@ -1,6 +1,7 @@
 /*
  * sys.c - Syscalls implementation
  */
+#include <errno.h>
 #include <devices.h>
 
 #include <utils.h>
@@ -46,12 +47,16 @@ int sys_write(int fd, char *buffer, int size) {
     int checkfd = check_fd(fd, ESCRIPTURA);
     if (checkfd != 0) return checkfd;
 
+//  TODO fix this shit => aka do errno.h
+    if (buffer == NULL) return -40; 
+    if (size <= 0) return -69;
+
+
     return sys_write_console(buffer, size);
 }
 
-int sys_gettime() {
-
-    return 0;
+unsigned long sys_gettime() {
+    return get_ticks();
 }
 
 void sys_exit()
