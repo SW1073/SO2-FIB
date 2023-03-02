@@ -14,10 +14,10 @@
 
 #include <sched.h>
 
+#include <interrupt.h> // para el zeos_ticks.
+
 #define LECTURA 0
 #define ESCRIPTURA 1
-
-extern int zeos_ticks;
 
 int check_fd(int fd, int permissions)
 {

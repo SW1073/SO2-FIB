@@ -16,17 +16,10 @@ int __attribute__ ((__section__(".text.main")))
     for (int i = 0; i < 30; ++i) buffer[i] = '\0';
     
   while(1) {
-      itoa(getticks(), buffer);
-
-      for (int i = 0; i < 30; ++i) {
-          if (buffer[i] != '\0') continue;
-
-          buffer[i] = '\n';
-          break;
-      }
-
-      for (int i = 0; i < 100000000; ++i);
-      // for (int i = 0; i < 100000000; ++i);
+      itoa(gettime(), buffer);
       write(1, buffer, strlen(buffer));
+      write(1, "\n", 1) ;
+
+    for (int i = 0; i < 100000000; ++i);
   }
 }

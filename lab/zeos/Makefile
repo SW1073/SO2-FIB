@@ -18,8 +18,10 @@ OBJCOPY = objcopy -O binary -R .note -R .comment -S
 INCLUDEDIR = include
 
 OPT = -O2
+OPT_io = -O2
 
 CFLAGS = -m32 $(OPT) -g -fno-omit-frame-pointer -ffreestanding -Wall -I$(INCLUDEDIR) -fno-PIC
+CFLAGS_io = -m32 $(OPT_io) -g -fno-omit-frame-pointer -ffreestanding -Wall -I$(INCLUDEDIR) -fno-PIC
 ASMFLAGS = -I$(INCLUDEDIR)
 LDFLAGS = -g -melf_i386
 

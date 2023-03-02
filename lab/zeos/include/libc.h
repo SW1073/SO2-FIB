@@ -10,7 +10,7 @@
 
 int write(int fd, char *buffer, int size);
 
-unsigned long getticks();
+unsigned long gettime();
 
 void itoa(int a, char *b);
 

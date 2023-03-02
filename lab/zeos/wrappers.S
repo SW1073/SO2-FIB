@@ -34,7 +34,7 @@ wr_fin:
     leave
     ret
 
-ENTRY (getticks)
+ENTRY (gettime)
     pushl %ebp
     mov %esp, %ebp
 
