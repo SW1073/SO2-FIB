@@ -1,6 +1,7 @@
 /*
  * interrupt.c -
  */
+
 #include <entry.h>
 #include <types.h>
 #include <interrupt.h>
@@ -85,9 +86,10 @@ void setIdt()
   set_handlers();
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
-  setTrapHandler(0x80, system_call_handler, 3);
+  setInterruptHandler(14, pf_handler, 0);
   setInterruptHandler(32, clock_handler, 0);
   setInterruptHandler(33, keyboard_handler, 0);
+  setTrapHandler(0x80, system_call_handler, 3);
 
 
   set_idt_reg(&idtR);
@@ -115,4 +117,14 @@ void keyboard_routine () {
 void clock_routine() {
     zeos_show_clock();
     ++zeos_ticks;
+}
+
+
+void pf_routine(int error_code, int eip) {
+    char *error_msg = "\nProcess generates a PAGE FAULT exception at EIP: @";
+    char itoa_eip[30];
+    itoa(eip, itoa_eip);
+    printk(error_msg);
+    printk(itoa_eip);
+    while(1);
 }
