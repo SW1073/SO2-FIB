@@ -15,6 +15,8 @@
 
 #include <errno.h>
 
+#include <interrupt.h>
+
 #define LECTURA 0
 #define ESCRIPTURA 1
 
@@ -71,4 +73,11 @@ int sys_write(int fd, char * buffer, int size) {
     */
 
     return sys_write_console(buffer, size); // return number of bytes written
+}
+
+/**
+ * clock syscall implementation
+ */
+int sys_gettime() {
+    return zeos_ticks;
 }

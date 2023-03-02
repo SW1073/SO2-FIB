@@ -22,14 +22,32 @@ ENTRY(write)
     int $0x80               // generate a trap
 
     cmpl $0, %eax
-    jge fi
+    jge fi_write
     neg %eax
     movl %eax, errno
     movl $-1, %eax
-fi:
+fi_write:
     popl %edx
     popl %ecx
     popl %ebx
+    movl %ebp, %esp
+    popl %ebp
+    ret
+
+ENTRY(gettime)
+    # Boilerplate
+    pushl %ebp
+    movl %esp, %ebp
+
+    movl $0x0a, %eax         // %eax <- gettime syscall id
+    int $0x80               // generate a trap
+
+    cmpl $0, %eax
+    jge fi_gettime
+    neg %eax
+    movl %eax, errno
+    movl $-1, %eax
+fi_gettime:
     movl %ebp, %esp
     popl %ebp
     ret
