@@ -16,7 +16,7 @@ Register    idtR;
 int x_pos = 0;
 int y_pos = 0;
 
-unsigned int ticks = 0;
+unsigned int zeos_ticks = 0;
 
 char char_map[] =
 {
@@ -121,7 +121,7 @@ void keyboard_routine(void) {
 }
 
 void clock_routine(void) {
-    ++ticks;
+    ++zeos_ticks;
     zeos_show_clock();
 }
 
