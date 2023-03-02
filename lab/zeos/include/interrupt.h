@@ -21,5 +21,7 @@ void setIdt();
 //------------------------------------
 
 void keyboard_routine(void);
+void clock_routine(void);
+void pf_routine(int error_flags, int eip);
 
 #endif  /* __INTERRUPT_H__ */

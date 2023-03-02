@@ -105,3 +105,7 @@ fin:
     movl %eax, 0x18(%esp) // Change the EAX value in the stack
     RESTORE_ALL // Restore the context
     iret
+
+ENTRY (pf_handler)
+    call pf_routine
+    iret

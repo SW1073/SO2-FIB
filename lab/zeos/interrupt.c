@@ -2,6 +2,7 @@
  * interrupt.c -
  */
 #include "include/entry.h"
+#include "libc.h"
 #include <types.h>
 #include <interrupt.h>
 #include <segment.h>
@@ -90,6 +91,8 @@ void setIdt()
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
     setTrapHandler(0x80, system_call_handler, 3);
+
+    setInterruptHandler(14, pf_handler, 0);
     setInterruptHandler(32, clock_handler, 0);
     setInterruptHandler(33, keyboard_handler, 0);
 
@@ -122,4 +125,13 @@ void keyboard_routine(void) {
 void clock_routine(void) {
     ++zeos_ticks;
     zeos_show_clock();
+}
+
+void pf_routine(int error_flags, int eip) {
+    char buffer[10];
+    itoa(eip, buffer);
+    printk("\n\nPAGE FAULT EN @");
+    printk(buffer);
+    printk("\n\n");
+    for (;;) {}
 }

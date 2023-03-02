@@ -61,5 +61,5 @@ unsigned long sys_gettime() {
 }
 
 void sys_exit()
-{  
+{ 
 }
