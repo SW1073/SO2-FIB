@@ -3,11 +3,13 @@
  */
 #include "include/entry.h"
 #include "libc.h"
+#include "sched.h"
 #include <types.h>
 #include <interrupt.h>
 #include <segment.h>
 #include <hardware.h>
 #include <io.h>
+#include <system.h>
 
 #include <zeos_interrupt.h>
 
@@ -88,9 +90,14 @@ void setIdt()
   idtR.limit = IDT_ENTRIES * sizeof(Gate) - 1;
   
   set_handlers();
+  
+  // writemsr aqui x3 por los tres registros.
+  writeMSR(0x174, 0, __KERNEL_CS);
+  writeMSR(0x175, 0, INITIAL_ESP);
+  writeMSR(0x176, 0, syscall_handler_sysenter);
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
-    setTrapHandler(0x80, system_call_handler, 3);
+    // setTrapHandler(0x80, system_call_handler, 3);
 
     setInterruptHandler(14, pf_handler, 0);
     setInterruptHandler(32, clock_handler, 0);

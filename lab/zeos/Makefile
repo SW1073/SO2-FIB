@@ -29,6 +29,7 @@ SYSOBJ = \
 	interrupt.o \
 	entry.o \
 	sys_call_table.o \
+	sys_utils.o \
 	io.o \
 	sched.o \
 	sys.o \
@@ -72,6 +73,9 @@ entry.s: entry.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 sys_call_table.s: sys_call_table.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
+	$(CPP) $(ASMFLAGS) -o $@ $<
+
+sys_utils.s: sys_utils.S $(INCLUDEDIR)/asm.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 user.o:user.c $(INCLUDEDIR)/libc.h

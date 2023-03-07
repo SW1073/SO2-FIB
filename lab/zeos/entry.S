@@ -106,6 +106,29 @@ fin:
     RESTORE_ALL // Restore the context
     iret
 
+ENTRY(syscall_handler_sysenter)
+    push $__USER_DS
+    push %EBP // User stack address
+    pushfl
+    push $__USER_CS
+    push 4(%EBP) // User return address
+    SAVE_ALL
+    cmpl $0, %EAX
+    jl sysenter_err
+    cmpl $MAX_SYSCALL, %EAX
+    jg sysenter_err
+    call *sys_call_table(, %EAX, 0x04)
+    jmp sysenter_fin
+sysenter_err:
+    movl $-38, %EAX
+sysenter_fin:
+    movl %EAX, 0x18(%ESP)
+    RESTORE_ALL
+    movl (%ESP), %EDX // Return address
+    movl 12(%ESP), %ECX // User stack address
+    sti // Enable interrupts again
+    sysexit
+
 ENTRY (pf_handler)
     call pf_routine
     iret

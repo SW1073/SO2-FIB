@@ -36,25 +36,30 @@ wr_fin:
 
 ENTRY (gettime)
     pushl %ebp
-    mov %esp, %ebp
+    movl %esp, %ebp
 
-    mov $10, %eax         // index to sys_call_table -> 10 is getticks()
-    int $0x80 
-    // after this the return value of the syscall will be in eax.
+    pushl %ecx
+    pushl %edx
+    pushl time_fin
+    
+    movl $10, %eax
+    sysenter
 
-    // if eax<0 -> neg eax, save eax to errno and return -1
-    // else return eax
-    cmpl $0x00, %eax
-    jge tic_fin
+time_fin:
+    popl %ebp
+    //popl %edx   // pop of return address. i dont care about it so put it in edx and overwrite it with actual edx just below
+    addl $4, %esp
+    popl %edx
+    popl %ecx
 
-    // save -eax to errno here. i dont know how to do that yet.
+    cmpl $0, %eax
+    jge time_no_err
+    
     neg %eax
     movl %eax, errno
     mov $-1, %eax
 
-    // save -eax to errno here. i dont know how to do that yet.
-    mov $-1, %eax
-tic_fin:
-
+time_no_err:
     leave
     ret
+    
