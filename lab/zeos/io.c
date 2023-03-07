@@ -24,6 +24,14 @@ Byte inb (unsigned short port)
   return v;
 }
 
+void scroll_screen(Word* screen) { 
+    for (int i = 1; i < NUM_ROWS; ++i) {
+        for (int j = 0; j < NUM_COLUMNS; ++j) {
+            screen[((i-1)*NUM_COLUMNS+j)] = screen[(i*NUM_COLUMNS+j)];
+        }
+    }
+}
+
 void printc(char c)
 {
     __asm__ __volatile__ ( "movb %0, %%al; outb $0xe9" ::"a"(c)); /* Magic BOCHS debug: writes 'c' to port 0xe9 */
@@ -37,11 +45,14 @@ void printc(char c)
         Word ch = (Word) (c & 0x00FF) | 0x0200;
         Word *screen = (Word *)0xb8000;
         screen[(y * NUM_COLUMNS + x)] = ch;
-        if (++x >= NUM_COLUMNS)
-        {
-            //TODO
+        if (++x >= NUM_COLUMNS) {
             x = 0;
-            y=(y+1)%NUM_ROWS;
+            if (y+1 >= NUM_ROWS) {
+                scroll_screen(screen);
+            }
+            else {
+                y=(y+1)%NUM_ROWS;
+            }
         }
     }
 }
