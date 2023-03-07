@@ -5,16 +5,25 @@ ENTRY (write)
     mov %esp, %ebp
 
     pushl %ebx
-    pushl %ecx
-    pushl %edx
 
     mov 8(%ebp), %ebx       // first argument to ebx
     mov 12(%ebp), %ecx      // second argument to ecx
     mov 16(%ebp), %edx      // third argument to edx
 
+    pushl %ecx
+    pushl %edx
+
+    pushl $wr_return_user
+    pushl %ebp
+    mov %esp, %ebp
+
     mov $0x04, %eax         // index to sys_call_table -> 4 is write()
-    int $0x80 
+    sysenter
     // after this the return value of the syscall will be in eax.
+wr_return_user:
+
+    leave
+    add $4, %esp    // quitar wr_return
 
     // if eax<0 -> neg eax, save eax to errno and return -1
     // else return eax
@@ -40,15 +49,19 @@ ENTRY (gettime)
 
     pushl %ecx
     pushl %edx
-    pushl time_fin
     
     movl $10, %eax
-    sysenter
 
-time_fin:
-    popl %ebp
-    //popl %edx   // pop of return address. i dont care about it so put it in edx and overwrite it with actual edx just below
-    addl $4, %esp
+    pushl $time_return_user
+    pushl %ebp
+    movl %esp, %ebp
+
+    sysenter
+time_return_user:
+
+    leave
+    add $4, %esp // pop of return address. 
+
     popl %edx
     popl %ecx
 
