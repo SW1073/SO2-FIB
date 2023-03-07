@@ -12,7 +12,7 @@
 
 Byte inb (unsigned short port);
 void printc(char c);
-void printc_color(char c, unsigned int foreground_color);
+void printc_color(char c, unsigned char foreground_color);
 void printc_xy(Byte x, Byte y, char c);
 void printk(char *string);
 
