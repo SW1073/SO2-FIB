@@ -39,7 +39,7 @@ void scroll_screen(Word* screen) {
     // en esa lina. De lo contrario, estaran
     // repetidos.
     for (j = 0; j < NUM_COLUMNS; ++j)
-        curr_line[j] = '\0';
+        curr_line[j] = (Word) ('\0' & 0x00FF) | 0x0200;
 }
 
 void printc(char c)
