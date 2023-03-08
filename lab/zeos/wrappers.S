@@ -22,9 +22,6 @@ ENTRY (write)
     // after this the return value of the syscall will be in eax.
 wr_return_user:
 
-    leave
-    add $4, %esp    // quitar wr_return
-
     // if eax<0 -> neg eax, save eax to errno and return -1
     // else return eax
     cmpl $0, %eax
@@ -36,6 +33,9 @@ wr_return_user:
     mov $-1, %eax
 
 wr_fin:
+    leave
+    add $4, %esp    // quitar wr_return
+
     popl %edx
     popl %ecx
     popl %ebx

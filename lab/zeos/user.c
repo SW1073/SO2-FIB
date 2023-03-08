@@ -18,6 +18,7 @@ int __attribute__ ((__section__(".text.main")))
 
 
     write(1, "\nhola\n", 6);
+
     char buffer[30];
     for (int i = 0; i < 30; ++i) buffer[i] = '\0';
     

@@ -11,6 +11,6 @@
 extern TSS         tss;
 extern Descriptor* gdt;
 
-void writeMSR(long int a, long int b, long int c);
+void writeMSR(long int msr, long int value_high, long int value_low);
 
 #endif  /* __SYSTEM_H__ */

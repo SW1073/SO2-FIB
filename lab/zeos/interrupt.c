@@ -3,7 +3,6 @@
  */
 #include "include/entry.h"
 #include "libc.h"
-#include "sched.h"
 #include <types.h>
 #include <interrupt.h>
 #include <segment.h>
