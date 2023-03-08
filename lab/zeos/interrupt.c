@@ -17,9 +17,6 @@ Gate idt[IDT_ENTRIES];
 Register    idtR;
 unsigned int zeos_ticks = 0;
 
-int x_pos = 0;
-int y_pos = 0;
-
 char char_map[] =
 {
   '\0','\0','1','2','3','4','5','6',
@@ -117,10 +114,9 @@ void keyboard_routine () {
         scan_code = key & scan_code_mask;
         c = char_map[scan_code];
         if (c == '\0') // not ASCII
-            printc_xy(x_pos, y_pos, not_ascii_char);
+            printc_xy(0, 0, not_ascii_char);
         else // is ASCII
-            printc_xy(x_pos, y_pos, c);
-         ++x_pos;
+            printc_xy(0, 0, c);
     }
 } 
 
