@@ -105,6 +105,12 @@ __asm__ __volatile__(
   : /*no output*/
   : "i" (0xfc)       /* 0xFC = 11111100 -> keyboard and timer enabled*/
   : "%al" );
+
+    /* 
+     * 0xFD = 0x 1111 1101 --> keyboard enabled
+     * 0xFC = 0x 1111 1100
+     *
+     */
 }
 
 void delay(void)

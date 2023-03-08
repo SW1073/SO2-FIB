@@ -17,8 +17,11 @@ OBJCOPY = objcopy -O binary -R .note -R .comment -S
 
 INCLUDEDIR = include
 
+OPT = -O2
+OPT_io = -O2
 
-CFLAGS = -m32 -O2  -g -fno-omit-frame-pointer -ffreestanding -Wall -I$(INCLUDEDIR) -fno-PIC
+CFLAGS = -m32 $(OPT) -g -fno-omit-frame-pointer -ffreestanding -Wall -I$(INCLUDEDIR) -fno-PIC
+CFLAGS_io = -m32 $(OPT_io) -g -fno-omit-frame-pointer -ffreestanding -Wall -I$(INCLUDEDIR) -fno-PIC
 ASMFLAGS = -I$(INCLUDEDIR)
 LDFLAGS = -g -melf_i386
 
@@ -26,6 +29,7 @@ SYSOBJ = \
 	interrupt.o \
 	entry.o \
 	sys_call_table.o \
+	sys_utils.o \
 	io.o \
 	sched.o \
 	sys.o \
@@ -41,7 +45,7 @@ LIBZEOS = -L . -l zeos
 USROBJ = \
 	libc.o \
 	wrappers.o \
-	suma.o \
+	# suma.o \
 	# libjp.a \
 
 all:zeos.bin
@@ -63,7 +67,7 @@ bootsect.o: bootsect.s
 bootsect.s: bootsect.S
 	$(CPP) $(ASMFLAGS) -traditional $< -o $@
 
-suma.s: suma.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
+wrappers.s: wrappers.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/libc.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 wrappers.s: wrappers.S $(INCLUDEDIR)/asm.h
@@ -73,6 +77,9 @@ entry.s: entry.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 sys_call_table.s: sys_call_table.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
+	$(CPP) $(ASMFLAGS) -o $@ $<
+
+sys_utils.s: sys_utils.S $(INCLUDEDIR)/asm.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 user.o:user.c $(INCLUDEDIR)/libc.h

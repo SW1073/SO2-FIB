@@ -12,4 +12,6 @@ extern TSS         tss;
 extern Descriptor* gdt;
 extern unsigned int zeos_ticks;
 
+void writeMSR(long int msr, long int value_high, long int value_low);
+
 #endif  /* __SYSTEM_H__ */

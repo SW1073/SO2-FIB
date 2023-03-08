@@ -1,53 +1,82 @@
 /**
  * wrappers.S: implementacion de los wrappers de las syscalls.
- * De momento solo contiene la syscall write(fd,buffer,size)
  */
 
 #include <asm.h>
 
-ENTRY(write)
-    # Boilerplate
+ENTRY (write)
     pushl %ebp
-    movl %esp, %ebp
+    mov %esp, %ebp
+
     pushl %ebx
+
+    mov 8(%ebp), %ebx       // first argument to ebx
+    mov 12(%ebp), %ecx      // second argument to ecx
+    mov 16(%ebp), %edx      // third argument to edx
+
     pushl %ecx
-    pushl %edx    
+    pushl %edx
 
-    # Push variables to the correct registers
-    movl 0x08(%ebp), %ebx   // %ebx <- fd
-    movl 0x0c(%ebp), %ecx   // %ecx <- &buffer[0]
-    movl 0x10(%ebp), %edx   // %edx <- size
+    pushl $wr_return_user
+    pushl %ebp
+    mov %esp, %ebp
 
-    movl $0x4, %eax         // %eax <- write syscall id
-    int $0x80               // generate a trap
+    mov $0x04, %eax         // index to sys_call_table -> 4 is write()
+    sysenter
+    // after this the return value of the syscall will be in eax.
+wr_return_user:
 
+    // if eax<0 -> neg eax, save eax to errno and return -1
+    // else return eax
     cmpl $0, %eax
-    jge fi_write
+    jge wr_fin
+
+    // save -eax to errno here. i dont know how to do that yet.
     neg %eax
     movl %eax, errno
-    movl $-1, %eax
-fi_write:
+    mov $-1, %eax
+
+wr_fin:
+    leave
+    add $4, %esp    // quitar wr_return
+
     popl %edx
     popl %ecx
     popl %ebx
-    movl %ebp, %esp
-    popl %ebp
+
+    leave
     ret
 
-ENTRY(gettime)
-    # Boilerplate
+ENTRY (gettime)
     pushl %ebp
     movl %esp, %ebp
 
-    movl $0x0a, %eax         // %eax <- gettime syscall id
-    int $0x80               // generate a trap
+    pushl %ecx
+    pushl %edx
+    
+    movl $10, %eax
+
+    pushl $time_return_user
+    pushl %ebp
+    movl %esp, %ebp
+
+    sysenter
+time_return_user:
+
+    leave
+    add $4, %esp // pop of return address. 
+
+    popl %edx
+    popl %ecx
 
     cmpl $0, %eax
-    jge fi_gettime
+    jge time_no_err
+    
     neg %eax
     movl %eax, errno
-    movl $-1, %eax
-fi_gettime:
-    movl %ebp, %esp
-    popl %ebp
+    mov $-1, %eax
+
+time_no_err:
+    leave
     ret
+    

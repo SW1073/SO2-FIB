@@ -10,11 +10,13 @@
 
 int write(int fd, char *buffer, int size);
 
-int gettime();
+unsigned long gettime();
 
 void itoa(int a, char *b);
 
 int strlen(char *a);
+
+void perror(void);
 
 int getpid();
 

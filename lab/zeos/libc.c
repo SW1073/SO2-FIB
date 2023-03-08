@@ -2,6 +2,7 @@
  * libc.c 
  */
 
+#include "include/errno.h"
 #include <libc.h>
 
 #include <types.h>
@@ -43,3 +44,33 @@ int strlen(char *a)
   return i;
 }
 
+void perror(void) {
+    char err[] = "\0\0\0\0\0";
+    itoa(errno, err);
+    write(1, "\n\nerrno code: ", strlen("\n\nerrno code: "));
+    write(1, err, strlen(err));
+    write(1, "\n", 1);
+
+    // WIP -> work in progress. More will be added if needed.
+    switch(-errno) {
+        case EACCES:
+            write(1, "Permission denied\n", strlen("Permission denied\n"));
+            break;
+        case EBADF:
+            write(1, "Bad file descriptor\n", strlen("Bad file descriptor\n"));
+            break;
+        case EFAULT:
+            write(1, "Bad address\n", strlen("Bad address\n"));
+            break;
+        case EINVAL:
+            write(1, "Invalid argument\n", strlen("Invalid argument\n"));
+            break;
+        case ENOSYS:
+            write(1, "Function not implemented\n", strlen("Function not implemented\n"));
+            break;
+        default:
+            write(1, "Unknown error\n", strlen("Unknown error\n"));
+            break;
+    }
+
+}

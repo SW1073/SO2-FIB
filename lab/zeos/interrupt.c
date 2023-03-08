@@ -3,17 +3,22 @@
  */
 
 #include <entry.h>
+#include <libc.h>
 #include <types.h>
 #include <interrupt.h>
 #include <segment.h>
 #include <hardware.h>
 #include <io.h>
+#include <system.h>
 
 #include <zeos_interrupt.h>
 
 Gate idt[IDT_ENTRIES];
 Register    idtR;
-unsigned int zeos_ticks;
+unsigned int zeos_ticks = 0;
+
+int x_pos = 0;
+int y_pos = 0;
 
 char char_map[] =
 {
@@ -84,13 +89,17 @@ void setIdt()
   idtR.limit = IDT_ENTRIES * sizeof(Gate) - 1;
   
   set_handlers();
+  
+  // writemsr aqui x3 por los tres registros.
+  writeMSR(0x174, 0, __KERNEL_CS);
+  writeMSR(0x175, 0, INITIAL_ESP);
+  writeMSR(0x176, 0, syscall_handler_sysenter);
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
-  setInterruptHandler(14, pf_handler, 0);
-  setInterruptHandler(32, clock_handler, 0);
-  setInterruptHandler(33, keyboard_handler, 0);
-  setTrapHandler(0x80, system_call_handler, 3);
-
+    // setTrapHandler(0x80, system_call_handler, 3);
+    setInterruptHandler(14, pf_handler, 0);
+    setInterruptHandler(32, clock_handler, 0);
+    setInterruptHandler(33, keyboard_handler, 0);
 
   set_idt_reg(&idtR);
 }
@@ -108,16 +117,12 @@ void keyboard_routine () {
         scan_code = key & scan_code_mask;
         c = char_map[scan_code];
         if (c == '\0') // not ASCII
-            printc_xy(0, 0, not_ascii_char);
+            printc_xy(x_pos, y_pos, not_ascii_char);
         else // is ASCII
-            printc_xy(0, 0, c);
+            printc_xy(x_pos, y_pos, c);
+         ++x_pos;
     }
 } 
-
-void clock_routine() {
-    zeos_show_clock();
-    ++zeos_ticks;
-}
 
 
 void pf_routine(int error_code, int eip) {
@@ -127,4 +132,10 @@ void pf_routine(int error_code, int eip) {
     printk(error_msg);
     printk(itoa_eip);
     while(1);
+}
+
+
+void clock_routine(void) {
+    ++zeos_ticks;
+    zeos_show_clock();
 }

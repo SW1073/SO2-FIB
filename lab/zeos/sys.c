@@ -2,16 +2,13 @@
  * sys.c - Syscalls implementation
  */
 #include <devices.h>
-
 #include <utils.h>
-
 #include <io.h>
-
 #include <mm.h>
-
 #include <mm_address.h>
-
 #include <sched.h>
+#include <interrupt.h> // para el zeos_ticks.
+#include <errno.h>
 
 #include <errno.h>
 
@@ -47,7 +44,7 @@ int sys_fork()
 }
 
 void sys_exit()
-{  
+{ 
 }
 
 /**
@@ -56,7 +53,7 @@ void sys_exit()
 int sys_write(int fd, char * buffer, int size) {
     int err;
     // check if file descriptor is correct
-    if ((err = check_fd(fd, 1)) < 0)
+    if ((err = check_fd(fd, ESCRIPTURA)) < 0)
         return err;
     // check if the buffer address is not a null pointer
     if (buffer == NULL)
@@ -78,6 +75,6 @@ int sys_write(int fd, char * buffer, int size) {
 /**
  * clock syscall implementation
  */
-int sys_gettime() {
+unsigned long sys_gettime() {
     return zeos_ticks;
 }
