@@ -90,7 +90,7 @@ void setIdt()
   // writemsr aqui x3 por los tres registros.
   writeMSR(0x174, 0, __KERNEL_CS);
   writeMSR(0x175, 0, INITIAL_ESP);
-  writeMSR(0x176, 0, syscall_handler_sysenter);
+  writeMSR(0x176, 0, (long int)syscall_handler_sysenter);
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
     // setTrapHandler(0x80, system_call_handler, 3);
