@@ -67,9 +67,6 @@ bootsect.o: bootsect.s
 bootsect.s: bootsect.S
 	$(CPP) $(ASMFLAGS) -traditional $< -o $@
 
-wrappers.s: wrappers.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/libc.h
-	$(CPP) $(ASMFLAGS) -o $@ $<
-
 wrappers.s: wrappers.S $(INCLUDEDIR)/asm.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
