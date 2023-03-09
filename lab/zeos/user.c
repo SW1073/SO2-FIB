@@ -22,21 +22,33 @@ int __attribute__ ((__section__(".text.main")))
     // Test both gettime and write syscalls
     // Also test write() scrolling capabilities
     char *buffer = "\0\0\0\0\0\0\0\0\0\n";
+    // Time 1
     itoa(gettime(), buffer);
+    write(1, "Time 1: ", 7);
     write(1, buffer, 10);
 
-    while(1) {
-        // for (int i = 0; i < 50000000; ++i);
-        // itoa(gettime(), buffer);
-        // write(1, buffer, 10);
-    }
+    for (int i = 0; i < 5000000; ++i)
+        itoa(gettime(), buffer); 
+
+    // Time 2
+    itoa(gettime(), buffer);
+    write(1, "Time 2: ", 7);
+    write(1, buffer, 10);
+
+    for (int i = 0; i < 5000000; ++i)
+        itoa(gettime(), buffer); 
+
+    // Time 3
+    itoa(gettime(), buffer);
+    write(1, "Time 3: ", 7);
+    write(1, buffer, 10);
 
     // Trigger a page fault
-    char *p = 0;
-    *p = 'x';
+    //char *p = 0;
+    //*p = 'x';
 
     // This point shall never be reached, since the page
     // fault exception never returns
-    write(1, "This point shall never be reached.", 34);
+    write(1, "This point shall never be reached if page fault is activated.", 61);
     while(1);
 }
