@@ -72,7 +72,7 @@ void printc(char c)
     }
 }
 
-void printc_color(char c, unsigned char foreground_color)
+void printc_color(char c, Byte foreground_color, Byte background_color, Byte blink)
 {
     __asm__ __volatile__ ( "movb %0, %%al; outb $0xe9" ::"a"(c)); /* Magic BOCHS debug: writes 'c' to port 0xe9 */
     Word *screen = (Word *)0xb8000;
@@ -88,7 +88,8 @@ void printc_color(char c, unsigned char foreground_color)
     }
     else
     {
-        Word ch = (Word) (c & 0x00FF) | (foreground_color << 8);
+        Byte color = ((blink ? 1 : 0) << 7) | ((background_color & 0x7) << 4) | (foreground_color & 0xF);
+        Word ch = (Word) (c & 0x00FF) | (color << 8);
         screen[(y * NUM_COLUMNS + x)] = ch;
         if (++x >= NUM_COLUMNS)
         {
@@ -123,9 +124,9 @@ void printk(char *string)
 }
 
 
-void printk_color(char *string, unsigned char foreground_color)
+void printk_color(char *string, Byte foreground_color, Byte background_color, Byte blink)
 {
   int i;
   for (i = 0; string[i]; i++)
-    printc_color(string[i], foreground_color);
+    printc_color(string[i], foreground_color, background_color, blink);
 }
