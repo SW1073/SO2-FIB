@@ -8,6 +8,6 @@ lab/zeos/bootsect
 lab/zeos/zeos.bin
 lab/zeos/user
 lab/zeos/user.out
-*~ build 
+lab/zeos/build 
 lab/compile_commands.json
 lab/.cache
