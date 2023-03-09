@@ -6,7 +6,7 @@ int pid;
 
 void page_fault() {
     char *p = 0;
-    *p = 0x10;
+    *p = 0x69;
 }
 
 int __attribute__ ((__section__(".text.main")))

@@ -20,6 +20,7 @@ unsigned int *p_sys_size = (unsigned int *) KERNEL_START;
 unsigned int *p_usr_size = (unsigned int *) KERNEL_START+1;
 unsigned int *p_rdtr = (unsigned int *) KERNEL_START+2;
 
+char intro[] = " _______  _______  _______  _______  \n |       ||       ||       ||       |\n |____   ||    ___||   _   ||  _____|\n ____|  ||   |___ |  | |  || |_____  \n | ______||    ___||  |_|  ||_____  |\n | |_____ |   |___ |       | _____| |\n |_______||_______||_______||_______|\n";
 /************************/
 /** Auxiliar functions **/
 /************************/
@@ -98,9 +99,10 @@ int __attribute__((__section__(".text.main")))
   /* Move user code/data now (after the page table initialization) */
   copy_data((void *) KERNEL_START + *p_sys_size, (void*)L_USER_START, *p_usr_size);
 
-
   printk("Entering user mode...");
-  printk_color("\n\nhola caracola\n\n", 130);
+  printk_color("\n######################################\n", 12);
+  printk_color(intro, 5);
+  printk_color("######################################\n", 12);
 
   enable_int();
   /*
