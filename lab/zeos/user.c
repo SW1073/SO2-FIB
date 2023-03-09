@@ -26,9 +26,9 @@ int __attribute__ ((__section__(".text.main")))
     write(1, buffer, 10);
 
     while(1) {
-        for (int i = 0; i < 50000000; ++i);
-        itoa(gettime(), buffer);
-        write(1, buffer, 10);
+        // for (int i = 0; i < 50000000; ++i);
+        // itoa(gettime(), buffer);
+        // write(1, buffer, 10);
     }
 
     // Trigger a page fault

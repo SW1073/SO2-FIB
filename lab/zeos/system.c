@@ -103,9 +103,9 @@ int __attribute__((__section__(".text.main")))
   copy_data((void *) KERNEL_START + *p_sys_size, (void*)L_USER_START, *p_usr_size);
 
   printk("Entering user mode...");
-  printk_color("\n\n######################################\n", 12, 0, 0);
-  printk_color(intro2, 5, 0, 0);
-  printk_color("######################################\n\n", 12, 0, 0);
+  printk_color("\n\n######################################\n", LIGHT_RED, BLACK, 1);
+  printk_color(intro2, MAGENTA, BLACK, 0);
+  printk_color("######################################\n\n", LIGHT_RED, BLACK, 1);
 
   enable_int();
   /*
