@@ -15,5 +15,6 @@ void printc(char c);
 void printc_color(char c, unsigned char foreground_color);
 void printc_xy(Byte x, Byte y, char c);
 void printk(char *string);
+void printk_color(char *string, unsigned char foreground_color);
 
 #endif  /* __IO_H__ */

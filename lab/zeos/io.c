@@ -111,3 +111,11 @@ void printk(char *string)
   for (i = 0; string[i]; i++)
     printc(string[i]);
 }
+
+
+void printk_color(char *string, unsigned char foreground_color)
+{
+  int i;
+  for (i = 0; string[i]; i++)
+    printc_color(string[i], foreground_color);
+}

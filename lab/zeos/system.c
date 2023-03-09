@@ -100,6 +100,7 @@ int __attribute__((__section__(".text.main")))
 
 
   printk("Entering user mode...");
+  printk_color("\n\nhola caracola\n\n", 130);
 
   enable_int();
   /*

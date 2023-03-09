@@ -52,6 +52,7 @@ void sys_exit()
  */
 int sys_write(int fd, char * buffer, int size) {
     int err;
+    char sys_buffer[size];
     // check if file descriptor is correct
     if ((err = check_fd(fd, ESCRIPTURA)) < 0)
         return err;
@@ -62,14 +63,12 @@ int sys_write(int fd, char * buffer, int size) {
     if (size < 0)
         return EINVAL; /*EINVAL: Invalid argument*/
 
-    /* UNSURE IF NECESSARY
     // copy user data segment to kernel address space, for the buffer to point to the correct data
     // if this operation is not done, the pointer will not be accessing the correct data
-    if ((err = copy_from_user(buffer, buffer, size)) < 0)
+    if ((err = copy_from_user(buffer, sys_buffer, size)) < 0)
         return err;
-    */
 
-    return sys_write_console(buffer, size); // return number of bytes written
+    return sys_write_console(sys_buffer, size); // return number of bytes written
 }
 
 /**
