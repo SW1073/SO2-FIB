@@ -10,12 +10,13 @@
 #include <interrupt.h> // para el zeos_ticks.
 #include <errno.h>
 
-#include <errno.h>
-
 #include <interrupt.h>
 
 #define LECTURA 0
 #define ESCRIPTURA 1
+
+// no sé si está bien pero de momento se queda así.
+char sys_buffer[4096];
 
 int check_fd(int fd, int permissions)
 {
@@ -52,7 +53,6 @@ void sys_exit()
  */
 int sys_write(int fd, char * buffer, int size) {
     int err;
-    char sys_buffer[size];
     // check if file descriptor is correct
     if ((err = check_fd(fd, ESCRIPTURA)) < 0)
         return err;

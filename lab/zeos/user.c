@@ -4,7 +4,7 @@ char buff[24];
 
 int pid;
 
-void page_fault() {
+void trigger_page_fault() {
     char *p = 0;
     *p = 0x69;
 }
@@ -44,8 +44,7 @@ int __attribute__ ((__section__(".text.main")))
     write(1, buffer, 10);
 
     // Trigger a page fault
-    //char *p = 0;
-    //*p = 'x';
+    trigger_page_fault();
 
     // This point shall never be reached, since the page
     // fault exception never returns
