@@ -2,6 +2,7 @@
  * sched.c - initializes struct for task 0 anda task 1
  */
 
+#include "list.h"
 #include <sched.h>
 #include <mm.h>
 #include <io.h>
@@ -17,6 +18,9 @@ struct task_struct *list_head_to_task_struct(struct list_head *l)
 #endif
 
 extern struct list_head blocked;
+
+struct list_head freequeue;
+struct list_head readyqueue;
 
 
 /* get_DIR - Returns the Page Directory address for task 't' */
@@ -65,7 +69,17 @@ void init_task1(void)
 
 void init_sched()
 {
+    INIT_LIST_HEAD(&readyqueue);
 
+    INIT_LIST_HEAD(&freequeue);
+    list_add(&(task[0].task.list), &freequeue);
+
+    int i = 0;
+    for (; i < NR_TASKS-1; ++i) {
+        list_add(&(task[i+1].task.list), &(task[i].task.list));
+    }
+
+    list_add(&freequeue, &(task[i].task.list));
 }
 
 struct task_struct* current()
