@@ -39,8 +39,23 @@ int sys_fork()
 {
   int PID=-1;
 
-  // creates the child process
-  
+/*
+  - primero comprobacion de que tengo los recursos necesarios:
+  - si alguno falla, los de arriba se liberan:
+
+    - asignar un task struct al nuevo proceso.
+    - asignar una Page Table (DIR) 
+    - asignar memoria fisica.
+
+  - ahora se empieza el trabajo en si:
+
+    - init task_union del hijo -> copiar el del padre al hijo.
+    - copiar memoria del padre al hijo (tocho):
+        - el contenido de kernel del PCB son iguales entre ellos. No se copian, el TLB referencia el del padre.
+
+ */
+
+
   return PID;
 }
 

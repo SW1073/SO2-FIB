@@ -79,3 +79,44 @@ struct task_struct* current()
   return (struct task_struct*)(ret_value&0xfffff000);
 }
 
+/*
+
+void task_switch(union task_union*t) {
+    push ebp
+    ebp <- esp
+
+    cr3 <- new->task.DIR            // cambia el tlb para poder traducir las direcciones logicas unicas al proceso
+    tss.esp0 <- new->stack[1024]    // pone la nueva pila de sistema (1024 para invalidar todo lo que habia antes).
+
+    current()->task.kernel_esp = ebp
+    esp <- new->task.kernel_esp
+
+    pop ebp
+    ret
+}
+
+    |                       |
+    |       ebp             |
+    |-----------------------|
+    |   @ret (a lo que      |
+    |   llamo el switch)    |
+    |-----------------------|
+    |   new (argumento      |
+    |   de task_switch)     |
+    |-----------------------|
+    |   mierda varia de     |
+    |   la rutina de sistema|
+    |-----------------------|
+    |       ebp             |
+    |-----------------------|
+    |   @ret a usuario      |
+    |   (salir de handler)  |
+    |-----------------------|
+    |       CTX SW          |
+    |-----------------------|
+    |       CTX HW          |
+    |_______________________|
+
+
+ */
+
