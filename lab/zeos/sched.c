@@ -20,6 +20,7 @@ extern struct list_head blocked;
 
 // HEAD de la freequeue
 extern struct list_head freequeue;
+struct list_head freequeue;
 
 
 /* get_DIR - Returns the Page Directory address for task 't' */
@@ -68,7 +69,16 @@ void init_task1(void)
 
 void init_sched()
 {
-
+    INIT_LIST_HEAD( &freequeue );
+    // Si insertamos los elementos como se muestra en el codigo (empezando por
+    // el indice más alto), los elementos quedan correctamente ordenados, tal que:
+    // +-------------------------------------------------------------------------+
+    // | freequeue -> task[0] -> task[1] -> ... -> task[NR_TASKS-1] -> freequeue |
+    // +-------------------------------------------------------------------------+
+    // De lo contratio, el next al que apuntaria freequeue seria task[NR_TASKS-1].
+    // Probablemente, este orden sea irrelevante, pero por si las moscas...
+    for (int i = NR_TASKS-1; i >= 0; --i)
+        list_add(&(task[i].task.list), &freequeue);
 }
 
 struct task_struct* current()
