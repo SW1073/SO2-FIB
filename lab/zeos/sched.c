@@ -26,6 +26,10 @@ struct list_head freequeue;
 extern struct list_head readyqueue;
 struct list_head readyqueue;
 
+// Declaracion del idle_task. 
+// Apunta al PCB (o task struct) del proceso idle.
+struct task_struct *idle_task;
+
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 
 {
@@ -62,7 +66,34 @@ void cpu_idle(void)
 
 void init_idle (void)
 {
+    // Obtenemos el puntero al inicio del task struct. Como que PID es el primer campo,
+    // la direccion de PID es la misma que la de todo el struct (si la casteamos, podemos
+    // acceder a todos los parametros).
+    struct task_struct *task_ptr = list_entry(freequeue.next, struct task_struct, PID);
+    // No estoy seguro si es necesario, pero como el task_struct ya no esta disponble,
+    // no tiene sentido que siga presente dentro de free_queue.
+    list_del(freequeue.next);
+    // Proceso idle tiene PID 0
+    task_ptr->PID = 0;
+    // init dir_pages_baseAaddr. Retorna 1 if OK (siempre)
+    allocate_DIR(task_ptr);
+    // TODO: initialize an execution context for the process to execute cpu_idle 
+    // function when it gets assigned the cpu
+    // {
+    // Store in the stack of the idle process the address of the code that it will
+    // execute (address of the cpu_idle function):
 
+    // Store in the stack the initial value that we want to assign to register ebp
+    // when undoing the dynamic link (it can be 0)
+
+    // inally, we need to keep (in a new field of its task_struct) the position of
+    // the stack where we have stored the initial value for the ebp register. This
+    // value will be loaded in the esp register when undoing the dynamic link.
+
+    // }
+
+    // idle_task apunta ahora al pcb que acabamos de inicializar.
+    idle_task = task_ptr;
 }
 
 void init_task1(void)
