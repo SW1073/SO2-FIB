@@ -22,6 +22,9 @@ extern struct list_head blocked;
 extern struct list_head freequeue;
 struct list_head freequeue;
 
+// HEAD de la freequeue
+extern struct list_head readyqueue;
+struct list_head readyqueue;
 
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 
@@ -69,6 +72,7 @@ void init_task1(void)
 
 void init_sched()
 {
+    // Init free queue
     INIT_LIST_HEAD( &freequeue );
     // Si insertamos los elementos como se muestra en el codigo (empezando por
     // el indice más alto), los elementos quedan correctamente ordenados, tal que:
@@ -79,6 +83,9 @@ void init_sched()
     // Probablemente, este orden sea irrelevante, pero por si las moscas...
     for (int i = NR_TASKS-1; i >= 0; --i)
         list_add(&(task[i].task.list), &freequeue);
+
+    // Init ready queue (initially empty)
+    INIT_LIST_HEAD( &readyqueue );
 }
 
 struct task_struct* current()
