@@ -97,7 +97,7 @@ void task_switch(union task_union*t) {
     cr3 <- new->task.DIR            // cambia el tlb para poder traducir las direcciones logicas unicas al proceso
     tss.esp0 <- new->stack[1024]    // pone la nueva pila de sistema (1024 para invalidar todo lo que habia antes).
 
-    current()->task.kernel_esp = ebp
+    ebp = current()->task.kernel_esp
     esp <- new->task.kernel_esp
 
     pop ebp

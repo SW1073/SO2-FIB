@@ -53,6 +53,51 @@ int sys_fork()
     - copiar memoria del padre al hijo (tocho):
         - el contenido de kernel del PCB son iguales entre ellos. No se copian, el TLB referencia el del padre.
 
+    - asignar pid
+    - preparar contexto de ejecución del hijo
+    - poner task_struct del hijo en readyqueue
+
+    |-----------------------|
+    |   mierda varia de     |
+    |   la rutina de sistema|
+    |-----------------------|
+    |       ebp             |
+    |-----------------------|
+    |   @ret a sys_fork     |
+    |   (salir de handler)  |
+    |-----------------------|
+    |       CTX SW          |
+    |-----------------------|
+    |       CTX HW          |
+    |-----------------------|
+
+
+    - solo hijo:
+        - crear función ret_from_fork() que literal solo retorne 0.
+
+        |-----------------------|
+        |           0           |
+        |-----------------------|
+        |    @ret_from_fork     |
+        |-----------------------|
+        |   @ret a sys_fork     |
+        |   (salir de handler)  |
+        |-----------------------|
+        |       CTX SW          |
+        |-----------------------|
+        |       CTX HW          |
+        |-----------------------|
+
+        - el task_switch() al final hace:
+            pop ebp
+            ret
+        - al hacer pop ebp, ebp ahora vale 0.
+        - al hacer ret va a @ret_from_fork, y hace lo siguiente:
+            push de ebp (ebp aqui vale 0)
+            ebp <- esp (ebp ahora vale esp, que está apuntando a @ret_handler (sys_fork))
+            eax <- 0
+            pop ebp (ebp ahora vale 0, y esp apunta a CTX SW.
+            ret
  */
 
 
