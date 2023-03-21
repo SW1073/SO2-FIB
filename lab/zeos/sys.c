@@ -106,6 +106,29 @@ int sys_fork()
 
 void sys_exit()
 { 
+    /*
+    - argumento status.
+
+        - libera todos los recursos del proceso.
+        - no liberar pcb porque tengo que guardar el status.
+        - llamar al scheduler.
+            - el planificador entonces hace task_switch y el hijo se queda esperando al wait() del padre para morir.
+
+     */
+}
+
+int sys_wait() {
+    /*
+        - mira los hijos a ver si tiene algun zombie.
+        - si tiene algún zombie:
+                - pilla el exit status del pcb.
+                - pilla el pid del pcb.
+                - guarda el exit status en algún lugar (??)
+                - libera el pcb.
+                - retorna el pid.
+     */
+
+    return 0;
 }
 
 /**

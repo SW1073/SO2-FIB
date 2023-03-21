@@ -112,6 +112,18 @@ void init_idle (void)
 
 void init_task1(void)
 {
+    /*
+        - asignar pcb
+        - asignar DIR
+
+        - cr3 <- DIR de init (para aclarle las traducciones de direcciones)
+        - tss.esp0 <- init.kernel_esp (tss.esp0 es lo que indica al kernel dónde está la pila de sistema)
+
+        - preparar trampolín (ya está hecho):
+            - añadir un CTX HW a mano donde esp es la pila del usuario en la page table dentro de DIR
+            - añadir un CTW SW a mano para añadir lo mismo que añade el SAVE_ALL pero con los regs
+                a 0 y los de segmento ya los sé.
+     */
 }
 
 
