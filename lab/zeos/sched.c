@@ -22,6 +22,8 @@ extern struct list_head blocked;
 struct list_head freequeue;
 struct list_head readyqueue;
 
+struct task_struct *idle_task;
+
 
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 
@@ -59,7 +61,53 @@ void cpu_idle(void)
 
 void init_idle (void)
 {
+    // pillar primer pcb libre (esto solo se hará una vez al inicializar el sistema
+    // así que no hay problema).
+    struct list_head *free_list = list_first(&freequeue);
 
+    // borrar este pcb de la freequeue porque obviamente ya no está libre.
+    list_del(free_list);
+
+    // list_head_to_task_struct da un task_struct, así que se castea como un task_union para poder modificar
+    // el stack después.
+    union task_union *pcb = (union task_union*)list_head_to_task_struct(free_list);
+
+    // se le pone un page directory al task.
+    allocate_DIR(&(pcb->task));
+ 
+    // self explanatory.
+    pcb->task.PID = 0;
+
+    // en el tope del stack de sistema del pcb se pone la dirección de la función que queremos
+    // que se resuma al acabar el task_switch
+    pcb->stack[KERNEL_STACK_SIZE-1] = (unsigned long)cpu_idle;
+
+    // aún no entiendo muy bien por qué hay que hacer esto pero lo pone el pdf.
+    // tiene algo que ver con el valor del ebp al deshacer el dynamic link o algo así.
+    pcb->stack[KERNEL_STACK_SIZE-2] = 0;
+    
+    // hacer que el kernel_esp apunte al tope del stack. como hemos "pusheado" dos
+    // valores, kernel_esp será el tope menos dos.
+    pcb->task.kernel_esp = &(pcb->stack[KERNEL_STACK_SIZE-2]);
+
+    /*
+
+    -   task_struct y stack de sistema en task_union 
+        después de los cambios de arriba:
+
+        |---------------|
+        |  task_struct  |
+        |===============|
+        |   ........    |
+        |   ........    |
+        |===============| <------ kernel_esp
+        |   ebp (0)     |
+        |===============|
+        |   @cpu_idle   |
+        |---------------|
+     */
+
+    idle_task = (struct task_struct*)pcb;
 }
 
 void init_task1(void)
