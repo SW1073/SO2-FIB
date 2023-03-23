@@ -2,6 +2,8 @@
  * sched.c - initializes struct for task 0 anda task 1
  */
 
+#include "list.h"
+#include "types.h"
 #include <sched.h>
 #include <mm.h>
 #include <io.h>
@@ -9,7 +11,7 @@
 union task_union task[NR_TASKS]
   __attribute__((__section__(".data.task")));
 
-#if 0
+#if 1
 struct task_struct *list_head_to_task_struct(struct list_head *l)
 {
   return list_entry( l, struct task_struct, list);
@@ -66,31 +68,35 @@ void cpu_idle(void)
 
 void init_idle (void)
 {
-    // Obtenemos el puntero al inicio del task struct. Como que PID es el primer campo,
-    // la direccion de PID es la misma que la de todo el struct (si la casteamos, podemos
-    // acceder a todos los parametros).
-    struct task_struct *task_ptr = list_entry(freequeue.next, struct task_struct, PID);
+    // Obtenemos el puntero al inicio del task struct.
+    struct task_struct *task_ptr = list_head_to_task_struct(list_first(&freequeue));
+        //list_entry(freequeue.next, struct task_struct, PID);
+
     // No estoy seguro si es necesario, pero como el task_struct ya no esta disponble,
     // no tiene sentido que siga presente dentro de free_queue.
     list_del(freequeue.next);
+
     // Proceso idle tiene PID 0
     task_ptr->PID = 0;
+
     // init dir_pages_baseAaddr. Retorna 1 if OK (siempre)
     allocate_DIR(task_ptr);
-    // TODO: initialize an execution context for the process to execute cpu_idle 
-    // function when it gets assigned the cpu
-    // {
+
+    // Castear el pointer del task para obtener el pointer de la union
+    union task_union* task_union_ptr = (union task_union*)task_ptr;
+
     // Store in the stack of the idle process the address of the code that it will
     // execute (address of the cpu_idle function):
+    task_union_ptr->stack[KERNEL_STACK_SIZE-1] = (unsigned long)(void*)cpu_idle;
 
     // Store in the stack the initial value that we want to assign to register ebp
     // when undoing the dynamic link (it can be 0)
+    task_union_ptr->stack[KERNEL_STACK_SIZE-2] = 0;
 
     // inally, we need to keep (in a new field of its task_struct) the position of
     // the stack where we have stored the initial value for the ebp register. This
     // value will be loaded in the esp register when undoing the dynamic link.
-
-    // }
+    task_union_ptr->task.kernel_esp = (DWord)&task_union_ptr->stack[KERNEL_STACK_SIZE-2];
 
     // idle_task apunta ahora al pcb que acabamos de inicializar.
     idle_task = task_ptr;
