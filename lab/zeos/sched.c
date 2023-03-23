@@ -2,11 +2,10 @@
  * sched.c - initializes struct for task 0 anda task 1
  */
 
-#include "list.h"
-#include "types.h"
 #include <sched.h>
 #include <mm.h>
 #include <io.h>
+#include <system.h>
 
 union task_union task[NR_TASKS]
   __attribute__((__section__(".data.task")));
@@ -104,6 +103,35 @@ void init_idle (void)
 
 void init_task1(void)
 {
+    // Nos traemos un pcb libre para inicializar el proceso
+    struct task_struct *task_ptr = list_head_to_task_struct(list_first(&freequeue));
+
+    // Obtenemos el pointer al task_union tambien.
+    union task_union* task_union_ptr = (union task_union*)task_ptr;
+
+    // Quitamos el pcb de la lista de pcb's libres (ya no lo esta)
+    list_del(freequeue.next);
+
+    // El proceso inicial tiene PID 1
+    task_ptr->PID = 1;
+    
+    // init dir_pages_baseAaddr. Retorna 1 if OK (siempre)
+    allocate_DIR(task_ptr);
+
+    // Completar la inicializacion del espacio de direcciones de memoria.
+    set_user_pages(task_ptr);
+
+    // Update the TSS to make it point to the new_task system stack.
+    tss.esp0 = (DWord)&task_union_ptr->stack[KERNEL_STACK_SIZE];
+
+    // In case you use sysenter you must modify also the MSR number 0x175.
+    // Basicamente, hacemos que la entrada 0x175 del MSR tome valor tss.esp0,
+    // en vez del valor INITIAL_ESP que apuntaba antes
+    writeMSR(0x175, 0, tss.esp0);
+
+    // Set its page directory as the current page directory in the system,
+    // by using the set_cr3 function (see file mm.c).
+    set_cr3(task_ptr->dir_pages_baseAddr);
 }
 
 
