@@ -132,3 +132,19 @@ sysenter_fin:
 ENTRY (pf_handler)
     call pf_routine
     iret
+
+
+ENTRY (task_switch)
+    pushl %ebp
+    movl %esp, %ebp
+    pushl %esi
+    pushl %edi
+    pushl %ebx
+    pushl 8(%ebp)
+    call inner_task_switch
+    popl %ebx
+    popl %edi
+    popl %esi
+    movl %ebp, %esp
+    popl %ebp
+    ret

@@ -124,6 +124,10 @@ void init_task1(void)
     // Update the TSS to make it point to the new_task system stack.
     tss.esp0 = (DWord)&task_union_ptr->stack[KERNEL_STACK_SIZE];
 
+    // kernel_esp debe guardar la posicion dentro de la pila que tenia el esp
+    // antes del último cambio de contexto
+    task_ptr->kernel_esp = tss.esp0;
+
     // In case you use sysenter you must modify also the MSR number 0x175.
     // Basicamente, hacemos que la entrada 0x175 del MSR tome valor tss.esp0,
     // en vez del valor INITIAL_ESP que apuntaba antes
@@ -164,3 +168,7 @@ struct task_struct* current()
   return (struct task_struct*)(ret_value&0xfffff000);
 }
 
+void inner_task_switch(union task_union *t) {
+    
+
+} 
