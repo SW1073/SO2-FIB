@@ -3,6 +3,7 @@
  */
 
 #include "list.h"
+#include "system.h"
 #include <sched.h>
 #include <mm.h>
 #include <io.h>
@@ -10,12 +11,12 @@
 union task_union task[NR_TASKS]
   __attribute__((__section__(".data.task")));
 
-#if 0
+// #if 1
 struct task_struct *list_head_to_task_struct(struct list_head *l)
 {
   return list_entry( l, struct task_struct, list);
 }
-#endif
+// #endif
 
 extern struct list_head blocked;
 
@@ -112,6 +113,7 @@ void init_idle (void)
 
 void init_task1(void)
 {
+
     /*
         - asignar pcb
         - asignar DIR
@@ -124,6 +126,33 @@ void init_task1(void)
             - añadir un CTW SW a mano para añadir lo mismo que añade el SAVE_ALL pero con los regs
                 a 0 y los de segmento ya los sé.
      */
+
+    // pillar primer pcb libre (esto solo se hará una vez al inicializar el sistema
+    // así que no hay problema).
+    struct list_head *free_list = list_first(&freequeue);
+
+    // borrar este pcb de la freequeue porque obviamente ya no está libre.
+    list_del(free_list);
+
+    // list_head_to_task_struct da un task_struct, así que se castea como un task_union para poder modificar
+    // el stack después.
+    union task_union *pcb = (union task_union*)list_head_to_task_struct(free_list);
+
+    // se le pone un page directory al task.
+    allocate_DIR(&(pcb->task));
+
+    set_user_pages(&pcb->task);
+
+    // self explanatory.
+    pcb->task.PID = 1;
+
+    // hacer que el kernel_esp apunte al tope del stack.
+    pcb->task.kernel_esp = &(pcb->stack[KERNEL_STACK_SIZE]);
+    tss.esp0 = (unsigned long)pcb->task.kernel_esp;
+    // writeMSR(0x175, 0, tss.esp0);
+    writeMSR(0x175, 0, tss.esp0);
+
+    set_cr3(get_DIR(&(pcb->task)));
 }
 
 
