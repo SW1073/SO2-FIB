@@ -4,6 +4,7 @@
 
 #include "list.h"
 #include "system.h"
+#include "types.h"
 #include <sched.h>
 #include <mm.h>
 #include <io.h>
@@ -24,6 +25,7 @@ struct list_head freequeue;
 struct list_head readyqueue;
 
 struct task_struct *idle_task;
+struct task_struct *init_task;
 
 
 /* get_DIR - Returns the Page Directory address for task 't' */
@@ -148,13 +150,13 @@ void init_task1(void)
 
     // hacer que el kernel_esp apunte al tope del stack.
     pcb->task.kernel_esp = &(pcb->stack[KERNEL_STACK_SIZE]);
-    tss.esp0 = (unsigned long)pcb->task.kernel_esp;
+    tss.esp0 = (DWord)pcb->task.kernel_esp;
+    init_task = (struct task_struct*)pcb;
     // writeMSR(0x175, 0, tss.esp0);
     writeMSR(0x175, 0, tss.esp0);
 
     set_cr3(get_DIR(&(pcb->task)));
 }
-
 
 void init_sched()
 {
@@ -177,6 +179,19 @@ struct task_struct* current()
   return (struct task_struct*)(ret_value&0xfffff000);
 }
 
+void inner_task_switch(union task_union *new) {
+
+    new->task.kernel_esp = &(new->stack[KERNEL_STACK_SIZE]);
+    tss.esp0 = (unsigned long)new->task.kernel_esp;
+    writeMSR(0x175, 0, tss.esp0);
+
+    set_cr3(get_DIR((struct task_struct*)new));
+    DWord ebp = get_ebp();
+    current()->kernel_esp = (DWord*)ebp;
+
+    set_esp_and_switch(new->task.kernel_esp);
+}
+
 /*
 
 void task_switch(union task_union*t) {
@@ -186,7 +201,9 @@ void task_switch(union task_union*t) {
     cr3 <- new->task.DIR            // cambia el tlb para poder traducir las direcciones logicas unicas al proceso
     tss.esp0 <- new->stack[1024]    // pone la nueva pila de sistema (1024 para invalidar todo lo que habia antes).
 
+    // esto no se puede hacer en c, hay que llamar a una función en assembly.
     ebp = current()->task.kernel_esp
+    // para este man lo mismo que el de arriba.
     esp <- new->task.kernel_esp
 
     pop ebp
@@ -214,7 +231,6 @@ void task_switch(union task_union*t) {
     |-----------------------|
     |       CTX HW          |
     |_______________________|
-
 
  */
 

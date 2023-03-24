@@ -16,3 +16,17 @@ ENTRY (writeMSR)
 
     leave
     ret
+
+
+ENTRY (get_ebp)
+    movl %ebp, %eax
+    ret
+
+
+// @param new_esp
+ENTRY (set_esp_and_switch)
+    movl 4(%esp), %eax
+    lea -8(%eax), %esp
+    //movl %eax, %esp
+    popl %ebp
+    ret

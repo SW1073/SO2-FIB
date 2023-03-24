@@ -2,6 +2,7 @@
  * interrupt.c -
  */
 
+#include "sched.h"
 #include <entry.h>
 #include <libc.h>
 #include <types.h>
@@ -10,6 +11,7 @@
 #include <hardware.h>
 #include <io.h>
 #include <system.h>
+#include <sched.h>
 
 #include <zeos_interrupt.h>
 
@@ -133,5 +135,14 @@ void pf_routine(int error_code, int eip) {
 
 void clock_routine(void) {
     ++zeos_ticks;
+    if (zeos_ticks == 500) {
+        printk("cambiando a idle");
+        task_switch((union task_union*)idle_task);
+    }
+
+    // if (zeos_ticks == 1000) {
+    //     printk("volviendo a user.c");
+    //     task_switch((union task_union*)init_task);
+    // }
     zeos_show_clock();
 }
