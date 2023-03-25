@@ -28,7 +28,7 @@ int __attribute__ ((__section__(".text.main")))
     write(1, buffer, 10);
 
     for (int i = 0; i < 5000000; ++i)
-        itoa(gettime(), buffer); 
+        itoa(gettime(), buffer);
 
     // Time 2
     itoa(gettime(), buffer);
@@ -36,18 +36,43 @@ int __attribute__ ((__section__(".text.main")))
     write(1, buffer, 10);
 
     for (int i = 0; i < 5000000; ++i)
-        itoa(gettime(), buffer); 
+        itoa(gettime(), buffer);
 
     // Time 3
     itoa(gettime(), buffer);
     write(1, "Time 3: ", 7);
     write(1, buffer, 10);
 
+    for (int i = 0; i < 5000000; ++i)
+        itoa(gettime(), buffer);
+
+    // Time 4
+    itoa(gettime(), buffer);
+    write(1, "Time 4: ", 7);
+    write(1, buffer, 10);
+
+    for (int i = 0; i < 5000000; ++i)
+        itoa(gettime(), buffer);
+
+    // Time 5
+    itoa(gettime(), buffer);
+    write(1, "Time 5: ", 7);
+    write(1, buffer, 10);
+
+    for (int i = 0; i < 5000000; ++i)
+        itoa(gettime(), buffer);
+
+    // Time 6
+    itoa(gettime(), buffer);
+    write(1, "Time 6: ", 7);
+    write(1, buffer, 10);
+
     // Trigger a page fault
-    trigger_page_fault();
+    // trigger_page_fault();
 
     // This point shall never be reached, since the page
     // fault exception never returns
+    write(1, "no more gettime()\n", strlen("no more gettime()\n"));
     write(1, "This point shall never be reached if page fault is activated.", 61);
     while(1);
 }

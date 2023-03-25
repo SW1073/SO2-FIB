@@ -25,7 +25,7 @@ struct list_head freequeue;
 struct list_head readyqueue;
 
 struct task_struct *idle_task;
-struct task_struct *init_task;
+struct task_struct *init_task; // TODO quitar esto, era solo para probar el task_switch
 
 
 /* get_DIR - Returns the Page Directory address for task 't' */
@@ -181,7 +181,6 @@ struct task_struct* current()
 
 void inner_task_switch(union task_union *new) {
 
-    new->task.kernel_esp = &(new->stack[KERNEL_STACK_SIZE]);
     tss.esp0 = (unsigned long)new->task.kernel_esp;
     writeMSR(0x175, 0, tss.esp0);
 

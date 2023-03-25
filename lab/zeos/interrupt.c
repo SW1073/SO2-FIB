@@ -135,14 +135,15 @@ void pf_routine(int error_code, int eip) {
 
 void clock_routine(void) {
     ++zeos_ticks;
-    if (zeos_ticks == 500) {
-        printk("cambiando a idle");
+    if (zeos_ticks == 9000) {
+        printk("cambiando a idle\n\n");
         task_switch((union task_union*)idle_task);
     }
 
-    // if (zeos_ticks == 1000) {
-    //     printk("volviendo a user.c");
-    //     task_switch((union task_union*)init_task);
-    // }
+    if (zeos_ticks == 14000) {
+        printk("volviendo a user.c\n");
+        task_switch((union task_union*)init_task);
+    }
+
     zeos_show_clock();
 }

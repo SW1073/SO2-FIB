@@ -25,8 +25,6 @@ ENTRY (get_ebp)
 
 // @param new_esp
 ENTRY (set_esp_and_switch)
-    movl 4(%esp), %eax
-    lea -8(%eax), %esp
-    //movl %eax, %esp
+    movl 4(%esp), %esp
     popl %ebp
     ret
