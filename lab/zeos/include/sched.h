@@ -33,6 +33,10 @@ extern union task_union task[NR_TASKS]; /* Vector de tasques */
 
 #define INITIAL_ESP       	KERNEL_ESP(&task[1])
 
+
+
+extern struct task_struct *idle_task; //TODO quitar???
+
 /* Inicialitza les dades del proces inicial */
 void init_task1(void);
 

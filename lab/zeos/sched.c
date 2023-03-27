@@ -30,6 +30,7 @@ struct list_head readyqueue;
 // Declaracion del idle_task. 
 // Apunta al PCB (o task struct) del proceso idle.
 struct task_struct *idle_task;
+extern struct task_struct *idle_task;
 
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 
@@ -168,7 +169,26 @@ struct task_struct* current()
   return (struct task_struct*)(ret_value&0xfffff000);
 }
 
-void inner_task_switch(union task_union *t) {
-    
-
+void inner_task_switch(union task_union *new) {
+    // Hacemos que el esp0 apunte al esp del kernel 
+    // del proceso que vamos a poner a ejecuta (new).
+    tss.esp0 = new->task.kernel_esp;
+    // Cambiamos la entrada que toca del MSR, para
+    // las correctas entradas a modo sistema.
+    writeMSR(0x175, 0, tss.esp0);
+    // Flush de TLB para que las traducciones de las @
+    // fisicas a logicas tengan que ser recalculadas
+    // (de lo contrario, usariamos el espacio de memoria
+    // del proceso anterior)
+    set_cr3(get_DIR((struct task_struct*)new));
+    // Hacemos que el puntero al kernel_esp del proceso actual
+    // apunte al nuevo proceso, desde este momento, 
+    // +-----------------+
+    // | current() = new |
+    // +-----------------+
+    current()->kernel_esp = get_ebp();
+    // Damos valor al registro esp con el puntero a la pila
+    // del nuevo proceso, y devolvemos, poniendo a ejecutar
+    // la @ de retorno de la nueva pila de sistema.
+    set_esp_and_switch(new->task.kernel_esp);
 } 

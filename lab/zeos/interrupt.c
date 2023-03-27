@@ -2,6 +2,7 @@
  * interrupt.c -
  */
 
+#include "sched.h"
 #include <entry.h>
 #include <libc.h>
 #include <types.h>
@@ -130,8 +131,12 @@ void pf_routine(int error_code, int eip) {
     while(1);
 }
 
-
+extern struct task_struct* idle_task;
 void clock_routine(void) {
     ++zeos_ticks;
+    if (zeos_ticks == 1000) {
+        printk("Saltando a idle task!");
+        task_switch((union task_union*)idle_task);
+    }
     zeos_show_clock();
 }
