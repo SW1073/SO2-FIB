@@ -22,6 +22,10 @@ int __attribute__ ((__section__(".text.main")))
     // Test both gettime and write syscalls
     // Also test write() scrolling capabilities
     char *buffer = "\0\0\0\0\0\0\0\0\0\n";
+    itoa(getpid(), buffer);
+    write(1, "- PID: ", 7);
+    write(1, buffer, 10);
+
     // Time 1
     itoa(gettime(), buffer);
     write(1, "Time 1: ", 7);

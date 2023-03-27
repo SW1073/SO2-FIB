@@ -79,4 +79,30 @@ time_return_user:
 time_no_err:
     leave
     ret
-    
+
+ENTRY (getpid)
+    pushl %ebp
+    movl %esp, %ebp
+
+    movl $20, %eax
+
+    pushl $pid_return_user
+    pushl %ebp
+    movl %esp, %ebp
+
+    sysenter
+pid_return_user:
+    leave
+    add $4, %esp
+
+    cmpl $0, %eax
+    jge pid_no_err
+
+    neg %eax
+    movl %eax, errno
+    movl $-1, %eax
+
+pid_no_err:
+    leave
+    ret
+
