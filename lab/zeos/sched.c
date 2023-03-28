@@ -233,3 +233,36 @@ void task_switch(union task_union*t) {
 
  */
 
+
+/*
+    pthread_create(void *(*func)(void*), void *param)
+        - inicializar task_union (copiando del padre). como se copian tal cual, sabemos que pertenecen al mismo proceso.
+        - inicializar el stack de usuario.
+        - inicializar el stack de sistema.
+            - tocar el EIP y CS del contexto HW para que apunte a func (primer parametro de phtread_create()).
+            - tocar el ESP del contexto HW para que apunte al tope de la nueva pila de usuario.
+
+
+    - para poder hacer que el thread salga bien si el código de usuario no pone el pthread_exit() se hace lo siguiente:
+        - se crea un wrapper que ejecute la función de usuario, y luego se ejecuta el phtread_exit().
+        void* pthread_wrapper(void *(*func)(void*), void *param) {
+            func(void*);
+            pthread_exit();
+        }
+
+        - la función usuario entonces será:
+            |-----------------------|
+            |           0           |
+            |-----------------------|
+            |     &func usuario     |
+            |-----------------------|
+            |       *params         |
+            |_______________________|
+
+    ------------------------
+    - el task_switch:
+        - si veo que veo a cambiar al mismo proceso (otro thread) no hace falta tocar el cr3.
+        - así se evita flushear el TLB y tener mucho TLB misses.
+            - básicamente es un if antes del set_cr3()
+ */
+
