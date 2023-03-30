@@ -19,6 +19,9 @@ int __attribute__ ((__section__(".text.main")))
     if (write(1, "\nHola que tal\n", 14) > 0) {
         write(1, "W\n", 2);
     }
+
+    fork();
+
     // Test both gettime and write syscalls
     // Also test write() scrolling capabilities
     char *buffer = "\0\0\0\0\0\0\0\0\0\n";

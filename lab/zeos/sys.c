@@ -1,6 +1,9 @@
 /*
  * sys.c - Syscalls implementation
  */
+#include "list.h"
+#include "system.h"
+#include "types.h"
 #include <devices.h>
 #include <utils.h>
 #include <io.h>
@@ -37,7 +40,7 @@ int sys_getpid()
 
 int sys_fork()
 {
-  int PID=-1;
+  int PID = 69;
 
 /*
   - primero comprobacion de que tengo los recursos necesarios:
@@ -92,16 +95,46 @@ int sys_fork()
             pop ebp
             ret
         - al hacer pop ebp, ebp ahora vale 0.
-        - al hacer ret va a @ret_from_fork, y hace lo siguiente:
+        - al hacer ret va a @ret_from_fork (esp ahora apunta a @ret_sys_fork), y hace lo siguiente:
             push de ebp (ebp aqui vale 0)
-            ebp <- esp (ebp ahora vale esp, que está apuntando a @ret_handler (sys_fork))
+            ebp <- esp (ebp ahora vale esp, y apunta al tope del stack, donde esta el 0 que acabamos de pushear)
             eax <- 0
-            pop ebp (ebp ahora vale 0, y esp apunta a CTX SW.
+            pop ebp (ebp ahora vale 0, y esp apunta a @ret_sys_fork.
             ret
+        - al hacer ret volvemos al handler de sys_fork
  */
 
+    if (list_empty(&freequeue)) {
+        return ENOMEM;
+    }
 
-  return PID;
+    struct list_head *free_list_pos = list_first(&freequeue) ;
+
+    struct task_struct* pcb = list_head_to_task_struct(free_list_pos);
+    union task_union* pcb_union = (union task_union*)pcb;
+    union task_union* parent_union = (union task_union*)current();
+
+    copy_data(current(), pcb_union, sizeof(union task_union));
+    allocate_DIR(pcb); // el copy_data() copia el directorio (task.dir_pages_baseAddr) del padre al hijo, así que hay que darle otro.
+
+    pcb->kernel_esp = &pcb_union->stack[KERNEL_STACK_SIZE] - (&parent_union->stack[KERNEL_STACK_SIZE] - parent_union->task.kernel_esp);
+
+    pcb->kernel_esp -= 8;
+
+    *(DWord*)pcb->kernel_esp = 0;
+    *(DWord*)(pcb->kernel_esp+4) = (unsigned long)ret_from_fork;
+ 
+    copy_and_allocate_pages(current(), pcb);
+
+    // pcb_union->stack[(DWord*)pcb->kernel_esp] = 0;
+    // pcb_union->stack[] = (unsigned long)ret_from_fork;
+
+    list_del(free_list_pos);
+    list_add_tail(free_list_pos, &readyqueue);
+
+    pcb->PID = PID;
+
+    return PID;
 }
 
 void sys_exit()

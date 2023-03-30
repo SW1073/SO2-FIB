@@ -106,3 +106,29 @@ pid_no_err:
     leave
     ret
 
+ENTRY (fork)
+    pushl %ebp
+    movl %esp, %ebp
+
+    movl $2, %eax
+
+    pushl $fork_return_user
+    pushl %ebp
+    movl %esp, %ebp
+
+    sysenter
+fork_return_user:
+    leave
+    add $4, %esp
+
+    cmpl $0, %eax
+    jge fork_no_err
+
+    neg %eax
+    movl %eax, errno
+    movl $-1, %eax
+
+fork_no_err:
+    leave
+    ret
+

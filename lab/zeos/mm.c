@@ -2,6 +2,8 @@
  * mm.c - Memory Management: Paging & segment memory management
  */
 
+#include "include/utils.h"
+#include "mm_address.h"
 #include <types.h>
 #include <mm.h>
 #include <segment.h>
@@ -100,6 +102,81 @@ void set_user_pages( struct task_struct *task )
   	process_PT[PAG_LOG_INIT_DATA+pag].bits.rw = 1;
   	process_PT[PAG_LOG_INIT_DATA+pag].bits.present = 1;
   }
+}
+
+void copy_and_allocate_pages(struct task_struct *parent, struct task_struct *child) {
+    page_table_entry *parent_pt = get_PT(parent);
+    page_table_entry *child_pt = get_PT(child);
+    DWord parent_address, child_address;
+
+    parent_address = (DWord)parent_pt<<12;
+    child_address = (DWord)child_pt<<12;
+
+    // copiar tal cual las páginas del kernel
+    copy_data((void*)parent_address, (void*)child_address, NUM_PAG_KERNEL);
+
+    parent_address = ((DWord)parent_pt+NUM_PAG_KERNEL+NUM_PAG_DATA)<<12;
+    child_address = ((DWord)child_pt+NUM_PAG_KERNEL+NUM_PAG_DATA)<<12;
+
+    // copiar tal cual las páginas del código de usuario
+    copy_data((void*)parent_address, (void*)child_address, NUM_PAG_CODE);
+
+    // allocate new physical pages for each page in the user code and user data.
+    // each new frame is allocated to the parent aswell temporarily, so that it can actually copy the data to it.
+
+    // por cada frame nuevo hay que encontrar una pagina nueva sin usar en la tabla del padre para poder copiar los datos.
+    // cuando se encuentra la página, para conseguir su dirección lógica hay que shiftearlo 12 bits hacia la izquierda.
+    // entonces, después de haber alocatado un frame nuevo a una página libre en el padre (al hijo también se le alocata,
+    // pero con la dirección lógica del dato original del padre), puedo copiarlo a la página nueva
+    // con copy_data(pagina_dato_original_padre<<12, pagina_libre_en_el_padre_que_su_frame_usara_el_hijo, 4096)
+
+
+    // TODO handlear errores.
+    //      si algo falla hay que liberar las pages pilladas en get_free_pages() y los frames fisicos
+    //      pillados en alloc_frame() (con free_frame())
+
+    int pag, new_ph_pag, free_page, actual_page;
+
+    /* DATA */
+    for (pag = 0; pag < NUM_PAG_DATA; ++pag) {
+        new_ph_pag = alloc_frame();
+        free_page = get_free_page(parent_pt); // puede fallar, si falla hay que liberar todo.
+        actual_page = PAG_LOG_INIT_DATA+pag;;
+
+        set_ss_pag(parent_pt, free_page, new_ph_pag);
+
+        copy_data((void*)(actual_page<<12), (void*)(free_page<<12), PAGE_SIZE);
+
+        child_pt[actual_page].entry = parent_pt[actual_page].entry;
+        child_pt[actual_page].bits.pbase_addr = new_ph_pag;
+    }
+
+    // delete all pages after the KERNEL+DATA+CODE segments.
+    del_ss_extra_pages(parent_pt);
+
+    // flush TLB to delete the extra pages translations, so that the parent
+    // doesnt have access to the child's address space.
+    set_cr3(get_DIR(parent));
+}
+
+int get_free_page(page_table_entry *PT) {
+    int OFFSET = NUM_PAG_KERNEL+NUM_PAG_CODE+NUM_PAG_DATA;
+
+    for (int pag = OFFSET; pag < TOTAL_PAGES; ++pag) {
+        if (PT[pag].entry == 0) return pag;
+    }
+
+    return -1;
+}
+
+void del_ss_extra_pages(page_table_entry *PT) {
+    int OFFSET = NUM_PAG_KERNEL+NUM_PAG_CODE+NUM_PAG_DATA;
+
+    for (int pag = OFFSET; pag < TOTAL_PAGES; ++pag) {
+        if (PT[pag].entry != 0) del_ss_pag(PT, pag);
+
+        PT[pag].entry = 0;
+    }
 }
 
 /* Writes on CR3 register producing a TLB flush */

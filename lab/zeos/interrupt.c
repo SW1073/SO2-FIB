@@ -2,6 +2,7 @@
  * interrupt.c -
  */
 
+#include "list.h"
 #include "sched.h"
 #include <entry.h>
 #include <libc.h>
@@ -132,18 +133,21 @@ void pf_routine(int error_code, int eip) {
     while(1);
 }
 
+void change_task() {
+    if (list_empty(&readyqueue)) {
+        printk("nada por ejecutar!\n");
+        task_switch((union task_union*)idle_task);
+    } else {
+        printk("cambiando...\n");
+        task_switch((union task_union*)list_head_to_task_struct(list_first(&readyqueue)));
+    }
+}
 
 void clock_routine(void) {
     ++zeos_ticks;
-    if (zeos_ticks == 9000) {
-        printk("cambiando a idle\n\n");
-        task_switch((union task_union*)idle_task);
-    }
-
-    if (zeos_ticks == 14000) {
-        printk("volviendo a user.c\n");
-        task_switch((union task_union*)init_task);
-    }
-
     zeos_show_clock();
+    if (zeos_ticks != 0 && zeos_ticks%5000 == 0) {
+        change_task();
+    }
 }
+

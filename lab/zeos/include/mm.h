@@ -22,7 +22,9 @@ int init_frames( void );
 int alloc_frame( void );
 void free_frame( unsigned int frame );
 void set_user_pages( struct task_struct *task );
-
+void copy_and_allocate_pages(struct task_struct *parent, struct task_struct *child);
+int get_free_page(page_table_entry *PT);
+void del_ss_extra_pages(page_table_entry *PT);
 
 extern Descriptor  *gdt;
 
