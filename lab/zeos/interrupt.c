@@ -139,7 +139,10 @@ void change_task() {
         task_switch((union task_union*)idle_task);
     } else {
         printk("cambiando...\n");
-        task_switch((union task_union*)list_head_to_task_struct(list_first(&readyqueue)));
+        struct list_head *next = list_first(&readyqueue);
+        list_del(next);
+        list_add_tail(&current()->list, &readyqueue);
+        task_switch((union task_union*)list_head_to_task_struct(next));
     }
 }
 

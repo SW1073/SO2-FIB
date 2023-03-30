@@ -163,8 +163,12 @@ void init_sched()
     INIT_LIST_HEAD(&readyqueue);
 
     INIT_LIST_HEAD(&freequeue);
-    for (int i = NR_TASKS-1; i >= 0; --i) {
-        list_add(&(task[i].task.list), &freequeue);
+    // for (int i = NR_TASKS-1; i >= 0; --i) {
+    //     list_add(&(task[i].task.list), &freequeue);
+    // }
+
+    for (int i = 0; i < NR_TASKS; i++) {
+        list_add_tail(&(task[i].task.list), &freequeue);
     }
 }
 

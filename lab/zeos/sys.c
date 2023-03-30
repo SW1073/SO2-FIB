@@ -108,26 +108,26 @@ int sys_fork()
         return ENOMEM;
     }
 
-    struct list_head *free_list_pos = list_first(&freequeue) ;
+    struct list_head *free_list_pos = list_first(&freequeue);
+    struct list_head copy = *free_list_pos;
 
     struct task_struct* pcb = list_head_to_task_struct(free_list_pos);
     union task_union* pcb_union = (union task_union*)pcb;
-    union task_union* parent_union = (union task_union*)current();
 
     copy_data(current(), pcb_union, sizeof(union task_union));
+    *free_list_pos = copy;
+    pcb->list = *free_list_pos;
     allocate_DIR(pcb); // el copy_data() copia el directorio (task.dir_pages_baseAddr) del padre al hijo, así que hay que darle otro.
 
-    pcb->kernel_esp = &pcb_union->stack[KERNEL_STACK_SIZE] - (&parent_union->stack[KERNEL_STACK_SIZE] - parent_union->task.kernel_esp);
+    // CTX HW + CTX SW + @ret_handler = 17 posiciones encima de la base del stack.
+    // Hay que tener en cuenta que encima de estas 17 posiciones hay el @ret_from_fork y el ebp falso.
 
-    pcb->kernel_esp -= 8;
+    pcb->kernel_esp = &(pcb_union->stack[KERNEL_STACK_SIZE]) - 19; // 17-2 por el @ret_from_fork y el ebp.
 
-    *(DWord*)pcb->kernel_esp = 0;
-    *(DWord*)(pcb->kernel_esp+4) = (unsigned long)ret_from_fork;
+    pcb_union->stack[KERNEL_STACK_SIZE-19] = 0;
+    pcb_union->stack[KERNEL_STACK_SIZE-18] = (DWord)ret_from_fork;
  
     copy_and_allocate_pages(current(), pcb);
-
-    // pcb_union->stack[(DWord*)pcb->kernel_esp] = 0;
-    // pcb_union->stack[] = (unsigned long)ret_from_fork;
 
     list_del(free_list_pos);
     list_add_tail(free_list_pos, &readyqueue);

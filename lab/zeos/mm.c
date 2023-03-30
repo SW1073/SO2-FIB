@@ -107,19 +107,9 @@ void set_user_pages( struct task_struct *task )
 void copy_and_allocate_pages(struct task_struct *parent, struct task_struct *child) {
     page_table_entry *parent_pt = get_PT(parent);
     page_table_entry *child_pt = get_PT(child);
-    DWord parent_address, child_address;
 
-    parent_address = (DWord)parent_pt<<12;
-    child_address = (DWord)child_pt<<12;
-
-    // copiar tal cual las páginas del kernel
-    copy_data((void*)parent_address, (void*)child_address, NUM_PAG_KERNEL);
-
-    parent_address = ((DWord)parent_pt+NUM_PAG_KERNEL+NUM_PAG_DATA)<<12;
-    child_address = ((DWord)child_pt+NUM_PAG_KERNEL+NUM_PAG_DATA)<<12;
-
-    // copiar tal cual las páginas del código de usuario
-    copy_data((void*)parent_address, (void*)child_address, NUM_PAG_CODE);
+    // copiar tal cual toda la page table.
+    copy_data((void*)parent_pt, (void*)child_pt, TOTAL_PAGES*sizeof(page_table_entry));
 
     // allocate new physical pages for each page in the user code and user data.
     // each new frame is allocated to the parent aswell temporarily, so that it can actually copy the data to it.
@@ -140,15 +130,13 @@ void copy_and_allocate_pages(struct task_struct *parent, struct task_struct *chi
     /* DATA */
     for (pag = 0; pag < NUM_PAG_DATA; ++pag) {
         new_ph_pag = alloc_frame();
-        free_page = get_free_page(parent_pt); // puede fallar, si falla hay que liberar todo.
         actual_page = PAG_LOG_INIT_DATA+pag;;
+        free_page = get_free_page(parent_pt); // puede fallar, si falla hay que liberar todo.
 
         set_ss_pag(parent_pt, free_page, new_ph_pag);
+        set_ss_pag(child_pt, actual_page, new_ph_pag);
 
         copy_data((void*)(actual_page<<12), (void*)(free_page<<12), PAGE_SIZE);
-
-        child_pt[actual_page].entry = parent_pt[actual_page].entry;
-        child_pt[actual_page].bits.pbase_addr = new_ph_pag;
     }
 
     // delete all pages after the KERNEL+DATA+CODE segments.
@@ -163,7 +151,7 @@ int get_free_page(page_table_entry *PT) {
     int OFFSET = NUM_PAG_KERNEL+NUM_PAG_CODE+NUM_PAG_DATA;
 
     for (int pag = OFFSET; pag < TOTAL_PAGES; ++pag) {
-        if (PT[pag].entry == 0) return pag;
+        if (PT[pag].bits.present == 0) return pag;
     }
 
     return -1;
