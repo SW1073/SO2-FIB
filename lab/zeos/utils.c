@@ -130,3 +130,7 @@ unsigned long get_ticks(void) {
 
         return ticks;
 }
+
+int ret_from_fork() {
+    return 0;
+}

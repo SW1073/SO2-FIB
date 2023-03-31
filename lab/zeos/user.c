@@ -19,9 +19,22 @@ int __attribute__ ((__section__(".text.main")))
     if (write(1, "\nHola que tal\n", 14) > 0) {
         write(1, "W\n", 2);
     }
+
+    char *buffer = "\0\0\0\0\0\0\0\0\0\n";
+
+    // Test or sum
+    int ret = fork();
+    if ( ret== 0 ) {
+        write(1, "SOY EL HIJO\n", 12);
+    }
+    else {
+        write(1, "SOY EL PAPA\n", 12);
+    }
+
+    perror();
+
     // Test both gettime and write syscalls
     // Also test write() scrolling capabilities
-    char *buffer = "\0\0\0\0\0\0\0\0\0\n";
     // Time 1
     itoa(gettime(), buffer);
     write(1, "Time 1: ", 7);

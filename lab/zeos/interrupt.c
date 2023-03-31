@@ -131,12 +131,11 @@ void pf_routine(int error_code, int eip) {
     while(1);
 }
 
-extern struct task_struct* idle_task;
 void clock_routine(void) {
     ++zeos_ticks;
     if (zeos_ticks == 1000) {
-        printk("Saltando a idle task!");
-        task_switch((union task_union*)idle_task);
+        printk("Saltando al hijo!"); // TODO remove this
+        task_switch((union task_union*)list_head_to_task_struct(list_first(&readyqueue)));
     }
     zeos_show_clock();
 }

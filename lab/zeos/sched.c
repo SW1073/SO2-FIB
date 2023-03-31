@@ -20,17 +20,14 @@ struct task_struct *list_head_to_task_struct(struct list_head *l)
 extern struct list_head blocked;
 
 // HEAD de la freequeue
-extern struct list_head freequeue;
 struct list_head freequeue;
 
 // HEAD de la freequeue
-extern struct list_head readyqueue;
 struct list_head readyqueue;
 
 // Declaracion del idle_task. 
 // Apunta al PCB (o task struct) del proceso idle.
 struct task_struct *idle_task;
-extern struct task_struct *idle_task;
 
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 

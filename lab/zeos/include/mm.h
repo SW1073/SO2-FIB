@@ -39,4 +39,9 @@ void set_ss_pag(page_table_entry *PT, unsigned page,unsigned frame);
 void del_ss_pag(page_table_entry *PT, unsigned page);
 unsigned int get_frame(page_table_entry *PT, unsigned int page);
 
+// Utils propis
+int copy_pages_to_child(page_table_entry *child, page_table_entry *parent);
+int get_free_page(page_table_entry *pt);
+void del_ss_extra_pages(page_table_entry *pt);
+
 #endif  /* __MM_H__ */

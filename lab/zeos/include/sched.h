@@ -35,7 +35,9 @@ extern union task_union task[NR_TASKS]; /* Vector de tasques */
 
 
 
-extern struct task_struct *idle_task; //TODO quitar???
+extern struct list_head freequeue;
+extern struct list_head readyqueue;
+
 
 /* Inicialitza les dades del proces inicial */
 void init_task1(void);

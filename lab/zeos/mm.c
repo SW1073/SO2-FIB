@@ -7,6 +7,7 @@
 #include <segment.h>
 #include <hardware.h>
 #include <sched.h>
+#include <utils.h>
 
 Byte phys_mem[TOTAL_PAGES];
 
@@ -262,4 +263,63 @@ void del_ss_pag(page_table_entry *PT, unsigned logical_page)
 /* get_frame - Returns the physical frame associated to page 'logical_page' */
 unsigned int get_frame (page_table_entry *PT, unsigned int logical_page){
      return PT[logical_page].bits.pbase_addr; 
+}
+
+/**
+ * Hace lo necesario para copiar los datos del padre al hijo.
+ * KERNEL -> accesso logico compartido
+ * DATA+STACK -> accesso privado
+ * CODE -> accesso logico compartido
+ */
+int copy_pages_to_child(page_table_entry *child_pt, page_table_entry *parent_pt) {
+    // CODE y KERNEL
+    copy_data(parent_pt, child_pt, sizeof(page_table_entry)*TOTAL_PAGES);
+
+    // DATA
+    int p;
+    int new_ph_page;
+    // Recorrem totes les pagines de dades i fem el mateix procediment per a totes elles:
+    for (p = PAG_LOG_INIT_DATA; p < PAG_LOG_INIT_DATA+NUM_PAG_DATA; ++p) {
+        // Alocatar una pagina lliure per a poder mapejarla al espai de memoria del fill
+        if ((new_ph_page = alloc_frame()) < 0)
+            return -1; //TODO: Sustituir por error code correcto
+
+        // Mapejar la pagina lliure del @space_parent al frame físic del fill
+        int parent_free_page = get_free_page(parent_pt); // TODO: puede fallar
+        set_ss_pag(parent_pt, parent_free_page, new_ph_page);
+
+        // Copiar les dades de la pagina p a la pagina acabada de mapejar
+        copy_data((void*)(p<<12), (void*)(parent_free_page<<12), PAGE_SIZE);
+
+        // Crear la associacio a la child_pt de la pagina logica p a la nova pagina fisica new_ph_page
+        set_ss_pag(child_pt, p, new_ph_page);
+    }
+    // Borrar las paginas extra que hemos usado para los mapeos
+    del_ss_extra_pages(parent_pt);
+
+    return 0; // Tot ok
+}
+
+/**
+ * Retorna un frame libre del espacio logico del padre.
+ * Util af para hacer mapeos temporales y asi copiar
+ * datos entre dos espacios logicos de direccines.
+ * Retorna -1 si no hay paginas extra libres.
+ */
+int get_free_page(page_table_entry *pt) {
+    DWord init_offset = NUM_PAG_KERNEL + NUM_PAG_DATA + NUM_PAG_CODE;
+    for (int p = init_offset; p < TOTAL_PAGES; ++p)
+        if (pt[p].bits.present == 0)
+            return p;
+    return -1;
+}
+
+/**
+ * Pone a 0 todas las entradas de la tabla de paginas
+ * mas allá del espacio de datos y de codigo.
+ */
+void del_ss_extra_pages(page_table_entry *pt) {
+    DWord init_offset = NUM_PAG_KERNEL + NUM_PAG_DATA + NUM_PAG_CODE;
+    for (int p = init_offset; p < TOTAL_PAGES; ++p)
+        del_ss_pag(pt, p);
 }

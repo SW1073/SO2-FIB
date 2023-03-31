@@ -12,5 +12,6 @@ int access_ok(int type, const void *addr, unsigned long size);
 #define min(a,b)	(a<b?a:b)
 
 unsigned long get_ticks(void);
+int ret_from_fork();
 
 #endif
