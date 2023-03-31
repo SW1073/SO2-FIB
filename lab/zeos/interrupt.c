@@ -149,8 +149,12 @@ void change_task() {
 void clock_routine(void) {
     ++zeos_ticks;
     zeos_show_clock();
-    if (zeos_ticks != 0 && zeos_ticks%5000 == 0) {
-        change_task();
+
+    update_sched_data_rr();
+
+    if (needs_sched_rr()) {
+        update_process_state_rr(current(), &readyqueue);
+        sched_next_rr();
     }
 }
 

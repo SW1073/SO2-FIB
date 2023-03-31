@@ -12,10 +12,13 @@
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
 
+#define INIT_QUANTUM 100
+
 enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
 
 struct task_struct {
   int PID;			/* Process ID. This MUST be the first field of the struct. */
+  int quantum;
   page_table_entry * dir_pages_baseAddr;
   struct list_head list;
   DWord *kernel_esp;
@@ -33,10 +36,14 @@ extern struct list_head readyqueue;
 extern struct task_struct *idle_task;
 extern struct task_struct *init_task; // TODO quitar esto, era solo para probar el task_switch
 
+extern int global_quantum;
 
 #define KERNEL_ESP(t)       	(DWord) &(t)->stack[KERNEL_STACK_SIZE]
 
 #define INITIAL_ESP       	KERNEL_ESP(&task[1])
+
+int get_quantum(struct task_struct *t);
+void set_quantum(struct task_struct *t, int new_quantum);
 
 /* Inicialitza les dades del proces inicial */
 void init_task1(void);

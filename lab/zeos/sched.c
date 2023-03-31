@@ -27,6 +27,15 @@ struct list_head readyqueue;
 struct task_struct *idle_task;
 struct task_struct *init_task; // TODO quitar esto, era solo para probar el task_switch
 
+int global_quantum;
+
+int get_quantum(struct task_struct *t) {
+    return t->quantum;
+}
+
+void set_quantum(struct task_struct *t, int new_quantum) {
+    t->quantum = new_quantum;
+}
 
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 
@@ -80,6 +89,7 @@ void init_idle (void)
  
     // self explanatory.
     pcb->task.PID = 0;
+    pcb->task.quantum = INIT_QUANTUM;
 
     // en el tope del stack de sistema del pcb se pone la dirección de la función que queremos
     // que se resuma al acabar el task_switch
@@ -147,6 +157,8 @@ void init_task1(void)
 
     // self explanatory.
     pcb->task.PID = 1;
+    pcb->task.quantum = 1000;
+    global_quantum = pcb->task.quantum;
 
     // hacer que el kernel_esp apunte al tope del stack.
     pcb->task.kernel_esp = &(pcb->stack[KERNEL_STACK_SIZE]);
@@ -163,10 +175,6 @@ void init_sched()
     INIT_LIST_HEAD(&readyqueue);
 
     INIT_LIST_HEAD(&freequeue);
-    // for (int i = NR_TASKS-1; i >= 0; --i) {
-    //     list_add(&(task[i].task.list), &freequeue);
-    // }
-
     for (int i = 0; i < NR_TASKS; i++) {
         list_add_tail(&(task[i].task.list), &freequeue);
     }
@@ -270,3 +278,30 @@ void task_switch(union task_union*t) {
             - básicamente es un if antes del set_cr3()
  */
 
+void update_sched_data_rr() {
+    global_quantum--;
+}
+
+int needs_sched_rr() {
+    return global_quantum <= 0;
+}
+
+void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
+    if (t != current()) list_del(&t->list);
+    if (dest != NULL) list_add_tail(&t->list, dest);
+}
+
+void sched_next_rr() {
+    if (list_empty(&readyqueue)) {
+        task_switch((union task_union*)idle_task); // poner idle
+        return; // estoy 90% seguro de que nunca llega aqui pero se ve raro no poner el return.
+    }
+
+    struct list_head *next = list_first(&readyqueue);
+    struct task_struct *next_task = list_head_to_task_struct(next);
+
+    update_process_state_rr(next_task, NULL);
+    global_quantum = next_task->quantum;
+
+    task_switch((union task_union*)next_task);
+}

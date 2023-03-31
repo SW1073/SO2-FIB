@@ -72,5 +72,4 @@ void perror(void) {
             write(1, "Unknown error\n", strlen("Unknown error\n"));
             break;
     }
-
 }
