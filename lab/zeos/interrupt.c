@@ -133,19 +133,6 @@ void pf_routine(int error_code, int eip) {
     while(1);
 }
 
-void change_task() {
-    if (list_empty(&readyqueue)) {
-        printk("nada por ejecutar!\n");
-        task_switch((union task_union*)idle_task);
-    } else {
-        printk("cambiando...\n");
-        struct list_head *next = list_first(&readyqueue);
-        list_del(next);
-        list_add_tail(&current()->list, &readyqueue);
-        task_switch((union task_union*)list_head_to_task_struct(next));
-    }
-}
-
 void clock_routine(void) {
     ++zeos_ticks;
     zeos_show_clock();

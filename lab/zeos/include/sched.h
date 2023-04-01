@@ -37,6 +37,7 @@ extern struct task_struct *idle_task;
 extern struct task_struct *init_task; // TODO quitar esto, era solo para probar el task_switch
 
 extern int global_quantum;
+extern int pids;
 
 #define KERNEL_ESP(t)       	(DWord) &(t)->stack[KERNEL_STACK_SIZE]
 

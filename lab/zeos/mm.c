@@ -104,7 +104,7 @@ void set_user_pages( struct task_struct *task )
   }
 }
 
-void copy_and_allocate_pages(struct task_struct *parent, struct task_struct *child) {
+int copy_and_allocate_pages(struct task_struct *parent, struct task_struct *child) {
     page_table_entry *parent_pt = get_PT(parent);
     page_table_entry *child_pt = get_PT(child);
 
@@ -129,9 +129,17 @@ void copy_and_allocate_pages(struct task_struct *parent, struct task_struct *chi
 
     /* DATA */
     for (pag = 0; pag < NUM_PAG_DATA; ++pag) {
-        new_ph_pag = alloc_frame();
+        if ((new_ph_pag = alloc_frame()) < 0) {
+            abort_copy(parent, child);
+            return -1;
+        }
+
+        if ((free_page = get_free_page(parent_pt)) < 0) {
+            abort_copy(parent, child);
+            return -1;
+        }
+
         actual_page = PAG_LOG_INIT_DATA+pag;;
-        free_page = get_free_page(parent_pt); // puede fallar, si falla hay que liberar todo.
 
         set_ss_pag(parent_pt, free_page, new_ph_pag);
         set_ss_pag(child_pt, actual_page, new_ph_pag);
@@ -144,6 +152,14 @@ void copy_and_allocate_pages(struct task_struct *parent, struct task_struct *chi
 
     // flush TLB to delete the extra pages translations, so that the parent
     // doesnt have access to the child's address space.
+    set_cr3(get_DIR(parent));
+
+    return 0;
+}
+
+void abort_copy(struct task_struct *parent, struct task_struct *child) {
+    del_ss_extra_pages(get_PT(parent));
+    free_user_pages(child);
     set_cr3(get_DIR(parent));
 }
 
@@ -161,9 +177,7 @@ void del_ss_extra_pages(page_table_entry *PT) {
     int OFFSET = NUM_PAG_KERNEL+NUM_PAG_CODE+NUM_PAG_DATA;
 
     for (int pag = OFFSET; pag < TOTAL_PAGES; ++pag) {
-        if (PT[pag].entry != 0) del_ss_pag(PT, pag);
-
-        PT[pag].entry = 0;
+        del_ss_pag(PT, pag);
     }
 }
 

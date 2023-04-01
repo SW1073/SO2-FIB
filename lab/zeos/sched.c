@@ -28,6 +28,7 @@ struct task_struct *idle_task;
 struct task_struct *init_task; // TODO quitar esto, era solo para probar el task_switch
 
 int global_quantum;
+int pids;
 
 int get_quantum(struct task_struct *t) {
     return t->quantum;
@@ -88,7 +89,7 @@ void init_idle (void)
     allocate_DIR(&(pcb->task));
  
     // self explanatory.
-    pcb->task.PID = 0;
+    pcb->task.PID = pids++;
     pcb->task.quantum = INIT_QUANTUM;
 
     // en el tope del stack de sistema del pcb se pone la dirección de la función que queremos
@@ -156,7 +157,7 @@ void init_task1(void)
     set_user_pages(&pcb->task);
 
     // self explanatory.
-    pcb->task.PID = 1;
+    pcb->task.PID = pids++;
     pcb->task.quantum = 1000;
     global_quantum = pcb->task.quantum;
 
@@ -172,12 +173,15 @@ void init_task1(void)
 
 void init_sched()
 {
+    pids = 0;
+
     INIT_LIST_HEAD(&readyqueue);
 
     INIT_LIST_HEAD(&freequeue);
     for (int i = 0; i < NR_TASKS; i++) {
         list_add_tail(&(task[i].task.list), &freequeue);
     }
+
 }
 
 struct task_struct* current()

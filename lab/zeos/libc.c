@@ -68,6 +68,9 @@ void perror(void) {
         case ENOSYS:
             write(1, "Function not implemented\n", strlen("Function not implemented\n"));
             break;
+        case ENOMEM:
+            write(1, "Insufficient memory\n", strlen("Insufficient memory\n"));
+            break;
         default:
             write(1, "Unknown error\n", strlen("Unknown error\n"));
             break;

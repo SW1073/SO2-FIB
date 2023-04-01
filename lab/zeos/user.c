@@ -20,58 +20,83 @@ int __attribute__ ((__section__(".text.main")))
         write(1, "W\n", 2);
     }
 
-    fork();
+    int pid = fork();
+
+    if (pid == 0) {
+        if (fork() == 0) {
+            write(1, "child of child\n", strlen("child of child\n"));
+        }
+    }
 
     // Test both gettime and write syscalls
     // Also test write() scrolling capabilities
     char *buffer = "\0\0\0\0\0\0\0\0\0\n";
-    itoa(getpid(), buffer);
-    write(1, "- PID: ", 7);
-    write(1, buffer, 10);
+    char *buffer1 = "\0\0\0\0\0\0\0\0\0\0";
+    // itoa(getpid(), buffer);
+    // write(1, "- PID: ", 7);
+    // write(1, buffer, 10);
 
     // Time 1
+    itoa(getpid(), buffer1);
     itoa(gettime(), buffer);
-    write(1, "Time 1: ", 7);
+    write(1, "- PID: ", strlen("- PID: "));
+    write(1, buffer1, 10);
+    write(1, " || Time 1: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
 
     for (int i = 0; i < 5000000; ++i)
         itoa(gettime(), buffer);
 
     // Time 2
+    itoa(getpid(), buffer1);
     itoa(gettime(), buffer);
-    write(1, "Time 2: ", 7);
+    write(1, "- PID: ", strlen("- PID: "));
+    write(1, buffer1, 10);
+    write(1, " || Time 2: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
 
     for (int i = 0; i < 5000000; ++i)
         itoa(gettime(), buffer);
 
     // Time 3
+    itoa(getpid(), buffer1);
     itoa(gettime(), buffer);
-    write(1, "Time 3: ", 7);
+    write(1, "- PID: ", strlen("- PID: "));
+    write(1, buffer1, 10);
+    write(1, " || Time 3: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
 
     for (int i = 0; i < 5000000; ++i)
         itoa(gettime(), buffer);
 
     // Time 4
+    itoa(getpid(), buffer1);
     itoa(gettime(), buffer);
-    write(1, "Time 4: ", 7);
+    write(1, "- PID: ", strlen("- PID: "));
+    write(1, buffer1, 10);
+    write(1, " || Time 4: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
 
     for (int i = 0; i < 5000000; ++i)
         itoa(gettime(), buffer);
 
     // Time 5
+    itoa(getpid(), buffer1);
     itoa(gettime(), buffer);
-    write(1, "Time 5: ", 7);
+    write(1, "- PID: ", strlen("- PID: "));
+    write(1, buffer1, 10);
+    write(1, " || Time 5: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
 
     for (int i = 0; i < 5000000; ++i)
         itoa(gettime(), buffer);
 
     // Time 6
+    itoa(getpid(), buffer1);
     itoa(gettime(), buffer);
-    write(1, "Time 6: ", 7);
+    write(1, "- PID: ", strlen("- PID: "));
+    write(1, buffer1, 10);
+    write(1, " || Time 6: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
 
     // Trigger a page fault
