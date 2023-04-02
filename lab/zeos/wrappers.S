@@ -37,7 +37,7 @@ wr_return_user:
     mov $-1, %eax
 
 wr_fin:
-    leave
+    popl %ebp
     add $4, %esp    // quitar wr_return
 
     popl %edx
@@ -63,7 +63,7 @@ ENTRY (gettime)
     sysenter
 time_return_user:
 
-    leave
+    popl %ebp
     add $4, %esp // pop of return address. 
 
     popl %edx
@@ -94,7 +94,7 @@ ENTRY (fork)
 
     sysenter                // saltamos a la segunda entrada de la sys_call_table
 fork_return_user:
-    leave
+    popl %ebp
     add $4, %esp // pop of return address. 
 
     cmpl $0, %eax
@@ -129,7 +129,7 @@ ENTRY (exit)
     // codigo nunca se ejecutan.
 
 exit_return_user:
-    leave
+    popl %ebp
     add $4, %esp // pop of return address.
 
     leave
@@ -150,7 +150,7 @@ ENTRY (getpid)
 
     sysenter                // saltamos a la vigesima entrada de la sys_call_table
 getpid_return_user:
-    leave
+    popl %ebp
     add $4, %esp // pop of return address. 
 
     cmpl $0, %eax

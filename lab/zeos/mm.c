@@ -2,6 +2,7 @@
  * mm.c - Memory Management: Paging & segment memory management
  */
 
+#include <errno.h>
 #include <types.h>
 #include <mm.h>
 #include <segment.h>
@@ -282,7 +283,7 @@ int copy_pages_to_child(page_table_entry *child_pt, page_table_entry *parent_pt)
     for (p = PAG_LOG_INIT_DATA; p < PAG_LOG_INIT_DATA+NUM_PAG_DATA; ++p) {
         // Alocatar una pagina lliure per a poder mapejarla al espai de memoria del fill
         if ((new_ph_page = alloc_frame()) < 0)
-            return -1; //TODO: Sustituir por error code correcto
+            return ENOMEM;
 
         // Mapejar la pagina lliure del @space_parent al frame físic del fill
         int parent_free_page = get_free_page(parent_pt); // TODO: puede fallar

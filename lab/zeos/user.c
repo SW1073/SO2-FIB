@@ -34,7 +34,6 @@ int __attribute__ ((__section__(".text.main")))
         write(1, buffer, strlen(buffer));
         write(1, "SOY EL PAPA\n", 12);
     }
-    exit();
     perror();
 
     // Test both gettime and write syscalls
@@ -61,7 +60,7 @@ int __attribute__ ((__section__(".text.main")))
     write(1, buffer, 10);
 
     // Trigger a page fault
-    trigger_page_fault();
+    // trigger_page_fault();
 
     // This point shall never be reached, since the page
     // fault exception never returns

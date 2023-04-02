@@ -148,15 +148,14 @@ void init_sched()
 {
     // Init free queue
     INIT_LIST_HEAD( &freequeue );
-    // Si insertamos los elementos como se muestra en el codigo (empezando por
-    // el indice más alto), los elementos quedan correctamente ordenados, tal que:
+    // Si insertamos los elementos como se muestra en el codigo, con list_add_tail,
+    // los elementos quedan correctamente ordenados, tal que:
     // +-------------------------------------------------------------------------+
     // | freequeue -> task[0] -> task[1] -> ... -> task[NR_TASKS-1] -> freequeue |
     // +-------------------------------------------------------------------------+
-    // De lo contratio, el next al que apuntaria freequeue seria task[NR_TASKS-1].
     // Probablemente, este orden sea irrelevante, pero por si las moscas...
-    for (int i = NR_TASKS-1; i >= 0; --i)
-        list_add(&(task[i].task.list), &freequeue);
+    for (int i = 0; i < NR_TASKS; ++i)
+        list_add_tail(&(task[i].task.list), &freequeue);
 
     // Init ready queue (initially empty)
     INIT_LIST_HEAD( &readyqueue );
@@ -176,7 +175,7 @@ struct task_struct* current()
 void inner_task_switch(union task_union *new) {
     // Hacemos que el esp0 apunte al esp del kernel 
     // del proceso que vamos a poner a ejecuta (new).
-    tss.esp0 = new->task.kernel_esp;
+    tss.esp0 = KERNEL_ESP(new);
     // Cambiamos la entrada que toca del MSR, para
     // las correctas entradas a modo sistema.
     writeMSR(0x175, 0, tss.esp0);

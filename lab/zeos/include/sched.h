@@ -34,7 +34,7 @@ extern union task_union task[NR_TASKS]; /* Vector de tasques */
 
 #define INITIAL_ESP       	KERNEL_ESP(&task[1])
 
-#define INIT_QUANTUM 1000;
+#define INIT_QUANTUM 10;
 
 
 extern struct list_head freequeue;
