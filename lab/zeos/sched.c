@@ -2,6 +2,7 @@
  * sched.c - initializes struct for task 0 anda task 1
  */
 
+#include "list.h"
 #include <sched.h>
 #include <mm.h>
 #include <io.h>
@@ -57,6 +58,8 @@ void cpu_idle(void)
 {
 	__asm__ __volatile__("sti": : :"memory");
 
+    printk("Ejecutado el CPU_IDLE!!!"); // TODO quitar esto
+
 	while(1)
 	{
 	;
@@ -75,6 +78,9 @@ void init_idle (void)
 
     // Proceso idle tiene PID 0
     task_ptr->PID = 0;
+
+    // Quantum del proceso
+    task_ptr->quantum = INIT_QUANTUM;
 
     // init dir_pages_baseAaddr. Retorna 1 if OK (siempre)
     allocate_DIR(task_ptr);
@@ -202,6 +208,11 @@ int current_ticks_left = INIT_QUANTUM;
  * of the current process (after calling function update_process_state_rr).
  */
 void sched_next_rr() {
+    if (current_ticks_left == 0 && list_empty(&readyqueue)) {
+        current_ticks_left = current()->quantum;
+        return;
+    }
+
     struct task_struct* next_process = list_empty(&readyqueue) ? idle_task : list_head_to_task_struct(list_first(&readyqueue));
     update_process_state_rr(next_process, NULL);
     current_ticks_left = get_quantum(next_process);
@@ -213,7 +224,7 @@ void sched_next_rr() {
  * process from its current queue (state) and inserts it into a new queue.
  */
 void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
-    if (current() != t)
+    if (current() != t && t != idle_task)
         list_del(&t->list);
     if (dest != NULL)
         list_add_tail(&t->list, dest);
@@ -240,7 +251,8 @@ void update_sched_data_rr() {
 void schedule() {
     update_sched_data_rr();
     if (needs_sched_rr()) {
-        update_process_state_rr(current(), &readyqueue);
+        if (current() != idle_task)
+            update_process_state_rr(current(), &readyqueue);
         sched_next_rr();
     }
 }

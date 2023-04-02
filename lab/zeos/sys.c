@@ -1,6 +1,7 @@
 /*
  * sys.c - Syscalls implementation
  */
+#include "types.h"
 #include <devices.h>
 #include <utils.h>
 #include <io.h>
@@ -85,8 +86,21 @@ int sys_fork()
     return child->task.PID;
 }
 
-void sys_exit()
-{ 
+/**
+ * exit syscall implementation
+ */
+void sys_exit() {
+    struct task_struct* current_proc = current();
+    // page_table_entry* current_proc_pt = get_PT(current_proc);
+
+    // Free user pages
+    free_user_pages(current_proc);
+    // Free pcb
+    list_add_tail(&current_proc->list, &freequeue);
+
+    // Let rr decide next proc to execute
+    // This function will not return
+    sched_next_rr();
 }
 
 /**
@@ -113,7 +127,7 @@ int sys_write(int fd, char * buffer, int size) {
 }
 
 /**
- * clock syscall implementation
+ * gettime syscall implementation
  */
 unsigned long sys_gettime() {
     return zeos_ticks;

@@ -30,7 +30,7 @@ int __attribute__ ((__section__(".text.main")))
     else {
         write(1, "SOY EL PAPA\n", 12);
     }
-
+    exit();
     perror();
 
     // Test both gettime and write syscalls

@@ -111,3 +111,26 @@ fork_no_err:
     leave
     ret
     
+// Wrapper para la syscall exit()
+ENTRY (exit)
+    pushl %ebp
+    movl %esp, %ebp
+
+    movl $1, %eax // id de la syscall exit() -> 1
+
+    pushl $exit_return_user // @ a la que sysenter debe devolver
+    pushl %ebp              // el ebp actual, que debera usarse al volver
+    movl %esp, %ebp
+
+    sysenter                // saltamos a la primera entrada de la sys_call_table
+
+    // Exit no devuelve error. Es más, nunca devuelve por donde
+    // se la ha llamado. Por lo tanto, las siguientes lineas de
+    // codigo nunca se ejecutan.
+
+exit_return_user:
+    leave
+    add $4, %esp // pop of return address.
+
+    leave
+    ret
