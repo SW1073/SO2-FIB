@@ -202,8 +202,7 @@ int current_ticks_left = INIT_QUANTUM;
  * of the current process (after calling function update_process_state_rr).
  */
 void sched_next_rr() {
-    struct task_struct* next_process = list_head_to_task_struct(list_first(&readyqueue));
-    update_process_state_rr(current(), &readyqueue);
+    struct task_struct* next_process = list_empty(&readyqueue) ? idle_task : list_head_to_task_struct(list_first(&readyqueue));
     update_process_state_rr(next_process, NULL);
     current_ticks_left = get_quantum(next_process);
     task_switch((union task_union*)next_process);
@@ -241,6 +240,7 @@ void update_sched_data_rr() {
 void schedule() {
     update_sched_data_rr();
     if (needs_sched_rr()) {
+        update_process_state_rr(current(), &readyqueue);
         sched_next_rr();
     }
 }
