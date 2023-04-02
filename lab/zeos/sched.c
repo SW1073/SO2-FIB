@@ -91,6 +91,9 @@ void init_idle (void)
     // self explanatory.
     pcb->task.PID = pids++;
     pcb->task.quantum = INIT_QUANTUM;
+    // pcb->task.exit_status = 0;
+
+    // init_children(&pcb->task);
 
     // en el tope del stack de sistema del pcb se pone la dirección de la función que queremos
     // que se resuma al acabar el task_switch
@@ -158,8 +161,10 @@ void init_task1(void)
 
     // self explanatory.
     pcb->task.PID = pids++;
-    pcb->task.quantum = 1000;
+    pcb->task.quantum = INIT_QUANTUM;
     global_quantum = pcb->task.quantum;
+
+    // init_children(&pcb->task);
 
     // hacer que el kernel_esp apunte al tope del stack.
     pcb->task.kernel_esp = &(pcb->stack[KERNEL_STACK_SIZE]);
@@ -170,6 +175,30 @@ void init_task1(void)
 
     set_cr3(get_DIR(&(pcb->task)));
 }
+
+// int can_have_more_children(struct task_struct *t) {
+//     return t->number_of_children < MAX_CHILDREN;
+// }
+//
+// void init_children(struct task_struct *t) {
+//     t->number_of_children = 0;
+//
+//     for (int i = 0; i < MAX_CHILDREN; ++i) {
+//         t->children[i] = NULL;
+//     }
+// }
+//
+// int add_child(struct task_struct *parent, struct task_struct *child) {
+//     for (int i = 0; i < MAX_CHILDREN; ++i) {
+//         if (parent->children[i] != NULL) continue;
+//
+//         parent->children[i] = child;
+//         parent->number_of_children++;
+//         return 1;
+//     }
+//
+//     return -1;
+// }
 
 void init_sched()
 {
@@ -205,6 +234,37 @@ void inner_task_switch(union task_union *new) {
     current()->kernel_esp = (DWord*)ebp;
 
     set_esp_and_switch(new->task.kernel_esp);
+}
+
+
+void update_sched_data_rr() {
+    global_quantum--;
+}
+
+int needs_sched_rr() {
+    return global_quantum <= 0;
+}
+
+void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
+    if (t != current()) list_del(&t->list);
+    if (dest != NULL) list_add_tail(&t->list, dest);
+}
+
+void sched_next_rr() {
+    if (list_empty(&readyqueue)) {
+        task_switch((union task_union*)idle_task); // poner idle
+        return; // estoy 90% seguro de que nunca llega aqui pero se ve raro no poner el return.
+    }
+
+    struct list_head *next = list_first(&readyqueue);
+    struct task_struct *next_task = list_head_to_task_struct(next);
+
+    update_process_state_rr(current(), &readyqueue);
+    update_process_state_rr(next_task, NULL);
+
+    global_quantum = next_task->quantum;
+
+    task_switch((union task_union*)next_task);
 }
 
 /*
@@ -281,31 +341,3 @@ void task_switch(union task_union*t) {
         - así se evita flushear el TLB y tener mucho TLB misses.
             - básicamente es un if antes del set_cr3()
  */
-
-void update_sched_data_rr() {
-    global_quantum--;
-}
-
-int needs_sched_rr() {
-    return global_quantum <= 0;
-}
-
-void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
-    if (t != current()) list_del(&t->list);
-    if (dest != NULL) list_add_tail(&t->list, dest);
-}
-
-void sched_next_rr() {
-    if (list_empty(&readyqueue)) {
-        task_switch((union task_union*)idle_task); // poner idle
-        return; // estoy 90% seguro de que nunca llega aqui pero se ve raro no poner el return.
-    }
-
-    struct list_head *next = list_first(&readyqueue);
-    struct task_struct *next_task = list_head_to_task_struct(next);
-
-    update_process_state_rr(next_task, NULL);
-    global_quantum = next_task->quantum;
-
-    task_switch((union task_union*)next_task);
-}

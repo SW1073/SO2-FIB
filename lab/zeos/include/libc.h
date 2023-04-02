@@ -22,6 +22,6 @@ int getpid();
 
 int fork();
 
-void exit();
+void exit(int exit_status);
 
 #endif  /* __LIBC_H__ */

@@ -144,6 +144,8 @@ ENTRY(task_switch)
     pushl 8(%ebp)
     call inner_task_switch
 
+    addl $4, %esp
+
     popl %ebx
     popl %edi
     popl %esi

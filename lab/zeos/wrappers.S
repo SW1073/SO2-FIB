@@ -132,3 +132,33 @@ fork_no_err:
     leave
     ret
 
+ENTRY (exit)
+    pushl %ebp
+    movl %esp, %ebp
+
+    pushl %ebx
+    movl 8(%ebp), %ebx
+
+    movl $1, %eax
+
+    pushl $exit_return_user
+    pushl %ebp
+    movl %esp, %ebp
+
+    sysenter
+exit_return_user:
+    leave
+    addl $4, %esp
+
+    popl %ebx
+
+    cmpl $0, %eax
+    jge fork_no_err
+
+    neg %eax
+    movl %eax, errno
+    movl $-1, %eax
+
+exit_no_err:
+    leave
+    ret

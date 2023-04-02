@@ -12,16 +12,20 @@
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
 
-#define INIT_QUANTUM 100
+#define INIT_QUANTUM 1000
+#define MAX_CHILDREN 10
 
 enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
 
 struct task_struct {
   int PID;			/* Process ID. This MUST be the first field of the struct. */
   int quantum;
+  // int exit_status;
+  // int number_of_children;
   page_table_entry * dir_pages_baseAddr;
   struct list_head list;
   DWord *kernel_esp;
+  // struct task_struct* children[MAX_CHILDREN];
 };
 
 union task_union {
@@ -53,10 +57,16 @@ void init_idle(void);
 
 void init_sched(void);
 
+void init_children(struct task_struct* t);
+
 struct task_struct * current();
 
 void task_switch(union task_union*t);
 void inner_task_switch(union task_union*t);
+
+// children management
+int can_have_more_children(struct task_struct *t);
+int add_child(struct task_struct *parent, struct task_struct *child);
 
 struct task_struct *list_head_to_task_struct(struct list_head *l);
 

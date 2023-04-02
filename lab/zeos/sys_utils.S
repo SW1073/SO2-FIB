@@ -47,6 +47,7 @@ ENTRY (ret_from_fork)
 
     movl $0, %eax
 
-    pop %ebp
+    // popl %ebp
+    leave
     ret
 

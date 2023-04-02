@@ -5,6 +5,7 @@
 #include "system.h"
 #include "types.h"
 #include <devices.h>
+#include <stdlib.h>
 #include <utils.h>
 #include <io.h>
 #include <mm.h>
@@ -40,6 +41,10 @@ int sys_getpid()
 
 int sys_fork()
 {
+    // if (list_empty(&freequeue) || !can_have_more_children(current())) {
+    //     return ENOMEM;
+    // }
+
     if (list_empty(&freequeue)) {
         return ENOMEM;
     }
@@ -55,7 +60,7 @@ int sys_fork()
 
     // CTX HW + CTX SW + @ret_handler = 17 posiciones encima de la base del stack.
     // Hay que tener en cuenta que encima de estas 17 posiciones hay el @ret_from_fork y el ebp falso.
-    pcb->kernel_esp = &(pcb_union->stack[KERNEL_STACK_SIZE]) - 19; // 17-2 por el @ret_from_fork y el ebp.
+    pcb->kernel_esp = &(pcb_union->stack[KERNEL_STACK_SIZE-19]); // 17-2 por el @ret_from_fork y el ebp.
 
     pcb_union->stack[KERNEL_STACK_SIZE-19] = 0;
     pcb_union->stack[KERNEL_STACK_SIZE-18] = (DWord)ret_from_fork;
@@ -69,10 +74,12 @@ int sys_fork()
 
     pcb->PID = pids++;
 
+    // add_child(current(), pcb);
+
     return pcb->PID;
 }
 
-void sys_exit()
+void sys_exit(int exit_status)
 { 
     /*
     - argumento status.
@@ -83,6 +90,13 @@ void sys_exit()
             - el planificador entonces hace task_switch y el hijo se queda esperando al wait() del padre para morir.
 
      */
+
+    // del_ss_extra_pages(get_PT(current()));
+    free_user_pages(current());
+
+    // current()->exit_status = exit_status;
+
+    sched_next_rr();
 }
 
 int sys_wait() {
@@ -96,6 +110,25 @@ int sys_wait() {
                 - retorna el pid.
      */
 
+    // if (current()->number_of_children == 0) return ECHILD;
+    //
+    // int child_pid = -1;
+    // // int child_exit_status = -1; // idk donde meter esto
+    //
+    // for (int i = 0; i < MAX_CHILDREN; ++i) {
+    //     if (current()->children[i] == NULL) continue;
+    //
+    //     struct task_struct *child = current()->children[i];
+    //
+    //     child_pid = child->PID;
+    //     // child_exit_status = child->exit_status;
+    //     update_process_state_rr(child, &freequeue);
+    //     current()->children[i] = NULL;
+    //
+    //     break;
+    // }
+    //
+    // return child_pid;
     return 0;
 }
 
