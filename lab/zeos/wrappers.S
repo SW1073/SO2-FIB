@@ -134,3 +134,35 @@ exit_return_user:
 
     leave
     ret
+
+
+
+// Wrapper para la syscall fork()
+ENTRY (getpid)
+    pushl %ebp
+    movl %esp, %ebp
+
+    movl $20, %eax // id de la syscall getpid() -> 20
+
+    pushl $getpid_return_user // @ a la que sysenter debe devolver
+    pushl %ebp              // el ebp actual, que debera usarse al volver
+    movl %esp, %ebp
+
+    sysenter                // saltamos a la vigesima entrada de la sys_call_table
+getpid_return_user:
+    leave
+    add $4, %esp // pop of return address. 
+
+    cmpl $0, %eax
+    jge getpid_no_err
+
+    // Ha habido un error.
+    // Devolvemos -1 y ponemos el
+    // codigo de error en errno
+    neg %eax
+    movl %eax, errno
+    mov $-1, %eax
+
+getpid_no_err:
+    leave
+    ret

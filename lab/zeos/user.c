@@ -25,9 +25,13 @@ int __attribute__ ((__section__(".text.main")))
     // Test or sum
     int ret = fork();
     if ( ret== 0 ) {
+        itoa(getpid(), buffer);
+        write(1, buffer, strlen(buffer));
         write(1, "SOY EL HIJO\n", 12);
     }
     else {
+        itoa(getpid(), buffer);
+        write(1, buffer, strlen(buffer));
         write(1, "SOY EL PAPA\n", 12);
     }
     exit();
