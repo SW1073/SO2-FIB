@@ -19,6 +19,7 @@ struct task_struct {
   page_table_entry * dir_pages_baseAddr;
   struct list_head list; // Entrada para las colas.
   DWord kernel_esp;
+  DWord quantum;
 };
 
 union task_union {
@@ -33,6 +34,7 @@ extern union task_union task[NR_TASKS]; /* Vector de tasques */
 
 #define INITIAL_ESP       	KERNEL_ESP(&task[1])
 
+#define INIT_QUANTUM 1000;
 
 
 extern struct list_head freequeue;
@@ -65,5 +67,10 @@ void sched_next_rr();
 void update_process_state_rr(struct task_struct *t, struct list_head *dest);
 int needs_sched_rr();
 void update_sched_data_rr();
+
+void schedule();
+
+int get_quantum (struct task_struct *t);
+void set_quantum (struct task_struct *t, int new_quantum);
 
 #endif  /* __SCHED_H__ */

@@ -2,7 +2,6 @@
  * interrupt.c -
  */
 
-#include "sched.h"
 #include <entry.h>
 #include <libc.h>
 #include <types.h>
@@ -133,9 +132,6 @@ void pf_routine(int error_code, int eip) {
 
 void clock_routine(void) {
     ++zeos_ticks;
-    if (zeos_ticks == 1000) {
-        printk("Saltando al hijo!"); // TODO remove this
-        task_switch((union task_union*)list_head_to_task_struct(list_first(&readyqueue)));
-    }
     zeos_show_clock();
+    schedule();
 }

@@ -112,6 +112,9 @@ void init_task1(void)
 
     // El proceso inicial tiene PID 1
     task_ptr->PID = 1;
+
+    // El proceso no ha ejecutado ningun tick todavia
+    task_ptr->quantum = INIT_QUANTUM;
     
     // init dir_pages_baseAaddr. Retorna 1 if OK (siempre)
     allocate_DIR(task_ptr);
@@ -189,3 +192,69 @@ void inner_task_switch(union task_union *new) {
     // la @ de retorno de la nueva pila de sistema.
     set_esp_and_switch(new->task.kernel_esp);
 } 
+
+// ==================== RoundRobin ====================
+int current_ticks_left = INIT_QUANTUM;
+
+/**
+ * Function to select the next process to execute, to extract it from the ready queue and to invoke
+ * the context switch process. This function should always be executed after updating the state
+ * of the current process (after calling function update_process_state_rr).
+ */
+void sched_next_rr() {
+    struct task_struct* next_process = list_head_to_task_struct(list_first(&readyqueue));
+    update_process_state_rr(current(), &readyqueue);
+    update_process_state_rr(next_process, NULL);
+    current_ticks_left = get_quantum(next_process);
+    task_switch((union task_union*)next_process);
+}
+
+/**
+ * Function to update the current state of a process to a new state. This function deletes the
+ * process from its current queue (state) and inserts it into a new queue.
+ */
+void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
+    if (current() != t)
+        list_del(&t->list);
+    if (dest != NULL)
+        list_add_tail(&t->list, dest);
+}
+
+/**
+ * Function to decide if it is necessary to change the current process.
+ */
+int needs_sched_rr() {
+    return !current_ticks_left && !list_empty(&readyqueue);
+}
+
+/**
+ * Function to update the relevant information to take scheduling decisions.
+ */
+void update_sched_data_rr() {
+    --current_ticks_left;
+}
+
+/**
+ * Llama todas las funciones necesarias para decidir
+ * que se ejecutara a durante el siguiente tick
+ */
+void schedule() {
+    update_sched_data_rr();
+    if (needs_sched_rr()) {
+        sched_next_rr();
+    }
+}
+
+/**
+ * Get the quantum of the t process.
+ */
+int get_quantum (struct task_struct *t) {
+    return t->quantum;
+}
+
+/**
+ * Set the quantum of the t process to new_quantum.
+ */
+void set_quantum (struct task_struct *t, int new_quantum) {
+    t->quantum = new_quantum;
+}
