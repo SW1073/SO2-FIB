@@ -144,7 +144,7 @@ void clock_routine(void) {
     update_sched_data_rr();
 
     if (needs_sched_rr()) {
-        // update_process_state_rr(current(), &readyqueue);
+        update_process_state_rr(current(), &readyqueue);
         sched_next_rr();
     }
 }

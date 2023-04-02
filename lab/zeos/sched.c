@@ -226,7 +226,8 @@ struct task_struct* current()
 
 void inner_task_switch(union task_union *new) {
 
-    tss.esp0 = (unsigned long)new->task.kernel_esp;
+    // tss.esp0 = (unsigned long)new->task.kernel_esp;
+    tss.esp0 = KERNEL_ESP(new);
     writeMSR(0x175, 0, tss.esp0);
 
     set_cr3(get_DIR((struct task_struct*)new));
@@ -259,7 +260,6 @@ void sched_next_rr() {
     struct list_head *next = list_first(&readyqueue);
     struct task_struct *next_task = list_head_to_task_struct(next);
 
-    update_process_state_rr(current(), &readyqueue);
     update_process_state_rr(next_task, NULL);
 
     global_quantum = next_task->quantum;
