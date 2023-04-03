@@ -132,3 +132,17 @@ int sys_write(int fd, char * buffer, int size) {
 unsigned long sys_gettime() {
     return zeos_ticks;
 }
+
+
+/**
+ * get_stats syscall implementation
+ */
+int sys_get_stats(int pid, struct stats *st) {
+    for (int i = 0; i < NR_TASKS; ++i) {
+        if (task[i].task.PID == pid) {
+            st = &task[i].task.stats;
+            return 0;
+        }
+    }
+    return ESRCH; // No such process
+}

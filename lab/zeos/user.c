@@ -34,6 +34,10 @@ int __attribute__ ((__section__(".text.main")))
         write(1, buffer, strlen(buffer));
         write(1, "SOY EL PAPA\n", 12);
     }
+    
+    struct stats st;
+    get_stats(1, &st); // aaaaaaaa break here
+
     perror();
 
     // Test both gettime and write syscalls
