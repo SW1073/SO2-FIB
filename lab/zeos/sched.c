@@ -2,11 +2,11 @@
  * sched.c - initializes struct for task 0 anda task 1
  */
 
-#include "list.h"
 #include <sched.h>
 #include <mm.h>
 #include <io.h>
 #include <system.h>
+#include <utils.h>
 
 union task_union task[NR_TASKS]
   __attribute__((__section__(".data.task")));
@@ -266,4 +266,33 @@ int get_quantum (struct task_struct *t) {
  */
 void set_quantum (struct task_struct *t, int new_quantum) {
     t->quantum = new_quantum;
+}
+
+// =========================================================
+// ==================== Stats funtions  ====================
+// =========================================================
+
+void stats_user_to_sys() {
+    DWord current_ticks = get_ticks();
+    current()->stats.user_ticks += current_ticks - current()->stats.elapsed_total_ticks;
+    current()->stats.elapsed_total_ticks = current_ticks;
+}
+
+void stats_sys_to_user() {
+    DWord current_ticks = get_ticks();
+    current()->stats.system_ticks += current_ticks - current()->stats.elapsed_total_ticks;
+    current()->stats.elapsed_total_ticks = current_ticks;
+}
+
+void stats_sys_to_ready() {
+    DWord current_ticks = get_ticks();
+    current()->stats.system_ticks += current_ticks - current()->stats.elapsed_total_ticks;
+    current()->stats.elapsed_total_ticks = current_ticks;
+}
+
+void stats_ready_to_sys() {
+    DWord current_ticks = get_ticks();
+    current()->stats.ready_ticks += current_ticks - current()->stats.elapsed_total_ticks;
+    current()->stats.elapsed_total_ticks = current_ticks;
+    current()->stats.total_trans += 1;
 }
