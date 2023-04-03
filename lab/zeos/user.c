@@ -21,10 +21,12 @@ int __attribute__ ((__section__(".text.main")))
     }
 
     int pid = fork();
+    int pid3 = -1;
 
     if (pid == 0) {
         if (fork() == 0) {
             write(1, "child of child\n", strlen("child of child\n"));
+            pid3 = getpid();
         }
     }
 
@@ -54,6 +56,11 @@ int __attribute__ ((__section__(".text.main")))
     write(1, buffer1, 10);
     write(1, " || Time 2: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
+
+    if (pid3 != -1) {
+        write(1, "exiting!\n", strlen("exiting!\n"));
+        exit(-1);
+    }
 
     for (int i = 0; i < 5000000; ++i)
         itoa(gettime(), buffer);

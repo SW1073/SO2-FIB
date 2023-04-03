@@ -91,10 +91,10 @@ void sys_exit(int exit_status)
 
      */
 
-    // del_ss_extra_pages(get_PT(current()));
+    // current()->exit_status = exit_status;
     free_user_pages(current());
 
-    // current()->exit_status = exit_status;
+    update_process_state_rr(current(), &freequeue);
 
     sched_next_rr();
 }

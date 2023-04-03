@@ -9,13 +9,12 @@ ENTRY (write)
     mov %esp, %ebp
 
     pushl %ebx
+    pushl %ecx
+    pushl %edx
 
     mov 8(%ebp), %ebx       // first argument to ebx
     mov 12(%ebp), %ecx      // second argument to ecx
     mov 16(%ebp), %edx      // third argument to edx
-
-    pushl %ecx
-    pushl %edx
 
     pushl $wr_return_user
     pushl %ebp
@@ -37,7 +36,8 @@ wr_return_user:
     mov $-1, %eax
 
 wr_fin:
-    popl %ebp
+    leave
+    // popl %ebp
     add $4, %esp    // quitar wr_return
 
     popl %edx
@@ -63,7 +63,8 @@ ENTRY (gettime)
     sysenter
 time_return_user:
 
-    popl %ebp
+    // popl %ebp
+    leave
     add $4, %esp // pop of return address. 
 
     popl %edx
@@ -92,7 +93,8 @@ ENTRY (getpid)
 
     sysenter
 pid_return_user:
-    popl %ebp
+    // popl %ebp
+    leave
     add $4, %esp
 
     cmpl $0, %eax
@@ -118,7 +120,8 @@ ENTRY (fork)
 
     sysenter
 fork_return_user:
-    popl %ebp
+    leave
+    // popl %ebp
     add $4, %esp
 
     cmpl $0, %eax
@@ -147,7 +150,8 @@ ENTRY (exit)
 
     sysenter
 exit_return_user:
-    popl %ebp
+    leave
+    // popl %ebp
     addl $4, %esp
 
     popl %ebx
