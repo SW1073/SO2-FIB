@@ -37,7 +37,7 @@ void write_msg_n_num(char *msg, int num) {
 
 void print_stats(struct stats st) {
     char *separator = "========================================\n";
-    write(1, separator, strlen(separator));
+    write_wrapper(separator);
     write_msg_n_num("User ticks: ", st.user_ticks);
     write_msg_n_num("System ticks: ", st.system_ticks);
     write_msg_n_num("Blocked ticks: ", st.blocked_ticks);
@@ -45,7 +45,7 @@ void print_stats(struct stats st) {
     write_msg_n_num("Elapsed total ticks: ", st.elapsed_total_ticks);
     write_msg_n_num("Total transitions: ", st.total_trans);
     write_msg_n_num("Remaining ticks: ", st.remaining_ticks);
-    write(1, separator, strlen(separator));
+    write_wrapper(separator);
 }
 /* ==================================== */
 
@@ -62,24 +62,29 @@ int __attribute__ ((__section__(".text.main")))
     }
 
     // Test or sum
-    int ret = fork();
+    int ret = 123;//fork();//fork();
     if ( ret== 0 ) {
         write_msg_n_num("Soy el hijo. PID: ", getpid());
+        // fork();
     }
     else {
         write_msg_n_num("Soy el padre. PID: ", getpid());
     }
     
+
     perror();
 
     struct stats st;
+
+    while (gettime() < 1000);
+
     // Time 1
     write_msg_n_num("Time 1: ", gettime());
     write_msg_n_num("PID: ", getpid());
     get_stats(getpid(), &st);
     print_stats(st);
 
-    while (gettime() < 1000);
+    while (gettime() < 2000);
 
     // Time 2
     write_msg_n_num("Time 2: ", gettime());
@@ -87,7 +92,7 @@ int __attribute__ ((__section__(".text.main")))
     get_stats(getpid(), &st);
     print_stats(st);
 
-    while (gettime() < 2000);
+    while (gettime() < 3000);
 
     // Time 3
     write_msg_n_num("Time 3: ", gettime());

@@ -80,6 +80,6 @@ void init_process_stats(struct stats *st);
 void stats_user_to_sys();
 void stats_sys_to_user();
 void stats_sys_to_ready();
-void stats_ready_to_sys();
+void stats_ready_to_sys(struct task_struct *t);
 
 #endif  /* __SCHED_H__ */

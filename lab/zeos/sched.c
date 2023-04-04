@@ -211,14 +211,33 @@ int current_ticks_left = INIT_QUANTUM;
  * of the current process (after calling function update_process_state_rr).
  */
 void sched_next_rr() {
+    // Caso especial en el que no hay procesos a ejecutar. Se reinicia su quantum y sigue ejecutando.
+    // Util para no llenar la readyqueue de procesos idle multiples veces.
     if (current_ticks_left == 0 && list_empty(&readyqueue)) {
         current_ticks_left = current()->quantum;
         return;
     }
 
+    // Escoger el proceso a ejecutar a continuacion
     struct task_struct* next_process = list_empty(&readyqueue) ? idle_task : list_head_to_task_struct(list_first(&readyqueue));
+
+    // Actualizar las estadisticas de los procesos que van a intercambiar el contexto
+    // +-------------------------+
+    // | current(): READY -> SYS |
+    // +-------------------------+
+    stats_sys_to_ready();
+    // +-----------------------------+
+    // | new_process(): SYS -> READY |
+    // +-----------------------------+
+    stats_ready_to_sys(next_process);
+
+    // Cambiar de cola el proceso a ejecutar (lo quitamos de cualquier cola)
     update_process_state_rr(next_process, NULL);
+
+    // Seteamos el quantum de la siguiente ejecucion
     current_ticks_left = get_quantum(next_process);
+
+    // Hacemos el task switch en si. Esta funcion no devuelve por aqui
     task_switch((union task_union*)next_process);
 }
 
@@ -306,9 +325,9 @@ void stats_sys_to_ready() {
     current()->stats.elapsed_total_ticks = current_ticks;
 }
 
-void stats_ready_to_sys() {
+void stats_ready_to_sys(struct task_struct *t) {
     DWord current_ticks = get_ticks();
-    current()->stats.ready_ticks += current_ticks - current()->stats.elapsed_total_ticks;
-    current()->stats.elapsed_total_ticks = current_ticks;
-    current()->stats.total_trans += 1;
+    t->stats.ready_ticks += current_ticks - t->stats.elapsed_total_ticks;
+    t->stats.elapsed_total_ticks = current_ticks;
+    t->stats.total_trans += 1;
 }
