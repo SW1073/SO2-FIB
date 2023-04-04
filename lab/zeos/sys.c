@@ -138,9 +138,17 @@ unsigned long sys_gettime() {
  * get_stats syscall implementation
  */
 int sys_get_stats(int pid, struct stats *st) {
-    for (int i = 0; i < NR_TASKS; ++i) {
+    
+    if (!access_ok(VERIFY_WRITE, st, sizeof(struct stats)))
+        return EFAULT; // Invalid st argument address
+
+    if (pid < 0)
+        return EINVAL; // Invalid PID argument
+
+    DWord i;
+    for (i = 0; i < NR_TASKS; ++i) {
         if (task[i].task.PID == pid) {
-            st = &task[i].task.stats;
+            copy_to_user(&task[i].task.stats, st, sizeof(struct stats));
             return 0;
         }
     }
