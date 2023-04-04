@@ -9,6 +9,44 @@ void trigger_page_fault() {
     *p = 0x69;
 }
 
+void print_stats(struct stats st) { 
+    char *buffer = "\0\0\0\0\0\0\0\0\0\n";
+    itoa(st.user_ticks, buffer);
+    write(1, "User ticks: ", 12);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
+
+    itoa(st.system_ticks, buffer);
+    write(1, "System ticks: ", 14);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
+
+    itoa(st.blocked_ticks, buffer);
+    write(1, "Blocked ticks: ", 15);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
+
+    itoa(st.ready_ticks, buffer);
+    write(1, "Ready ticks: ", 13);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
+
+    itoa(st.elapsed_total_ticks, buffer);
+    write(1, "Elapsed ticks: ", 15);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
+
+    itoa(st.total_trans, buffer);
+    write(1, "Total trans: ", 13);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
+
+    itoa(st.remaining_ticks, buffer);
+    write(1, "Remaining ticks: ", 17);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
+}
+
 int __attribute__ ((__section__(".text.main")))
   main(void)
 {
@@ -35,10 +73,15 @@ int __attribute__ ((__section__(".text.main")))
         write(1, "SOY EL PAPA\n", 12);
     }
     
+
     struct stats st;
     get_stats(1, &st); // aaaaaaaa break here
+    print_stats(st);
+
+
 
     perror();
+
 
     // Test both gettime and write syscalls
     // Also test write() scrolling capabilities
@@ -69,5 +112,5 @@ int __attribute__ ((__section__(".text.main")))
     // This point shall never be reached, since the page
     // fault exception never returns
     write(1, "This point shall never be reached if page fault is activated.", 61);
-    while(1);
+    for(;;);
 }

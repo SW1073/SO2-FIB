@@ -80,6 +80,9 @@ void init_idle (void)
     // Quantum del proceso
     task_ptr->quantum = INIT_QUANTUM;
 
+    // Inicializamos las estructuras de estadísticas.
+    init_process_stats(&task_ptr->stats);
+
     // init dir_pages_baseAaddr. Retorna 1 if OK (siempre)
     allocate_DIR(task_ptr);
 
@@ -119,6 +122,9 @@ void init_task1(void)
 
     // El proceso no ha ejecutado ningun tick todavia
     task_ptr->quantum = INIT_QUANTUM;
+
+    // Inicializamos las estructuras de estadísticas.
+    init_process_stats(&task_ptr->stats);
     
     // init dir_pages_baseAaddr. Retorna 1 if OK (siempre)
     allocate_DIR(task_ptr);
@@ -271,6 +277,16 @@ void set_quantum (struct task_struct *t, int new_quantum) {
 // =========================================================
 // ==================== Stats funtions  ====================
 // =========================================================
+
+void init_process_stats(struct stats *st) {
+    st->user_ticks = 0;
+    st->system_ticks = 0;
+    st->blocked_ticks = 0;
+    st->ready_ticks = 0;
+    st->elapsed_total_ticks = get_ticks();
+    st->total_trans = 0;
+    st->remaining_ticks = 123; //FIXME
+}
 
 void stats_user_to_sys() {
     DWord current_ticks = get_ticks();

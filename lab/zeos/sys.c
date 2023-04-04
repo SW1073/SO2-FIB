@@ -145,10 +145,13 @@ int sys_get_stats(int pid, struct stats *st) {
     if (pid < 0)
         return EINVAL; // Invalid PID argument
 
+    union task_union* tu;
+
     DWord i;
     for (i = 0; i < NR_TASKS; ++i) {
         if (task[i].task.PID == pid) {
-            copy_to_user(&task[i].task.stats, st, sizeof(struct stats));
+            tu = &task[i];
+            copy_to_user(&tu->task.stats, st, sizeof(struct stats));
             return 0;
         }
     }

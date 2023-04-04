@@ -113,6 +113,10 @@ ENTRY(syscall_handler_sysenter)
     push $__USER_CS
     push 4(%EBP) // User return address
     SAVE_ALL
+    
+    call stats_user_to_sys  // STATS
+    movl 0x18(%esp), %eax   // Recuperar el valor de EAX
+
     cmpl $0, %EAX
     jl sysenter_err
     cmpl $MAX_SYSCALL, %EAX
@@ -123,6 +127,9 @@ sysenter_err:
     movl $-38, %EAX
 sysenter_fin:
     movl %EAX, 0x18(%ESP)
+
+    call stats_sys_to_user  // STATS
+
     RESTORE_ALL
     movl (%ESP), %EDX // Return address
     movl 12(%ESP), %ECX // User stack address

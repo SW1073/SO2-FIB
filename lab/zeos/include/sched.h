@@ -75,9 +75,11 @@ void schedule();
 int get_quantum (struct task_struct *t);
 void set_quantum (struct task_struct *t, int new_quantum);
 
+void init_process_stats(struct stats *st);
+
 void stats_user_to_sys();
 void stats_sys_to_user();
-void stats_sys_to_sched();
-void stats_shced_to_sys();
+void stats_sys_to_ready();
+void stats_ready_to_sys();
 
 #endif  /* __SCHED_H__ */
