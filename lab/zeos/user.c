@@ -4,48 +4,51 @@ char buff[24];
 
 int pid;
 
+/* ============== HEADERS ============= */
+void trigger_page_fault();
+void write_wrapper(char *msg);
+void write_msg_n_num(char *msg, int num);
+void print_stats(struct stats st);
+/* ==================================== */
+
+/* ========== IMPEMENTATIONS ========== */
 void trigger_page_fault() {
+    write_wrapper("Imma trigger a page fault");
     char *p = 0;
     *p = 0x69;
 }
 
-void print_stats(struct stats st) { 
-    char *buffer = "\0\0\0\0\0\0\0\0\0\n";
-    itoa(st.user_ticks, buffer);
-    write(1, "User ticks: ", 12);
-    write(1, buffer, strlen(buffer));
-    write(1, "\n", 1);
-
-    itoa(st.system_ticks, buffer);
-    write(1, "System ticks: ", 14);
-    write(1, buffer, strlen(buffer));
-    write(1, "\n", 1);
-
-    itoa(st.blocked_ticks, buffer);
-    write(1, "Blocked ticks: ", 15);
-    write(1, buffer, strlen(buffer));
-    write(1, "\n", 1);
-
-    itoa(st.ready_ticks, buffer);
-    write(1, "Ready ticks: ", 13);
-    write(1, buffer, strlen(buffer));
-    write(1, "\n", 1);
-
-    itoa(st.elapsed_total_ticks, buffer);
-    write(1, "Elapsed ticks: ", 15);
-    write(1, buffer, strlen(buffer));
-    write(1, "\n", 1);
-
-    itoa(st.total_trans, buffer);
-    write(1, "Total trans: ", 13);
-    write(1, buffer, strlen(buffer));
-    write(1, "\n", 1);
-
-    itoa(st.remaining_ticks, buffer);
-    write(1, "Remaining ticks: ", 17);
-    write(1, buffer, strlen(buffer));
-    write(1, "\n", 1);
+/**
+ * Wrapper para simplificar las llamadas 
+ * a write y su control de errores
+ */
+void write_wrapper(char *msg) {
+    if (write(1, msg, strlen(msg)) < 0)
+        perror();
 }
+
+void write_msg_n_num(char *msg, int num) {
+    char* buffer = "\0\0\0\0\0\0\0\0\0\0\0\n";
+    itoa(num, buffer);
+    write_wrapper(msg);
+    write_wrapper(buffer);
+    write_wrapper("\n");
+}
+
+void print_stats(struct stats st) {
+    char *separator = "========================================\n";
+    write(1, separator, strlen(separator));
+    write_msg_n_num("User ticks: ", st.user_ticks);
+    write_msg_n_num("System ticks: ", st.system_ticks);
+    write_msg_n_num("Blocked ticks: ", st.blocked_ticks);
+    write_msg_n_num("Ready ticks: ", st.ready_ticks);
+    write_msg_n_num("Elapsed total ticks: ", st.elapsed_total_ticks);
+    write_msg_n_num("Total transitions: ", st.total_trans);
+    write_msg_n_num("Remaining ticks: ", st.remaining_ticks);
+    write(1, separator, strlen(separator));
+}
+/* ==================================== */
+
 
 int __attribute__ ((__section__(".text.main")))
   main(void)
@@ -58,59 +61,45 @@ int __attribute__ ((__section__(".text.main")))
         write(1, "W\n", 2);
     }
 
-    char *buffer = "\0\0\0\0\0\0\0\0\0\n";
-
     // Test or sum
     int ret = fork();
     if ( ret== 0 ) {
-        itoa(getpid(), buffer);
-        write(1, buffer, strlen(buffer));
-        write(1, "SOY EL HIJO\n", 12);
+        write_msg_n_num("Soy el hijo. PID: ", getpid());
     }
     else {
-        itoa(getpid(), buffer);
-        write(1, buffer, strlen(buffer));
-        write(1, "SOY EL PAPA\n", 12);
+        write_msg_n_num("Soy el padre. PID: ", getpid());
     }
     
-
-    struct stats st;
-    get_stats(1, &st); // aaaaaaaa break here
-    print_stats(st);
-
-
-
     perror();
 
-
-    // Test both gettime and write syscalls
-    // Also test write() scrolling capabilities
+    struct stats st;
     // Time 1
-    itoa(gettime(), buffer);
-    write(1, "Time 1: ", 7);
-    write(1, buffer, 10);
+    write_msg_n_num("Time 1: ", gettime());
+    write_msg_n_num("PID: ", getpid());
+    get_stats(getpid(), &st);
+    print_stats(st);
 
-    for (int i = 0; i < 5000000; ++i)
-        itoa(gettime(), buffer); 
+    while (gettime() < 1000);
 
     // Time 2
-    itoa(gettime(), buffer);
-    write(1, "Time 2: ", 7);
-    write(1, buffer, 10);
+    write_msg_n_num("Time 2: ", gettime());
+    write_msg_n_num("PID: ", getpid());
+    get_stats(getpid(), &st);
+    print_stats(st);
 
-    for (int i = 0; i < 5000000; ++i)
-        itoa(gettime(), buffer); 
+    while (gettime() < 2000);
 
     // Time 3
-    itoa(gettime(), buffer);
-    write(1, "Time 3: ", 7);
-    write(1, buffer, 10);
+    write_msg_n_num("Time 3: ", gettime());
+    write_msg_n_num("PID: ", getpid());
+    get_stats(getpid(), &st);
+    print_stats(st);
 
     // Trigger a page fault
-    // trigger_page_fault();
+    trigger_page_fault();
 
     // This point shall never be reached, since the page
     // fault exception never returns
-    write(1, "This point shall never be reached if page fault is activated.", 61);
+    write_wrapper("This point shall never be reached if page fault is activated.");
     for(;;);
 }
