@@ -1,3 +1,4 @@
+#include "stats.h"
 #include <libc.h>
 
 char buff[24];
@@ -7,6 +8,39 @@ int pid;
 void trigger_page_fault() {
     char *p = 0;
     *p = 0x69;
+}
+
+void print_stats(struct stats st) {
+    char *buffer = "\0\0\0\0\0\0\0\0\0\n";
+    write(1, "user ticks: ", strlen("user ticks: "));
+    itoa(st.user_ticks, buffer);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
+
+    write(1, "system ticks: ", strlen("system ticks: "));
+    itoa(st.user_ticks, buffer);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
+
+    write(1, "blocked ticks: ", strlen("blocked ticks: "));
+    itoa(st.blocked_ticks, buffer);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
+
+    write(1, "ready ticks: ", strlen("ready ticks: "));
+    itoa(st.ready_ticks, buffer);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
+
+    write(1, "total transitions (ready->run): ", strlen("total transitions (ready->run): "));
+    itoa(st.total_trans, buffer);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
+
+    write(1, "remaining ticks: ", strlen("remaining ticks: "));
+    itoa(st.remaining_ticks, buffer);
+    write(1, buffer, strlen(buffer));
+    write(1, "\n", 1);
 }
 
 int __attribute__ ((__section__(".text.main")))
@@ -46,7 +80,7 @@ int __attribute__ ((__section__(".text.main")))
     write(1, " || Time 1: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
 
-    for (int i = 0; i < 5000000; ++i)
+    for (int i = 0; i < 500000; ++i)
         itoa(gettime(), buffer);
 
     // Time 2
@@ -59,10 +93,15 @@ int __attribute__ ((__section__(".text.main")))
 
     if (pid3 != -1) {
         write(1, "exiting!\n", strlen("exiting!\n"));
+
+        struct stats st;
+        get_stats(pid3, &st);
+        print_stats(st);
+
         exit(-1);
     }
 
-    for (int i = 0; i < 5000000; ++i)
+    for (int i = 0; i < 500000; ++i)
         itoa(gettime(), buffer);
 
     // Time 3
@@ -73,7 +112,7 @@ int __attribute__ ((__section__(".text.main")))
     write(1, " || Time 3: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
 
-    for (int i = 0; i < 5000000; ++i)
+    for (int i = 0; i < 500000; ++i)
         itoa(gettime(), buffer);
 
     // Time 4
@@ -84,7 +123,7 @@ int __attribute__ ((__section__(".text.main")))
     write(1, " || Time 4: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
 
-    for (int i = 0; i < 5000000; ++i)
+    for (int i = 0; i < 500000; ++i)
         itoa(gettime(), buffer);
 
     // Time 5
@@ -95,7 +134,7 @@ int __attribute__ ((__section__(".text.main")))
     write(1, " || Time 5: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
 
-    for (int i = 0; i < 5000000; ++i)
+    for (int i = 0; i < 500000; ++i)
         itoa(gettime(), buffer);
 
     // Time 6
@@ -106,12 +145,19 @@ int __attribute__ ((__section__(".text.main")))
     write(1, " || Time 6: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
 
+    write(1, "\n\n", 2);
+
+    write(1, "- PID: ", strlen("- PID: "));
+    struct stats st;
+    get_stats(getpid(), &st);
+    print_stats(st);
+
     // Trigger a page fault
     // trigger_page_fault();
 
     // This point shall never be reached, since the page
     // fault exception never returns
-    write(1, "no more gettime()\n", strlen("no more gettime()\n"));
-    write(1, "This point shall never be reached if page fault is activated.", 61);
+    // write(1, "no more gettime()\n", strlen("no more gettime()\n"));
+    // write(1, "This point shall never be reached if page fault is activated.", 61);
     while(1);
 }

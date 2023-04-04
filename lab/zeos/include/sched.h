@@ -5,6 +5,7 @@
 #ifndef __SCHED_H__
 #define __SCHED_H__
 
+#include "stats.h"
 #include <list.h>
 #include <types.h>
 #include <mm_address.h>
@@ -25,6 +26,7 @@ struct task_struct {
   page_table_entry * dir_pages_baseAddr;
   struct list_head list;
   DWord *kernel_esp;
+  struct stats st;
   // struct task_struct* children[MAX_CHILDREN];
 };
 
@@ -41,6 +43,7 @@ extern struct task_struct *idle_task;
 extern struct task_struct *init_task; // TODO quitar esto, era solo para probar el task_switch
 
 extern int global_quantum;
+extern int current_ticks;
 extern int pids;
 
 #define KERNEL_ESP(t)       	(DWord) &(t)->stack[KERNEL_STACK_SIZE]
@@ -58,6 +61,14 @@ void init_idle(void);
 void init_sched(void);
 
 void init_children(struct task_struct* t);
+
+// -----------------------
+void init_stats(struct task_struct *t);
+void stats_user_to_system(struct task_struct *t);
+void stats_system_to_user(struct task_struct *t);
+void stats_system_to_ready(struct task_struct *t);
+void stats_ready_to_system(struct task_struct *t);
+// -----------------------
 
 struct task_struct * current();
 

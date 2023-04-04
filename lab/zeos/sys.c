@@ -1,8 +1,9 @@
 /*
  * sys.c - Syscalls implementation
  */
+#include "include/system.h"
 #include "list.h"
-#include "system.h"
+#include "stats.h"
 #include "types.h"
 #include <devices.h>
 #include <stdlib.h>
@@ -41,6 +42,7 @@ int sys_getpid()
 
 int sys_fork()
 {
+    stats_user_to_system(current());
     // if (list_empty(&freequeue) || !can_have_more_children(current())) {
     //     return ENOMEM;
     // }
@@ -57,6 +59,7 @@ int sys_fork()
 
     copy_data(current(), pcb_union, sizeof(union task_union));
     allocate_DIR(pcb); // el copy_data() copia el directorio (task.dir_pages_baseAddr) del padre al hijo, así que hay que darle otro.
+    init_stats(pcb);
 
     // CTX HW + CTX SW + @ret_handler = 17 posiciones encima de la base del stack.
     // Hay que tener en cuenta que encima de estas 17 posiciones hay el @ret_from_fork y el ebp falso.
@@ -76,6 +79,7 @@ int sys_fork()
 
     // add_child(current(), pcb);
 
+    stats_system_to_ready(pcb);
     return pcb->PID;
 }
 
@@ -93,6 +97,7 @@ void sys_exit(int exit_status)
 
     // current()->exit_status = exit_status;
     free_user_pages(current());
+    current()->PID = -1;
 
     update_process_state_rr(current(), &freequeue);
 
@@ -160,6 +165,17 @@ int sys_write(int fd, char * buffer, int size) {
  */
 unsigned long sys_gettime() {
     return zeos_ticks;
+}
+
+int sys_get_stats(int pid, struct stats *st) {
+    for (int i = 0; i < NR_TASKS; ++i) {
+        if (task[i].task.PID == -1 || task[i].task.PID != pid) continue;
+        if (copy_to_user((void*)&current()->st, st, sizeof(struct stats)) < 0) return -1;
+
+        return 1;
+    }
+
+    return -1;
 }
 
 

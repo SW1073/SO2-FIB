@@ -166,3 +166,39 @@ exit_return_user:
 exit_no_err:
     leave
     ret
+
+ENTRY (get_stats)
+    pushl %ebp
+    movl %esp, %ebp
+
+    pushl %ebx
+    pushl %ecx
+
+    movl 8(%ebp), %ebx
+    movl 12(%ebp), %ecx
+
+    movl $35, %eax
+
+    pushl $st_return_user
+    pushl %ebp
+    movl %esp, %ebp
+
+    sysenter
+st_return_user:
+    leave
+    // popl %ebp
+    addl $4, %esp
+
+    popl %ebx
+    popl %ecx
+
+    cmpl $0, %eax
+    jge st_no_err
+
+    neg %eax
+    movl %eax, errno
+    movl $-1, %eax
+
+st_no_err:
+    leave
+    ret

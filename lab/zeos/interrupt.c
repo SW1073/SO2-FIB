@@ -105,6 +105,8 @@ void setIdt()
 }
 
 void keyboard_routine () {
+    stats_user_to_system(current());
+
     int scan_code;
     char key, is_break, c;
     const char  msb_mask = 0x80,
@@ -121,6 +123,8 @@ void keyboard_routine () {
         else // is ASCII
             printc_xy(0, 0, c);
     }
+
+    stats_system_to_user(current());
 } 
 
 
@@ -134,6 +138,7 @@ void pf_routine(int error_code, int eip) {
 }
 
 void clock_routine(void) {
+    // stats_user_to_system(current());
     ++zeos_ticks;
     zeos_show_clock();
 
@@ -147,5 +152,7 @@ void clock_routine(void) {
         update_process_state_rr(current(), &readyqueue);
         sched_next_rr();
     }
+
+    // stats_system_to_user(current());
 }
 

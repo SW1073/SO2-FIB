@@ -5,6 +5,7 @@
 #include "list.h"
 #include "system.h"
 #include "types.h"
+#include "utils.h"
 #include <sched.h>
 #include <mm.h>
 #include <io.h>
@@ -29,6 +30,7 @@ struct task_struct *init_task; // TODO quitar esto, era solo para probar el task
 
 int global_quantum;
 int pids;
+int current_ticks = 0;
 
 int get_quantum(struct task_struct *t) {
     return t->quantum;
@@ -37,6 +39,32 @@ int get_quantum(struct task_struct *t) {
 void set_quantum(struct task_struct *t, int new_quantum) {
     t->quantum = new_quantum;
 }
+
+//------------- stats ----------------
+void stats_user_to_system(struct task_struct *t) {
+    unsigned long ticks = get_ticks();
+    t->st.user_ticks += ticks - t->st.elapsed_total_ticks;
+    t->st.elapsed_total_ticks = ticks;
+}
+
+void stats_system_to_user(struct task_struct *t) {
+    unsigned long ticks = get_ticks();
+    t->st.system_ticks += ticks - t->st.elapsed_total_ticks;
+    t->st.elapsed_total_ticks = ticks;
+}
+
+void stats_system_to_ready(struct task_struct *t) {
+    unsigned long ticks = get_ticks();
+    t->st.system_ticks += ticks - t->st.elapsed_total_ticks;
+    t->st.elapsed_total_ticks = ticks;
+}
+
+void stats_ready_to_system(struct task_struct *t) {
+    unsigned long ticks = get_ticks();
+    t->st.ready_ticks += ticks - t->st.elapsed_total_ticks;
+    t->st.elapsed_total_ticks = ticks;
+}
+//------------------------------------
 
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 
@@ -72,6 +100,16 @@ void cpu_idle(void)
 	}
 }
 
+void init_stats(struct task_struct *t) {
+    t->st.user_ticks = 0;
+    t->st.system_ticks = 0;
+    t->st.ready_ticks = 0;
+    t->st.blocked_ticks = 0;
+    t->st.elapsed_total_ticks = get_ticks();
+    t->st.total_trans = 0;
+    t->st.remaining_ticks = 0;
+}
+
 void init_idle (void)
 {
     // pillar primer pcb libre (esto solo se hará una vez al inicializar el sistema
@@ -91,6 +129,7 @@ void init_idle (void)
     // self explanatory.
     pcb->task.PID = pids++;
     pcb->task.quantum = INIT_QUANTUM;
+    init_stats((struct task_struct*)pcb);
     // pcb->task.exit_status = 0;
 
     // init_children(&pcb->task);
@@ -163,6 +202,7 @@ void init_task1(void)
     pcb->task.PID = pids++;
     pcb->task.quantum = INIT_QUANTUM;
     global_quantum = pcb->task.quantum;
+    init_stats((struct task_struct*)pcb);
 
     // init_children(&pcb->task);
 
@@ -170,7 +210,6 @@ void init_task1(void)
     pcb->task.kernel_esp = &(pcb->stack[KERNEL_STACK_SIZE]);
     tss.esp0 = (DWord)pcb->task.kernel_esp;
     init_task = (struct task_struct*)pcb;
-    // writeMSR(0x175, 0, tss.esp0);
     writeMSR(0x175, 0, tss.esp0);
 
     set_cr3(get_DIR(&(pcb->task)));
@@ -208,6 +247,7 @@ void init_sched()
 
     INIT_LIST_HEAD(&freequeue);
     for (int i = 0; i < NR_TASKS; i++) {
+        task[i].task.PID = -1;
         list_add_tail(&(task[i].task.list), &freequeue);
     }
 
@@ -234,12 +274,14 @@ void inner_task_switch(union task_union *new) {
     DWord ebp = get_ebp();
     current()->kernel_esp = (DWord*)ebp;
 
+    stats_ready_to_system((struct task_struct*)new);
     set_esp_and_switch(new->task.kernel_esp);
 }
 
 
 void update_sched_data_rr() {
     global_quantum--;
+    current()->st.remaining_ticks = global_quantum;
 }
 
 int needs_sched_rr() {
@@ -264,6 +306,9 @@ void sched_next_rr() {
 
     global_quantum = next_task->quantum;
 
+    ++next_task->st.total_trans;
+    next_task->st.remaining_ticks = next_task->quantum;
+    stats_ready_to_system(next_task);
     task_switch((union task_union*)next_task);
 }
 
