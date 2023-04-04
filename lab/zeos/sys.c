@@ -81,6 +81,9 @@ int sys_fork()
     // Asignar el PID al hijo
     child->task.PID = pid_counter++;
 
+    // Reiniciar las estadisticas para el hijo (pues las ha heredado del padre, y debemos cambiarlas)
+    init_process_stats(&child->task.stats);
+
     // Devolver ese PID al padre
     list_add_tail(child_list, &readyqueue);
     return child->task.PID;
@@ -145,13 +148,10 @@ int sys_get_stats(int pid, struct stats *st) {
     if (pid < 0)
         return EINVAL; // Invalid PID argument
 
-    union task_union* tu;
-
     DWord i;
     for (i = 0; i < NR_TASKS; ++i) {
         if (task[i].task.PID == pid) {
-            tu = &task[i];
-            copy_to_user(&tu->task.stats, st, sizeof(struct stats));
+            copy_to_user(&task[i].task.stats, st, sizeof(struct stats));
             return 0;
         }
     }
