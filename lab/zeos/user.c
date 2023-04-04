@@ -62,10 +62,9 @@ int __attribute__ ((__section__(".text.main")))
     }
 
     // Test or sum
-    int ret = 123;//fork();//fork();
+    int ret = fork();
     if ( ret== 0 ) {
         write_msg_n_num("Soy el hijo. PID: ", getpid());
-        // fork();
     }
     else {
         write_msg_n_num("Soy el padre. PID: ", getpid());
@@ -74,31 +73,31 @@ int __attribute__ ((__section__(".text.main")))
 
     perror();
 
-    struct stats st;
+    struct stats st1, st2, st3;
 
     while (gettime() < 1000);
 
     // Time 1
     write_msg_n_num("Time 1: ", gettime());
     write_msg_n_num("PID: ", getpid());
-    get_stats(getpid(), &st);
-    print_stats(st);
+    get_stats(getpid(), &st1);
+    print_stats(st1);
 
     while (gettime() < 2000);
 
     // Time 2
     write_msg_n_num("Time 2: ", gettime());
     write_msg_n_num("PID: ", getpid());
-    get_stats(getpid(), &st);
-    print_stats(st);
+    get_stats(getpid(), &st2);
+    print_stats(st2);
 
     while (gettime() < 3000);
 
     // Time 3
     write_msg_n_num("Time 3: ", gettime());
     write_msg_n_num("PID: ", getpid());
-    get_stats(getpid(), &st);
-    print_stats(st);
+    get_stats(getpid(), &st3);
+    print_stats(st3);
 
     // Trigger a page fault
     trigger_page_fault();
