@@ -135,8 +135,17 @@ int copy_and_allocate_pages(struct task_struct *parent, struct task_struct *chil
         }
 
         if ((free_page = get_free_page(parent_pt)) < 0) {
-            abort_copy(parent, child);
-            return -1;
+            if (pag == 0) {
+                // abortamos porque directamente no hay páginas lógicas libres.
+                abort_copy(parent, child);
+                return -1;
+            }
+
+            // no abortamos, pero se hace clear de todas las páginas después
+            // de las páginas de kernel, data y código, y se hace flush del TLB
+            // para no tener traducciones raras.
+            del_ss_extra_pages(parent_pt);
+            set_cr3(get_DIR(parent));
         }
 
         actual_page = PAG_LOG_INIT_DATA+pag;;
