@@ -30,6 +30,9 @@ struct list_head readyqueue;
 // Apunta al PCB (o task struct) del proceso idle.
 struct task_struct *idle_task;
 
+int pids;
+int current_ticks;
+
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 
 {
@@ -66,92 +69,109 @@ void cpu_idle(void)
 
 void init_idle (void)
 {
-    // Obtenemos el puntero al inicio del task struct.
-    struct task_struct *task_ptr = list_head_to_task_struct(list_first(&freequeue));
-        //list_entry(freequeue.next, struct task_struct, PID);
+    // pillar primer pcb libre (esto solo se hará una vez al inicializar el sistema
+    // así que no hay problema).
+    struct list_head *free_list = list_first(&freequeue);
 
-    // No estoy seguro si es necesario, pero como el task_struct ya no esta disponble,
-    // no tiene sentido que siga presente dentro de free_queue.
-    list_del(freequeue.next);
+    // borrar este pcb de la freequeue porque obviamente ya no está libre.
+    list_del(free_list);
 
-    // Proceso idle tiene PID 0
-    task_ptr->PID = 0;
+    // list_head_to_task_struct da un task_struct, así que se castea como un task_union para poder modificar
+    // el stack después.
+    union task_union *pcb = (union task_union*)list_head_to_task_struct(free_list);
 
-    // Quantum del proceso
-    task_ptr->quantum = INIT_QUANTUM;
+    // se le pone un page directory al task.
+    allocate_DIR(&(pcb->task));
+ 
+    // self explanatory.
+    pcb->task.PID = pids++;
 
     // Inicializamos las estructuras de estadísticas.
-    init_process_stats(&task_ptr->stats);
+    init_process_stats(&pcb->task.stats);
 
-    // init dir_pages_baseAaddr. Retorna 1 if OK (siempre)
-    allocate_DIR(task_ptr);
+    // en el tope del stack de sistema del pcb se pone la dirección de la función que queremos
+    // que se resuma al acabar el task_switch
+    pcb->stack[KERNEL_STACK_SIZE-1] = (unsigned long)cpu_idle;
 
-    // Castear el pointer del task para obtener el pointer de la union
-    union task_union* task_union_ptr = (union task_union*)task_ptr;
+    pcb->stack[KERNEL_STACK_SIZE-2] = 0;
+    
+    // hacer que el kernel_esp apunte al tope del stack. como hemos "pusheado" dos
+    // valores, kernel_esp será el tope menos dos.
+    pcb->task.kernel_esp = &(pcb->stack[KERNEL_STACK_SIZE-2]);
 
-    // Store in the stack of the idle process the address of the code that it will
-    // execute (address of the cpu_idle function):
-    task_union_ptr->stack[KERNEL_STACK_SIZE-1] = (unsigned long)(void*)cpu_idle;
+    /*
 
-    // Store in the stack the initial value that we want to assign to register ebp
-    // when undoing the dynamic link (it can be 0)
-    task_union_ptr->stack[KERNEL_STACK_SIZE-2] = 0;
+    -   task_struct y stack de sistema en task_union 
+        después de los cambios de arriba:
 
-    // inally, we need to keep (in a new field of its task_struct) the position of
-    // the stack where we have stored the initial value for the ebp register. This
-    // value will be loaded in the esp register when undoing the dynamic link.
-    task_union_ptr->task.kernel_esp = (DWord)&task_union_ptr->stack[KERNEL_STACK_SIZE-2];
+        |---------------|
+        |  task_struct  |
+        |===============|
+        |   ........    |
+        |   ........    |
+        |===============| <------ kernel_esp
+        |   ebp (0)     |
+        |===============|
+        |   @cpu_idle   |
+        |---------------|
+     */
 
-    // idle_task apunta ahora al pcb que acabamos de inicializar.
-    idle_task = task_ptr;
+    idle_task = (struct task_struct*)pcb;
 }
 
 void init_task1(void)
 {
-    // Nos traemos un pcb libre para inicializar el proceso
-    struct task_struct *task_ptr = list_head_to_task_struct(list_first(&freequeue));
+    /*
+        - asignar pcb
+        - asignar DIR
 
-    // Obtenemos el pointer al task_union tambien.
-    union task_union* task_union_ptr = (union task_union*)task_ptr;
+        - cr3 <- DIR de init (para aclarle las traducciones de direcciones)
+        - tss.esp0 <- init.kernel_esp (tss.esp0 es lo que indica al kernel dónde está la pila de sistema)
 
-    // Quitamos el pcb de la lista de pcb's libres (ya no lo esta)
-    list_del(freequeue.next);
+        - preparar trampolín (ya está hecho):
+            - añadir un CTX HW a mano donde esp es la pila del usuario en la page table dentro de DIR
+            - añadir un CTW SW a mano para añadir lo mismo que añade el SAVE_ALL pero con los regs
+                a 0 y los de segmento ya los sé.
+     */
 
-    // El proceso inicial tiene PID 1
-    task_ptr->PID = 1;
+    // pillar primer pcb libre (esto solo se hará una vez al inicializar el sistema
+    // así que no hay problema).
+    struct list_head *free_list = list_first(&freequeue);
 
-    // El proceso no ha ejecutado ningun tick todavia
-    task_ptr->quantum = INIT_QUANTUM;
+    // borrar este pcb de la freequeue porque obviamente ya no está libre.
+    list_del(free_list);
+
+    // list_head_to_task_struct da un task_struct, así que se castea como un task_union para poder modificar
+    // el stack después.
+    union task_union *pcb = (union task_union*)list_head_to_task_struct(free_list);
+
+    // se le pone un page directory al task.
+    allocate_DIR(&(pcb->task));
+
+    set_user_pages(&pcb->task);
+
+    // self explanatory.
+    pcb->task.PID = pids++;
+    pcb->task.quantum = INIT_QUANTUM;
 
     // Inicializamos las estructuras de estadísticas.
-    init_process_stats(&task_ptr->stats);
-    
-    // init dir_pages_baseAaddr. Retorna 1 if OK (siempre)
-    allocate_DIR(task_ptr);
+    init_process_stats(&pcb->task.stats);
 
-    // Completar la inicializacion del espacio de direcciones de memoria.
-    set_user_pages(task_ptr);
+    // init_children(&pcb->task);
 
-    // Update the TSS to make it point to the new_task system stack.
-    tss.esp0 = (DWord)&task_union_ptr->stack[KERNEL_STACK_SIZE];
-
-    // kernel_esp debe guardar la posicion dentro de la pila que tenia el esp
-    // antes del último cambio de contexto
-    task_ptr->kernel_esp = tss.esp0;
-
-    // In case you use sysenter you must modify also the MSR number 0x175.
-    // Basicamente, hacemos que la entrada 0x175 del MSR tome valor tss.esp0,
-    // en vez del valor INITIAL_ESP que apuntaba antes
+    // hacer que el kernel_esp apunte al tope del stack.
+    pcb->task.kernel_esp = &(pcb->stack[KERNEL_STACK_SIZE]);
+    tss.esp0 = (DWord)pcb->task.kernel_esp;
     writeMSR(0x175, 0, tss.esp0);
 
-    // Set its page directory as the current page directory in the system,
-    // by using the set_cr3 function (see file mm.c).
-    set_cr3(task_ptr->dir_pages_baseAddr);
+    set_cr3(get_DIR(&(pcb->task)));
 }
 
 
 void init_sched()
 {
+    pids = 0;
+
     // Init free queue
     INIT_LIST_HEAD( &freequeue );
     // Si insertamos los elementos como se muestra en el codigo, con list_add_tail,
@@ -351,3 +371,4 @@ void stats_set_remaining_ticks(struct task_struct *t, DWord n) {
 void stats_reset_remaining_ticks(struct task_struct *t) {
     t->stats.remaining_ticks = t->quantum;
 }
+

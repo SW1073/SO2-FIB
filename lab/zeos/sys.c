@@ -1,8 +1,8 @@
 /*
  * sys.c - Syscalls implementation
  */
-#include "types.h"
 #include <devices.h>
+#include <stdlib.h>
 #include <utils.h>
 #include <io.h>
 #include <mm.h>
@@ -18,8 +18,6 @@
 
 // no sé si está bien pero de momento se queda así.
 char sys_buffer[4096];
-
-DWord pid_counter = 2;
 
 int check_fd(int fd, int permissions)
 {
@@ -45,46 +43,38 @@ int sys_fork()
     // creates the child process
     // Get a free task_struct for the process. 
     // If there is no space for a new process, an error will be returned
+
     if (list_empty(&freequeue)) {
         return ENOMEM;
     }
 
-    // Inherit system data: copy the parent's task_union to the child.
-    // Determine whether it is necessary to modify the page table of
-    // the parent to access the child's system data. 
-    // The copy_data function can be used to copy.
+    struct list_head *free_list_pos = list_first(&freequeue);
+    list_del(free_list_pos);
 
-    // Obtenemos el task union del hijo y del padre.
-    struct list_head *child_list = list_first(&freequeue);
-    list_del(child_list);
-    union task_union *child = (union task_union*)list_head_to_task_struct(child_list);
-    union task_union *parent = (union task_union*)current();
+    struct task_struct* pcb = list_head_to_task_struct(free_list_pos);
+    union task_union* pcb_union = (union task_union*)pcb;
 
-    // Copiamos los contenidos del task struct del padre al hijo
-    copy_data(parent, child, sizeof(union task_union));
-    
-    // Allocate el nuevo directorio
-    allocate_DIR(&child->task);
+    copy_data(current(), pcb_union, sizeof(union task_union));
+    allocate_DIR(pcb); // el copy_data() copia el directorio (task.dir_pages_baseAddr) del padre al hijo, así que hay que darle otro.
+    init_process_stats(&pcb->stats);
 
-    // Search physical pages to map logical pages for data+stack of the child process    
-    // Share the kernel and code pages
-    copy_pages_to_child(&child->task, &parent->task);
+    // CTX HW + CTX SW + @ret_handler = 17 posiciones encima de la base del stack.
+    // Hay que tener en cuenta que encima de estas 17 posiciones hay el @ret_from_fork y el ebp falso.
+    pcb->kernel_esp = &(pcb_union->stack[KERNEL_STACK_SIZE-19]); // 17-2 por el @ret_from_fork y el ebp.
 
-    // Modificar la pila del hijo para que devuelva a ret_from_fork
+    pcb_union->stack[KERNEL_STACK_SIZE-19] = 0;
+    pcb_union->stack[KERNEL_STACK_SIZE-18] = (DWord)ret_from_fork;
+ 
+    if (copy_and_allocate_pages(current(), pcb) < 0) {
+        list_add_tail(free_list_pos, &freequeue);
+        return ENOMEM;
+    }
 
-    child->task.kernel_esp = (DWord)&child->stack[KERNEL_STACK_SIZE-19];
-    *((DWord*)child->task.kernel_esp) = 0; // ebp
-    *((DWord*)(child->task.kernel_esp+4)) = (DWord)(void*)ret_from_fork; // @ret_from_fork;
+    list_add_tail(free_list_pos, &readyqueue);
 
-    // Asignar el PID al hijo
-    child->task.PID = pid_counter++;
+    pcb->PID = pids++;
 
-    // Reiniciar las estadisticas para el hijo (pues las ha heredado del padre, y debemos cambiarlas)
-    init_process_stats(&child->task.stats);
-
-    // Devolver ese PID al padre
-    list_add_tail(child_list, &readyqueue);
-    return child->task.PID;
+    return pcb->PID;
 }
 
 /**
@@ -102,6 +92,20 @@ void sys_exit() {
     // Let rr decide next proc to execute
     // This function will not return
     sched_next_rr();
+}
+
+int sys_wait() {
+    /*
+        - mira los hijos a ver si tiene algun zombie.
+        - si tiene algún zombie:
+                - pilla el exit status del pcb.
+                - pilla el pid del pcb.
+                - guarda el exit status en algún lugar (??)
+                - libera el pcb.
+                - retorna el pid.
+     */
+
+    return 0;
 }
 
 /**

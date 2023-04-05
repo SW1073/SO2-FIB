@@ -68,7 +68,7 @@
     movb $0x20, %al ; \
     outb %al, $0x20; \
 
-ENTRY (clock_handler)
+ENTRY(clock_handler)
     SAVE_ALL
     EOI
     call stats_user_to_sys  // STATS
@@ -78,7 +78,7 @@ ENTRY (clock_handler)
     RESTORE_ALL
     iret
 
-ENTRY (keyboard_handler)
+ENTRY(keyboard_handler)
     SAVE_ALL
     EOI
     call stats_user_to_sys  // STATS
@@ -92,7 +92,7 @@ ENTRY (keyboard_handler)
 // and saved in EBX, ECX, EDX, ESI, EDI the arguments of the syscall, and in EAX the
 // index of the syscall that wants to be executed.
 // sys_call_table behaves as an "array", where %eax is the index of the syscall.
-ENTRY (system_call_handler)
+ENTRY(system_call_handler)
     SAVE_ALL // Save the current context
     cmpl $0, %eax // Is syscall number negative?
     jl err // If it is, jump to return an error
@@ -142,15 +142,14 @@ sysenter_fin:
     sti // Enable interrupts again
     sysexit
 
-ENTRY (pf_handler)
+ENTRY(pf_handler)
     call pf_routine
     iret
 
-
-ENTRY (task_switch)
+ENTRY(task_switch)
     pushl %ebp
-    movl %esp, %ebp
-    
+    mov %esp, %ebp
+
     pushl %esi
     pushl %edi
     pushl %ebx

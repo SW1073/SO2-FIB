@@ -25,4 +25,3 @@ ENTRY(set_esp_and_switch)
     movl 4(%esp), %esp
     popl %ebp
     ret
-    

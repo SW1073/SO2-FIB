@@ -104,6 +104,99 @@ void set_user_pages( struct task_struct *task )
   }
 }
 
+/**
+ * Hace lo necesario para copiar los datos del padre al hijo.
+ * KERNEL -> accesso logico compartido
+ * DATA+STACK -> accesso privado
+ * CODE -> accesso logico compartido
+ */
+int copy_and_allocate_pages(struct task_struct *parent, struct task_struct *child) {
+    page_table_entry *parent_pt = get_PT(parent);
+    page_table_entry *child_pt = get_PT(child);
+
+    // copiar tal cual toda la page table.
+    copy_data((void*)parent_pt, (void*)child_pt, TOTAL_PAGES*sizeof(page_table_entry));
+
+    // allocate new physical pages for each page in the user code and user data.
+    // each new frame is allocated to the parent aswell temporarily, so that it can actually copy the data to it.
+
+    // por cada frame nuevo hay que encontrar una pagina nueva sin usar en la tabla del padre para poder copiar los datos.
+    // cuando se encuentra la página, para conseguir su dirección lógica hay que shiftearlo 12 bits hacia la izquierda.
+    // entonces, después de haber alocatado un frame nuevo a una página libre en el padre (al hijo también se le alocata,
+    // pero con la dirección lógica del dato original del padre), puedo copiarlo a la página nueva
+    // con copy_data(pagina_dato_original_padre<<12, pagina_libre_en_el_padre_que_su_frame_usara_el_hijo, 4096)
+
+    int pag, new_ph_pag, free_page, actual_page;
+
+    /* DATA */
+    for (pag = 0; pag < NUM_PAG_DATA; ++pag) {
+        if ((new_ph_pag = alloc_frame()) < 0) {
+            abort_copy(parent, child);
+            return ENOMEM;
+        }
+
+        if ((free_page = get_free_page(parent_pt)) < 0) {
+            if (pag == 0) {
+                // abortamos porque directamente no hay páginas lógicas libres.
+                abort_copy(parent, child);
+                return ENOMEM;
+            }
+
+            // no abortamos, pero se hace clear de todas las páginas después
+            // de las páginas de kernel, data y código, y se hace flush del TLB
+            // para no tener traducciones raras.
+            del_ss_extra_pages(parent_pt);
+            set_cr3(get_DIR(parent));
+        }
+
+        actual_page = PAG_LOG_INIT_DATA+pag;;
+
+        set_ss_pag(parent_pt, free_page, new_ph_pag);
+        set_ss_pag(child_pt, actual_page, new_ph_pag);
+
+        copy_data((void*)(actual_page<<12), (void*)(free_page<<12), PAGE_SIZE);
+    }
+
+    // delete all pages after the KERNEL+DATA+CODE segments.
+    del_ss_extra_pages(parent_pt);
+
+    // flush TLB to delete the extra pages translations, so that the parent
+    // doesnt have access to the child's address space.
+    set_cr3(get_DIR(parent));
+
+    return 0;
+}
+
+// no!! pro life!!
+void abort_copy(struct task_struct *parent, struct task_struct *child) {
+    del_ss_extra_pages(get_PT(parent));
+    free_user_pages(child);
+    set_cr3(get_DIR(parent));
+}
+
+/**
+ * Retorna un frame libre del espacio logico del padre.
+ * Util af para hacer mapeos temporales y asi copiar
+ * datos entre dos espacios logicos de direccines.
+ * Retorna -1 si no hay paginas extra libres.
+ */
+int get_free_page(page_table_entry *pt) {
+    DWord init_offset = NUM_PAG_KERNEL + NUM_PAG_DATA + NUM_PAG_CODE;
+    for (int p = init_offset; p < TOTAL_PAGES; ++p)
+        if (pt[p].bits.present == 0) return p;
+    return -1;
+}
+
+/**
+ * Pone a 0 todas las entradas de la tabla de paginas
+ * mas allá del espacio de datos y de codigo.
+ */
+void del_ss_extra_pages(page_table_entry *pt) {
+    DWord init_offset = NUM_PAG_KERNEL + NUM_PAG_DATA + NUM_PAG_CODE;
+    for (int p = init_offset; p < TOTAL_PAGES; ++p)
+        del_ss_pag(pt, p);
+}
+
 /* Writes on CR3 register producing a TLB flush */
 void set_cr3(page_table_entry * dir)
 {
@@ -264,68 +357,4 @@ void del_ss_pag(page_table_entry *PT, unsigned logical_page)
 /* get_frame - Returns the physical frame associated to page 'logical_page' */
 unsigned int get_frame (page_table_entry *PT, unsigned int logical_page){
      return PT[logical_page].bits.pbase_addr; 
-}
-
-/**
- * Hace lo necesario para copiar los datos del padre al hijo.
- * KERNEL -> accesso logico compartido
- * DATA+STACK -> accesso privado
- * CODE -> accesso logico compartido
- */
-int copy_pages_to_child(struct task_struct *child, struct task_struct *parent) {
-
-    page_table_entry *child_pt = get_PT(child);
-    page_table_entry *parent_pt = get_PT(parent);
-
-    // CODE y KERNEL
-    copy_data(parent_pt, child_pt, sizeof(page_table_entry)*TOTAL_PAGES);
-
-    // DATA
-    int p;
-    int new_ph_page;
-    // Recorrem totes les pagines de dades i fem el mateix procediment per a totes elles:
-    for (p = PAG_LOG_INIT_DATA; p < PAG_LOG_INIT_DATA+NUM_PAG_DATA; ++p) {
-        // Alocatar una pagina lliure per a poder mapejarla al espai de memoria del fill
-        if ((new_ph_page = alloc_frame()) < 0)
-            return ENOMEM;
-
-        // Mapejar la pagina lliure del @space_parent al frame físic del fill
-        int parent_free_page = get_free_page(parent_pt); // TODO: puede fallar
-        set_ss_pag(parent_pt, parent_free_page, new_ph_page);
-
-        // Copiar les dades de la pagina p a la pagina acabada de mapejar
-        copy_data((void*)(p<<12), (void*)(parent_free_page<<12), PAGE_SIZE);
-
-        // Crear la associacio a la child_pt de la pagina logica p a la nova pagina fisica new_ph_page
-        set_ss_pag(child_pt, p, new_ph_page);
-    }
-    // Borrar las paginas extra que hemos usado para los mapeos
-    set_cr3(get_DIR(parent));
-    del_ss_extra_pages(parent_pt);
-
-    return 0; // Tot ok
-}
-
-/**
- * Retorna un frame libre del espacio logico del padre.
- * Util af para hacer mapeos temporales y asi copiar
- * datos entre dos espacios logicos de direccines.
- * Retorna -1 si no hay paginas extra libres.
- */
-int get_free_page(page_table_entry *pt) {
-    DWord init_offset = NUM_PAG_KERNEL + NUM_PAG_DATA + NUM_PAG_CODE;
-    for (int p = init_offset; p < TOTAL_PAGES; ++p)
-        if (pt[p].bits.present == 0)
-            return p;
-    return -1;
-}
-
-/**
- * Pone a 0 todas las entradas de la tabla de paginas
- * mas allá del espacio de datos y de codigo.
- */
-void del_ss_extra_pages(page_table_entry *pt) {
-    DWord init_offset = NUM_PAG_KERNEL + NUM_PAG_DATA + NUM_PAG_CODE;
-    for (int p = init_offset; p < TOTAL_PAGES; ++p)
-        del_ss_pag(pt, p);
 }

@@ -11,7 +11,6 @@
 #include <mm.h>
 #include <io.h>
 #include <utils.h>
-#include <zeos_mm.h> /* TO BE DELETED WHEN ADDED THE PROCESS MANAGEMENT CODE TO BECOME MULTIPROCESS */
 
 
 int (*usr_main)(void) = (void *) (PAG_LOG_INIT_CODE*PAGE_SIZE);
@@ -88,7 +87,7 @@ int __attribute__((__section__(".text.main")))
   init_mm();
 
   /* Initialize an address space to be used for the monoprocess version of ZeOS */
-  //monoprocess_init_addr_space(); /* TO BE DELETED WHEN THE PROCESS MANAGEMENT CODE TO BECOME MULTIPROCESS IS ADDED */
+  // monoprocess_init_addr_space(); /* TO BE DELETED WHEN THE PROCESS MANAGEMENT CODE TO BECOME MULTIPROCESS IS ADDED */
 
   /* Initialize Scheduling */
   init_sched();
@@ -107,6 +106,7 @@ int __attribute__((__section__(".text.main")))
   printk_color("######################################\n\n", LIGHT_RED, BLACK, 1);
 
   enable_int();
+
   /*
    * We return from a 'theorical' call to a 'call gate' to reduce our privileges
    * and going to execute 'magically' at 'usr_main'...

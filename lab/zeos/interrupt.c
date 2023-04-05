@@ -10,6 +10,7 @@
 #include <hardware.h>
 #include <io.h>
 #include <system.h>
+#include <sched.h>
 
 #include <zeos_interrupt.h>
 
@@ -135,3 +136,5 @@ void clock_routine(void) {
     zeos_show_clock();
     schedule();
 }
+
+

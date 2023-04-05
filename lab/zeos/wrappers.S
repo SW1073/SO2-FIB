@@ -64,7 +64,6 @@ time_return_user:
 
     popl %ebp
     add $4, %esp // pop of return address. 
-
     popl %edx
     popl %ecx
 
@@ -133,8 +132,6 @@ exit_return_user:
 
     leave
     ret
-
-
 
 // Wrapper para la syscall fork()
 ENTRY (getpid)
