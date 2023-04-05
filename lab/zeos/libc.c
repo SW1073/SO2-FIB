@@ -71,6 +71,9 @@ void perror(void) {
         case ENOMEM:
             write(1, "Insufficient memory\n", strlen("Insufficient memory\n"));
             break;
+        case ESRCH:
+            write(1, "No such process\n", strlen("No such process\n"));
+            break;
         default:
             write(1, "Unknown error\n", strlen("Unknown error\n"));
             break;

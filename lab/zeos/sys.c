@@ -122,6 +122,9 @@ int sys_write(int fd, char * buffer, int size) {
     // check if the size is valid (>0)
     if (size < 0)
         return EINVAL; /*EINVAL: Invalid argument*/
+    // Invalid buffer argument address
+    if (!access_ok(VERIFY_READ, buffer, size))
+        return EFAULT;
 
     // copy user data segment to kernel address space, for the buffer to point to the correct data
     // if this operation is not done, the pointer will not be accessing the correct data
