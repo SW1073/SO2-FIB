@@ -211,15 +211,12 @@ int current_ticks_left = INIT_QUANTUM;
  * of the current process (after calling function update_process_state_rr).
  */
 void sched_next_rr() {
-    // Caso especial en el que no hay procesos a ejecutar. Se reinicia su quantum y sigue ejecutando.
-    // Util para no llenar la readyqueue de procesos idle multiples veces.
-    if (current_ticks_left == 0 && list_empty(&readyqueue)) {
-        current_ticks_left = current()->quantum;
-        return;
-    }
-
     // Escoger el proceso a ejecutar a continuacion
-    struct task_struct* next_process = list_empty(&readyqueue) ? idle_task : list_head_to_task_struct(list_first(&readyqueue));
+    struct task_struct* next_process;
+    if (list_empty(&readyqueue))
+        next_process = idle_task;
+    else
+        next_process = list_head_to_task_struct(list_first(&readyqueue));
 
     // Actualizar las estadisticas de los procesos que van a intercambiar el contexto
     // +-------------------------+
@@ -256,7 +253,13 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
  * Function to decide if it is necessary to change the current process.
  */
 int needs_sched_rr() {
-    return !current_ticks_left && !list_empty(&readyqueue);
+    if (!current_ticks_left && !list_empty(&readyqueue))
+        return 1; // Necesitamos shceduling!!!
+    
+    if (!current_ticks_left)
+        current_ticks_left = current()->quantum;
+
+    return 0;
 }
 
 /**
