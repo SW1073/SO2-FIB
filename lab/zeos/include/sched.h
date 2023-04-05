@@ -82,4 +82,8 @@ void stats_sys_to_user();
 void stats_sys_to_ready();
 void stats_ready_to_sys(struct task_struct *t);
 
+void stats_decrement_remaining_ticks(struct task_struct *t);
+void stats_set_remaining_ticks(struct task_struct *t, DWord n);
+void stats_reset_remaining_ticks(struct task_struct *t);
+
 #endif  /* __SCHED_H__ */

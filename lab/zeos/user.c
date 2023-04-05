@@ -61,22 +61,50 @@ int __attribute__ ((__section__(".text.main")))
         write(1, "W\n", 2);
     }
 
-    // Test or sum
-    int ret = fork();
-    if ( ret== 0 ) {
-        write_msg_n_num("Soy el hijo. PID: ", getpid());
-    }
-    else {
-        write_msg_n_num("Soy el padre. PID: ", getpid());
-    }
+    // // Test or sum
+    // int ret = fork();
+    // if ( ret== 0 ) {
+    //     write_msg_n_num("Soy el hijo. PID: ", getpid());
+    //     ret = fork();
+    //     if (ret == 0) {
+    //         write_msg_n_num("Soy el hijo. PID: ", getpid());
+    //         ret = fork();
+    //         if (ret == 0) {
+    //             write_msg_n_num("Soy el hijo. PID: ", getpid());
+    //             ret = fork();
+    //             if (ret == 0) {
+    //                 write_msg_n_num("Soy el hijo. PID: ", getpid());
+    //                 ret = fork();
+    //                 if (ret == 0) {
+    //                     write_msg_n_num("Soy el hijo. PID: ", getpid());
+    //                     ret = fork();
+    //                     if (ret == 0) {
+    //                         write_msg_n_num("Soy el hijo. PID: ", getpid());
+    //                         ret = fork();
+    //                         if (ret == 0) {
+    //                             write_msg_n_num("Soy el hijo. PID: ", getpid());
+    //                             ret = fork();
+    //                             if (ret == 0) {
+    //                                 write_msg_n_num("Soy el hijo. PID: ", getpid());
+    //                                 ret = fork();
+    //                                 if (ret == 0) {
+    //                                     write_msg_n_num("Soy el hijo. PID: ", getpid());
+    //                                     ret = fork();
+    //                                 }else if (ret == -1) { perror(); }
+    //                             }else if (ret == -1) { perror(); }
+    //                         }else if (ret == -1) { perror(); }
+    //                     }else if (ret == -1) { perror(); }
+    //                 }else if (ret == -1) { perror(); }
+    //             }else if (ret == -1) { perror(); }
+    //         }else if (ret == -1) { perror(); }
+    //     }else if (ret == -1) { perror(); }
+    // }else if (ret == -1) { perror(); }  
     
-    fork();
-
-    perror();
+    // exit();
 
     struct stats st1, st2, st3;
 
-    while (gettime() < 1000);
+    while (gettime() < 1003);
 
     // Time 1
     write_msg_n_num("Time 1: ", gettime());
@@ -99,6 +127,12 @@ int __attribute__ ((__section__(".text.main")))
     write_msg_n_num("PID: ", getpid());
     get_stats(getpid(), &st3);
     print_stats(st3);
+
+    int ret = fork();
+    if (ret == 0) {
+        write_wrapper("Holaquease, soy el hijo");
+    }
+    while(1);
 
     // Trigger a page fault
     trigger_page_fault();

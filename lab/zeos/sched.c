@@ -233,6 +233,7 @@ void sched_next_rr() {
 
     // Seteamos el quantum de la siguiente ejecucion
     current_ticks_left = get_quantum(next_process);
+    stats_reset_remaining_ticks(next_process);
 
     // Hacemos el task switch en si. Esta funcion no devuelve por aqui
     task_switch((union task_union*)next_process);
@@ -243,7 +244,7 @@ void sched_next_rr() {
  * process from its current queue (state) and inserts it into a new queue.
  */
 void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
-    if (current() != t && t != idle_task)
+    if (t != current() && t != idle_task)
         list_del(&t->list);
     if (dest != NULL)
         list_add_tail(&t->list, dest);
@@ -253,11 +254,14 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
  * Function to decide if it is necessary to change the current process.
  */
 int needs_sched_rr() {
-    if (!current_ticks_left && !list_empty(&readyqueue))
+    if (!current_ticks_left && !list_empty(&readyqueue)) {
         return 1; // Necesitamos shceduling!!!
-    
-    if (!current_ticks_left)
+    }
+
+    if (!current_ticks_left) {
         current_ticks_left = current()->quantum;
+        stats_reset_remaining_ticks(current());
+    }
 
     return 0;
 }
@@ -267,6 +271,7 @@ int needs_sched_rr() {
  */
 void update_sched_data_rr() {
     --current_ticks_left;
+    stats_decrement_remaining_ticks(current());
 }
 
 /**
@@ -307,7 +312,7 @@ void init_process_stats(struct stats *st) {
     st->ready_ticks = 0;
     st->elapsed_total_ticks = get_ticks();
     st->total_trans = 0;
-    st->remaining_ticks = 123; //FIXME
+    st->remaining_ticks = INIT_QUANTUM;
 }
 
 void stats_user_to_sys() {
@@ -333,4 +338,16 @@ void stats_ready_to_sys(struct task_struct *t) {
     t->stats.ready_ticks += current_ticks - t->stats.elapsed_total_ticks;
     t->stats.elapsed_total_ticks = current_ticks;
     t->stats.total_trans += 1;
+}
+
+void stats_decrement_remaining_ticks(struct task_struct *t) {
+    t->stats.remaining_ticks--;
+}
+
+void stats_set_remaining_ticks(struct task_struct *t, DWord n) {
+    t->stats.remaining_ticks = n;
+}
+
+void stats_reset_remaining_ticks(struct task_struct *t) {
+    t->stats.remaining_ticks = t->quantum;
 }
