@@ -9,13 +9,12 @@ ENTRY (write)
     mov %esp, %ebp
 
     pushl %ebx
+    pushl %ecx
+    pushl %edx
 
     mov 8(%ebp), %ebx       // first argument to ebx
     mov 12(%ebp), %ecx      // second argument to ecx
     mov 16(%ebp), %edx      // third argument to edx
-
-    pushl %ecx
-    pushl %edx
 
     pushl $wr_return_user
     pushl %ebp
@@ -31,7 +30,7 @@ wr_return_user:
     cmpl $0, %eax
     jge wr_fin
 
-    // save -eax to errno here. i dont know how to do that yet.
+    // save -eax to errno here. 
     neg %eax
     movl %eax, errno
     mov $-1, %eax
@@ -173,6 +172,9 @@ ENTRY (get_stats)
     mov %esp, %ebp
 
     // Store the values of ecx and edx in the user stack
+    // (El registro ebx lo guardamos por convencion de 
+    // parametros entre funciones)
+    pushl %ebx
     pushl %edx
     pushl %ecx
 
@@ -216,6 +218,7 @@ get_stats_fin:
     // Pop both ecx and edx, in inverse order to the pushing one
     popl %ecx
     popl %edx
+    popl %ebx
 
     // Pop the caller ebp and restore the esp 
     leave
