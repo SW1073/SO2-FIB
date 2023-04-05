@@ -2,6 +2,7 @@
  * mm.c - Memory Management: Paging & segment memory management
  */
 
+#include "errno.h"
 #include "include/utils.h"
 #include "mm_address.h"
 #include <types.h>
@@ -120,25 +121,20 @@ int copy_and_allocate_pages(struct task_struct *parent, struct task_struct *chil
     // pero con la dirección lógica del dato original del padre), puedo copiarlo a la página nueva
     // con copy_data(pagina_dato_original_padre<<12, pagina_libre_en_el_padre_que_su_frame_usara_el_hijo, 4096)
 
-
-    // TODO handlear errores.
-    //      si algo falla hay que liberar las pages pilladas en get_free_pages() y los frames fisicos
-    //      pillados en alloc_frame() (con free_frame())
-
     int pag, new_ph_pag, free_page, actual_page;
 
     /* DATA */
     for (pag = 0; pag < NUM_PAG_DATA; ++pag) {
         if ((new_ph_pag = alloc_frame()) < 0) {
             abort_copy(parent, child);
-            return -1;
+            return ENOMEM;
         }
 
         if ((free_page = get_free_page(parent_pt)) < 0) {
             if (pag == 0) {
                 // abortamos porque directamente no hay páginas lógicas libres.
                 abort_copy(parent, child);
-                return -1;
+                return ENOMEM;
             }
 
             // no abortamos, pero se hace clear de todas las páginas después

@@ -137,22 +137,23 @@ void pf_routine(int error_code, int eip) {
     while(1);
 }
 
-void clock_routine(void) {
-    // stats_user_to_system(current());
-    ++zeos_ticks;
-    zeos_show_clock();
-
-    // if (zeos_ticks > 1000) {
-    //     task_switch((union task_union*)idle_task);
-    // }
-
+void schedule() {
     update_sched_data_rr();
 
     if (needs_sched_rr()) {
         update_process_state_rr(current(), &readyqueue);
         sched_next_rr();
     }
+}
+
+void clock_routine(void) {
+    // stats_user_to_system(current());
+    ++zeos_ticks;
+    zeos_show_clock();
+
+    schedule();
 
     // stats_system_to_user(current());
 }
+
 

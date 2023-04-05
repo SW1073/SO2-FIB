@@ -42,11 +42,6 @@ int sys_getpid()
 
 int sys_fork()
 {
-    stats_user_to_system(current());
-    // if (list_empty(&freequeue) || !can_have_more_children(current())) {
-    //     return ENOMEM;
-    // }
-
     if (list_empty(&freequeue)) {
         return ENOMEM;
     }
@@ -68,7 +63,8 @@ int sys_fork()
     pcb_union->stack[KERNEL_STACK_SIZE-19] = 0;
     pcb_union->stack[KERNEL_STACK_SIZE-18] = (DWord)ret_from_fork;
  
-    if (copy_and_allocate_pages(current(), pcb) < 0) {
+    int err = 0;
+    if ((err = copy_and_allocate_pages(current(), pcb)) < 0) {
         list_add_tail(free_list_pos, &freequeue);
         return ENOMEM;
     }
@@ -77,9 +73,6 @@ int sys_fork()
 
     pcb->PID = pids++;
 
-    // add_child(current(), pcb);
-
-    stats_system_to_ready(pcb);
     return pcb->PID;
 }
 
@@ -97,7 +90,6 @@ void sys_exit(int exit_status)
 
     // current()->exit_status = exit_status;
     free_user_pages(current());
-    current()->PID = -1;
 
     update_process_state_rr(current(), &freequeue);
 
@@ -115,25 +107,6 @@ int sys_wait() {
                 - retorna el pid.
      */
 
-    // if (current()->number_of_children == 0) return ECHILD;
-    //
-    // int child_pid = -1;
-    // // int child_exit_status = -1; // idk donde meter esto
-    //
-    // for (int i = 0; i < MAX_CHILDREN; ++i) {
-    //     if (current()->children[i] == NULL) continue;
-    //
-    //     struct task_struct *child = current()->children[i];
-    //
-    //     child_pid = child->PID;
-    //     // child_exit_status = child->exit_status;
-    //     update_process_state_rr(child, &freequeue);
-    //     current()->children[i] = NULL;
-    //
-    //     break;
-    // }
-    //
-    // return child_pid;
     return 0;
 }
 
@@ -178,66 +151,3 @@ int sys_get_stats(int pid, struct stats *st) {
     return -1;
 }
 
-
-/*
- - sys_fork()
-  - primero comprobacion de que tengo los recursos necesarios:
-  - si alguno falla, los de arriba se liberan:
-
-    - asignar un task struct al nuevo proceso.
-    - asignar una Page Table (DIR) 
-    - asignar memoria fisica.
-
-  - ahora se empieza el trabajo en si:
-
-    - init task_union del hijo -> copiar el del padre al hijo.
-    - copiar memoria del padre al hijo (tocho):
-        - el contenido de kernel del PCB son iguales entre ellos. No se copian, el TLB referencia el del padre.
-
-    - asignar pid
-    - preparar contexto de ejecución del hijo
-    - poner task_struct del hijo en readyqueue
-
-    |-----------------------|
-    |   mierda varia de     |
-    |   la rutina de sistema|
-    |-----------------------|
-    |       ebp             |
-    |-----------------------|
-    |   @ret a sys_fork     |
-    |   (salir de handler)  |
-    |-----------------------|
-    |       CTX SW          |
-    |-----------------------|
-    |       CTX HW          |
-    |-----------------------|
-
-
-    - solo hijo:
-        - crear función ret_from_fork() que literal solo retorne 0.
-
-        |-----------------------|
-        |           0           |
-        |-----------------------|
-        |    @ret_from_fork     |
-        |-----------------------|
-        |   @ret a sys_fork     |
-        |   (salir de handler)  |
-        |-----------------------|
-        |       CTX SW          |
-        |-----------------------|
-        |       CTX HW          |
-        |-----------------------|
-
-        - el task_switch() al final hace:
-            pop ebp
-            ret
-        - al hacer pop ebp, ebp ahora vale 0.
-        - al hacer ret va a @ret_from_fork (esp ahora apunta a @ret_sys_fork), y hace lo siguiente:
-            push de ebp (ebp aqui vale 0)
-            ebp <- esp (ebp ahora vale esp, y apunta al tope del stack, donde esta el 0 que acabamos de pushear)
-            eax <- 0
-            pop ebp (ebp ahora vale 0, y esp apunta a @ret_sys_fork.
-            ret
-        - al hacer ret volvemos al handler de sys_fork
- */

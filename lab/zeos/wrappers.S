@@ -37,7 +37,6 @@ wr_return_user:
 
 wr_fin:
     leave
-    // popl %ebp
     add $4, %esp    // quitar wr_return
 
     popl %edx
@@ -63,7 +62,6 @@ ENTRY (gettime)
     sysenter
 time_return_user:
 
-    // popl %ebp
     leave
     add $4, %esp // pop of return address. 
 
@@ -93,7 +91,6 @@ ENTRY (getpid)
 
     sysenter
 pid_return_user:
-    // popl %ebp
     leave
     add $4, %esp
 
@@ -121,7 +118,6 @@ ENTRY (fork)
     sysenter
 fork_return_user:
     leave
-    // popl %ebp
     add $4, %esp
 
     cmpl $0, %eax
@@ -139,9 +135,6 @@ ENTRY (exit)
     pushl %ebp
     movl %esp, %ebp
 
-    pushl %ebx
-    movl 8(%ebp), %ebx
-
     movl $1, %eax
 
     pushl $exit_return_user
@@ -151,10 +144,7 @@ ENTRY (exit)
     sysenter
 exit_return_user:
     leave
-    // popl %ebp
     addl $4, %esp
-
-    popl %ebx
 
     cmpl $0, %eax
     jge fork_no_err
@@ -186,7 +176,6 @@ ENTRY (get_stats)
     sysenter
 st_return_user:
     leave
-    // popl %ebp
     addl $4, %esp
 
     popl %ebx

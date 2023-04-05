@@ -10,6 +10,19 @@ void trigger_page_fault() {
     *p = 0x69;
 }
 
+void write_wrapper(char *msg) {
+    if (write(1, msg, strlen(msg)) < 0)
+        perror();
+}
+
+void write_msg_n_num(char *msg, int num) {
+    char* buffer = "\0\0\0\0\0\0\0\0\0\0\0\n";
+    itoa(num, buffer);
+    write_wrapper(msg);
+    write_wrapper(buffer);
+    write_wrapper("\n");
+}
+
 void print_stats(struct stats st) {
     char *buffer = "\0\0\0\0\0\0\0\0\0\n";
     write(1, "user ticks: ", strlen("user ticks: "));
@@ -54,15 +67,46 @@ int __attribute__ ((__section__(".text.main")))
         write(1, "W\n", 2);
     }
 
-    int pid = fork();
-    int pid3 = -1;
-
-    if (pid == 0) {
-        if (fork() == 0) {
-            write(1, "child of child\n", strlen("child of child\n"));
-            pid3 = getpid();
-        }
-    }
+// Test or sum
+    int ret = fork();
+    if ( ret== 0 ) {
+        write_msg_n_num("Soy el hijo. PID: ", getpid());
+        ret = fork();
+        if (ret == 0) {
+            write_msg_n_num("Soy el hijo. PID: ", getpid());
+            ret = fork();
+            if (ret == 0) {
+                write_msg_n_num("Soy el hijo. PID: ", getpid());
+                ret = fork();
+                if (ret == 0) {
+                    write_msg_n_num("Soy el hijo. PID: ", getpid());
+                    ret = fork();
+                    if (ret == 0) {
+                        write_msg_n_num("Soy el hijo. PID: ", getpid());
+                        ret = fork();
+                        if (ret == 0) {
+                            write_msg_n_num("Soy el hijo. PID: ", getpid());
+                            ret = fork();
+                            if (ret == 0) {
+                                write_msg_n_num("Soy el hijo. PID: ", getpid());
+                                ret = fork();
+                                if (ret == 0) {
+                                    write_msg_n_num("Soy el hijo. PID: ", getpid());
+                                    ret = fork();
+                                    if (ret == 0) {
+                                        write_msg_n_num("Soy el hijo. PID: ", getpid());
+                                        ret = fork();
+                                    }else if (ret == -1) { perror(); }
+                                }else if (ret == -1) { perror(); }
+                            }else if (ret == -1) { perror(); }
+                        }else if (ret == -1) { perror(); }
+                    }else if (ret == -1) { perror(); }
+                }else if (ret == -1) { perror(); }
+            }else if (ret == -1) { perror(); }
+        }else if (ret == -1) { perror(); }
+    }else if (ret == -1) { perror(); }
+    //
+    // exit(-1);
 
     // Test both gettime and write syscalls
     // Also test write() scrolling capabilities
@@ -91,15 +135,15 @@ int __attribute__ ((__section__(".text.main")))
     write(1, " || Time 2: ", strlen(" || Time 1: "));
     write(1, buffer, 10);
 
-    if (pid3 != -1) {
-        write(1, "exiting!\n", strlen("exiting!\n"));
-
-        struct stats st;
-        get_stats(pid3, &st);
-        print_stats(st);
-
-        exit(-1);
-    }
+    // if (pid3 != -1) {
+    //     write(1, "exiting!\n", strlen("exiting!\n"));
+    //
+    //     struct stats st;
+    //     get_stats(pid3, &st);
+    //     print_stats(st);
+    //
+    //     exit(-1);
+    // }
 
     for (int i = 0; i < 500000; ++i)
         itoa(gettime(), buffer);

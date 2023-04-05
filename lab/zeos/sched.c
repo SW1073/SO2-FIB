@@ -215,29 +215,6 @@ void init_task1(void)
     set_cr3(get_DIR(&(pcb->task)));
 }
 
-// int can_have_more_children(struct task_struct *t) {
-//     return t->number_of_children < MAX_CHILDREN;
-// }
-//
-// void init_children(struct task_struct *t) {
-//     t->number_of_children = 0;
-//
-//     for (int i = 0; i < MAX_CHILDREN; ++i) {
-//         t->children[i] = NULL;
-//     }
-// }
-//
-// int add_child(struct task_struct *parent, struct task_struct *child) {
-//     for (int i = 0; i < MAX_CHILDREN; ++i) {
-//         if (parent->children[i] != NULL) continue;
-//
-//         parent->children[i] = child;
-//         parent->number_of_children++;
-//         return 1;
-//     }
-//
-//     return -1;
-// }
 
 void init_sched()
 {
@@ -266,7 +243,6 @@ struct task_struct* current()
 
 void inner_task_switch(union task_union *new) {
 
-    // tss.esp0 = (unsigned long)new->task.kernel_esp;
     tss.esp0 = KERNEL_ESP(new);
     writeMSR(0x175, 0, tss.esp0);
 
@@ -274,115 +250,37 @@ void inner_task_switch(union task_union *new) {
     DWord ebp = get_ebp();
     current()->kernel_esp = (DWord*)ebp;
 
-    stats_ready_to_system((struct task_struct*)new);
     set_esp_and_switch(new->task.kernel_esp);
 }
 
 
 void update_sched_data_rr() {
     global_quantum--;
-    current()->st.remaining_ticks = global_quantum;
 }
 
 int needs_sched_rr() {
-    return global_quantum <= 0;
+    if (global_quantum <= 0 && !list_empty(&readyqueue)) return 1;
+
+    if (global_quantum == 0) global_quantum = current()->quantum;
+
+    return 0;
 }
 
 void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
-    if (t != current()) list_del(&t->list);
+    if (t != current() && t != idle_task) list_del(&t->list);
     if (dest != NULL) list_add_tail(&t->list, dest);
 }
 
 void sched_next_rr() {
-    if (list_empty(&readyqueue)) {
-        task_switch((union task_union*)idle_task); // poner idle
-        return; // estoy 90% seguro de que nunca llega aqui pero se ve raro no poner el return.
-    }
+    struct task_struct *next_task;
 
-    struct list_head *next = list_first(&readyqueue);
-    struct task_struct *next_task = list_head_to_task_struct(next);
+    if (list_empty(&readyqueue)) 
+        next_task = idle_task;
+    else
+        next_task = list_head_to_task_struct(list_first(&readyqueue));
 
     update_process_state_rr(next_task, NULL);
 
-    global_quantum = next_task->quantum;
-
-    ++next_task->st.total_trans;
-    next_task->st.remaining_ticks = next_task->quantum;
-    stats_ready_to_system(next_task);
     task_switch((union task_union*)next_task);
 }
 
-/*
-
-void task_switch(union task_union*t) {
-    push ebp
-    ebp <- esp
-
-    cr3 <- new->task.DIR            // cambia el tlb para poder traducir las direcciones logicas unicas al proceso
-    tss.esp0 <- new->stack[1024]    // pone la nueva pila de sistema (1024 para invalidar todo lo que habia antes).
-
-    // esto no se puede hacer en c, hay que llamar a una función en assembly.
-    ebp = current()->task.kernel_esp
-    // para este man lo mismo que el de arriba.
-    esp <- new->task.kernel_esp
-
-    pop ebp
-    ret
-}
-
-    |                       |
-    |       ebp             |
-    |-----------------------|
-    |   @ret (a lo que      |
-    |   llamo el switch)    |
-    |-----------------------|
-    |   new (argumento      |
-    |   de task_switch)     |
-    |-----------------------|
-    |   mierda varia de     |
-    |   la rutina de sistema|
-    |-----------------------|
-    |       ebp             |
-    |-----------------------|
-    |   @ret a usuario      |
-    |   (salir de handler)  |
-    |-----------------------|
-    |       CTX SW          |
-    |-----------------------|
-    |       CTX HW          |
-    |_______________________|
-
- */
-
-
-/*
-    pthread_create(void *(*func)(void*), void *param)
-        - inicializar task_union (copiando del padre). como se copian tal cual, sabemos que pertenecen al mismo proceso.
-        - inicializar el stack de usuario.
-        - inicializar el stack de sistema.
-            - tocar el EIP y CS del contexto HW para que apunte a func (primer parametro de phtread_create()).
-            - tocar el ESP del contexto HW para que apunte al tope de la nueva pila de usuario.
-
-
-    - para poder hacer que el thread salga bien si el código de usuario no pone el pthread_exit() se hace lo siguiente:
-        - se crea un wrapper que ejecute la función de usuario, y luego se ejecuta el phtread_exit().
-        void* pthread_wrapper(void *(*func)(void*), void *param) {
-            func(void*);
-            pthread_exit();
-        }
-
-        - la función usuario entonces será:
-            |-----------------------|
-            |           0           |
-            |-----------------------|
-            |     &func usuario     |
-            |-----------------------|
-            |       *params         |
-            |_______________________|
-
-    ------------------------
-    - el task_switch:
-        - si veo que veo a cambiar al mismo proceso (otro thread) no hace falta tocar el cr3.
-        - así se evita flushear el TLB y tener mucho TLB misses.
-            - básicamente es un if antes del set_cr3()
- */
