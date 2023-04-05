@@ -70,6 +70,7 @@ int __attribute__ ((__section__(".text.main")))
         write_msg_n_num("Soy el padre. PID: ", getpid());
     }
     
+    fork();
 
     perror();
 

@@ -68,9 +68,7 @@ int sys_fork()
 
     // Search physical pages to map logical pages for data+stack of the child process    
     // Share the kernel and code pages
-    page_table_entry *child_pt = get_PT(&child->task);
-    page_table_entry *parent_pt = get_PT(&parent->task);
-    copy_pages_to_child(child_pt, parent_pt);
+    copy_pages_to_child(&child->task, &parent->task);
 
     // Modificar la pila del hijo para que devuelva a ret_from_fork
 

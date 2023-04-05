@@ -272,7 +272,11 @@ unsigned int get_frame (page_table_entry *PT, unsigned int logical_page){
  * DATA+STACK -> accesso privado
  * CODE -> accesso logico compartido
  */
-int copy_pages_to_child(page_table_entry *child_pt, page_table_entry *parent_pt) {
+int copy_pages_to_child(struct task_struct *child, struct task_struct *parent) {
+
+    page_table_entry *child_pt = get_PT(child);
+    page_table_entry *parent_pt = get_PT(parent);
+
     // CODE y KERNEL
     copy_data(parent_pt, child_pt, sizeof(page_table_entry)*TOTAL_PAGES);
 
@@ -296,6 +300,7 @@ int copy_pages_to_child(page_table_entry *child_pt, page_table_entry *parent_pt)
         set_ss_pag(child_pt, p, new_ph_page);
     }
     // Borrar las paginas extra que hemos usado para los mapeos
+    set_cr3(get_DIR(parent));
     del_ss_extra_pages(parent_pt);
 
     return 0; // Tot ok
