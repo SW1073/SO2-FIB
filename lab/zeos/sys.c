@@ -2,13 +2,11 @@
  * sys.c - Syscalls implementation
  */
 #include <devices.h>
-#include <stdlib.h>
 #include <utils.h>
 #include <io.h>
 #include <mm.h>
 #include <mm_address.h>
 #include <sched.h>
-#include <interrupt.h> // para el zeos_ticks.
 #include <errno.h>
 
 #include <interrupt.h>
