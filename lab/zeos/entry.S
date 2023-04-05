@@ -71,14 +71,20 @@
 ENTRY (clock_handler)
     SAVE_ALL
     EOI
+    call stats_user_to_sys  // STATS
+    movl 0x18(%esp), %eax   // Recuperar el valor de EAX
     call clock_routine
+    call stats_sys_to_user  // STATS
     RESTORE_ALL
     iret
 
 ENTRY (keyboard_handler)
     SAVE_ALL
     EOI
+    call stats_user_to_sys  // STATS
+    movl 0x18(%esp), %eax   // Recuperar el valor de EAX
     call keyboard_routine
+    call stats_sys_to_user  // STATS
     RESTORE_ALL
     iret
 
