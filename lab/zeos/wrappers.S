@@ -84,6 +84,12 @@ ENTRY (fork)
     pushl %ebp
     movl %esp, %ebp
 
+    pushl %ebx
+    pushl %ecx
+    pushl %edx
+
+    movl 8(%ebp), %ebx
+
     movl $2, %eax // id de la syscall fork() -> 2
 
     pushl $fork_return_user // @ a la que sysenter debe devolver
@@ -94,6 +100,10 @@ ENTRY (fork)
 fork_return_user:
     popl %ebp
     add $4, %esp // pop of return address. 
+
+    popl %edx
+    popl %ecx
+    popl %ebx
 
     cmpl $0, %eax
     jge fork_no_err
@@ -221,4 +231,15 @@ get_stats_fin:
     leave
 
     // Return to the caller
+    ret
+
+ENTRY (ps)
+    pushl %ebp
+    movl %esp, %ebp
+
+    int $0x80
+    // no se checkean errores porque el handler solo es para ps y sabemos
+    // que ps nunca devuelve nada porque es void.
+
+    leave
     ret

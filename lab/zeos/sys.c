@@ -1,6 +1,8 @@
 /*
  * sys.c - Syscalls implementation
  */
+#include "libc.h"
+#include "list.h"
 #include <devices.h>
 #include <utils.h>
 #include <io.h>
@@ -35,12 +37,22 @@ int sys_getpid()
 }
 
 
-int sys_fork()
+int sys_fork(char *name)
 {
     // int PID=-1;
     // creates the child process
     // Get a free task_struct for the process. 
     // If there is no space for a new process, an error will be returned
+    int err;
+    
+    // Invalid buffer argument address
+    if (!access_ok(VERIFY_READ, name, MAX_NAME_LENGTH))
+        return EFAULT;
+
+    // copy user data segment to kernel address space, for the buffer to point to the correct data
+    // if this operation is not done, the pointer will not be accessing the correct data
+    if ((err = copy_from_user(name, sys_buffer, MAX_NAME_LENGTH)) < 0)
+        return err;
 
     if (list_empty(&freequeue)) {
         return ENOMEM;
@@ -55,6 +67,13 @@ int sys_fork()
     copy_data(current(), pcb_union, sizeof(union task_union));
     allocate_DIR(pcb); // el copy_data() copia el directorio (task.dir_pages_baseAddr) del padre al hijo, así que hay que darle otro.
     init_process_stats(&pcb->stats);
+
+    // for (int i = 0; i < MAX_NAME_LENGTH; ++i) {
+    //     pcb->name[i] = sys_buffer[i];
+    //     if (sys_buffer[i] == '\0') break;
+    // }
+
+    copy_task_name(pcb, sys_buffer);
 
     // CTX HW + CTX SW + @ret_handler = 17 posiciones encima de la base del stack.
     // Hay que tener en cuenta que encima de estas 17 posiciones hay el @ret_from_fork y el ebp falso.
@@ -159,4 +178,22 @@ int sys_get_stats(int pid, struct stats *st) {
         }
     }
     return ESRCH; // No such process
+}
+
+// ----- util para sys_ps ------
+void print_task(struct task_struct* t) {
+    printk("PID: ");
+    itoa(t->PID, sys_buffer);
+    printk(sys_buffer);
+    printk(" --- NAME: ");
+    printk(t->name);
+    printk("\n");
+}
+
+void sys_ps(void) {
+    print_task(current());
+
+    struct list_head* it;
+    list_for_each(it, &readyqueue)
+        print_task(list_head_to_task_struct(it));
 }

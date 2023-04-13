@@ -2,6 +2,7 @@
  * mm.c - Memory Management: Paging & segment memory management
  */
 
+#include "mm_address.h"
 #include <errno.h>
 #include <types.h>
 #include <mm.h>
@@ -126,19 +127,70 @@ int copy_and_allocate_pages(struct task_struct *parent, struct task_struct *chil
     // pero con la dirección lógica del dato original del padre), puedo copiarlo a la página nueva
     // con copy_data(pagina_dato_original_padre<<12, pagina_libre_en_el_padre_que_su_frame_usara_el_hijo, 4096)
 
+    int init_addr = L_USER_START;
+    int fin_addr = L_USER_START+(NUM_PAG_DATA<<12);
+    copy_user_data((char*)init_addr, (char*)fin_addr, child);
+
+    // int pag, new_ph_pag, free_page, actual_page;
+    //
+    // /* DATA */
+    // for (pag = 0; pag < NUM_PAG_DATA; ++pag) {
+    //     if ((new_ph_pag = alloc_frame()) < 0) {
+    //         abort_copy(parent, child);
+    //         return ENOMEM;
+    //     }
+    //
+    //     if ((free_page = get_free_page(parent_pt)) < 0) {
+    //         if (pag == 0) {
+    //             // abortamos porque directamente no hay páginas lógicas libres.
+    //             abort_copy(parent, child);
+    //             return ENOMEM;
+    //         }
+    //
+    //         // no abortamos, pero se hace clear de todas las páginas después
+    //         // de las páginas de kernel, data y código, y se hace flush del TLB
+    //         // para no tener traducciones raras.
+    //         del_ss_extra_pages(parent_pt);
+    //         set_cr3(get_DIR(parent));
+    //     }
+    //
+    //     actual_page = PAG_LOG_INIT_DATA+pag;;
+    //
+    //     set_ss_pag(parent_pt, free_page, new_ph_pag);
+    //     set_ss_pag(child_pt, actual_page, new_ph_pag);
+    //
+    //     copy_data((void*)(actual_page<<12), (void*)(free_page<<12), PAGE_SIZE);
+    // }
+    //
+    // // delete all pages after the KERNEL+DATA+CODE segments.
+    // del_ss_extra_pages(parent_pt);
+    //
+    // // flush TLB to delete the extra pages translations, so that the parent
+    // // doesnt have access to the child's address space.
+    // set_cr3(get_DIR(parent));
+
+    return 0;
+}
+
+int copy_user_data(char* src, char* dst, struct task_struct* PCB) {
+    int num_pag = ((int)dst>>12) - ((int)src>>12);
+    struct task_struct* parent = current();
+    page_table_entry *parent_pt = get_PT(parent);
+    page_table_entry *child_pt = get_PT(PCB);
+
     int pag, new_ph_pag, free_page, actual_page;
 
     /* DATA */
-    for (pag = 0; pag < NUM_PAG_DATA; ++pag) {
+    for (pag = 0; pag < num_pag; ++pag) {
         if ((new_ph_pag = alloc_frame()) < 0) {
-            abort_copy(parent, child);
+            abort_copy(parent, PCB);
             return ENOMEM;
         }
 
         if ((free_page = get_free_page(parent_pt)) < 0) {
             if (pag == 0) {
                 // abortamos porque directamente no hay páginas lógicas libres.
-                abort_copy(parent, child);
+                abort_copy(parent, PCB);
                 return ENOMEM;
             }
 
@@ -166,6 +218,7 @@ int copy_and_allocate_pages(struct task_struct *parent, struct task_struct *chil
 
     return 0;
 }
+
 
 // no!! pro life!!
 void abort_copy(struct task_struct *parent, struct task_struct *child) {

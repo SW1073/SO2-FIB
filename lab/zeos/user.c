@@ -1,3 +1,4 @@
+#include "io.h"
 #include <libc.h>
 
 char buff[24];
@@ -61,45 +62,21 @@ int __attribute__ ((__section__(".text.main")))
         write(1, "W\n", 2);
     }
 
-    // Test or sum
-    int ret = fork();
-    if ( ret== 0 ) {
-        write_msg_n_num("Soy el hijo. PID: ", getpid());
-        ret = fork();
-        if (ret == 0) {
-            write_msg_n_num("Soy el hijo. PID: ", getpid());
-            ret = fork();
-            if (ret == 0) {
-                write_msg_n_num("Soy el hijo. PID: ", getpid());
-                ret = fork();
-                if (ret == 0) {
-                    write_msg_n_num("Soy el hijo. PID: ", getpid());
-                    ret = fork();
-                    if (ret == 0) {
-                        write_msg_n_num("Soy el hijo. PID: ", getpid());
-                        ret = fork();
-                        if (ret == 0) {
-                            write_msg_n_num("Soy el hijo. PID: ", getpid());
-                            ret = fork();
-                            if (ret == 0) {
-                                write_msg_n_num("Soy el hijo. PID: ", getpid());
-                                ret = fork();
-                                if (ret == 0) {
-                                    write_msg_n_num("Soy el hijo. PID: ", getpid());
-                                    ret = fork();
-                                    if (ret == 0) {
-                                        write_msg_n_num("Soy el hijo. PID: ", getpid());
-                                        ret = fork();
-                                    }else if (ret == -1) { perror(); }
-                                }else if (ret == -1) { perror(); }
-                            }else if (ret == -1) { perror(); }
-                        }else if (ret == -1) { perror(); }
-                    }else if (ret == -1) { perror(); }
-                }else if (ret == -1) { perror(); }
-            }else if (ret == -1) { perror(); }
-        }else if (ret == -1) { perror(); }
-    }else if (ret == -1) { perror(); }  
-    
+    ps();
+    int pid = fork("crack");
+    // ps();
+    if (pid == 0) {
+        int p = 0;
+        fork("dios");
+        if (p == 0) {
+            int p1 = 0;
+            fork("malware");
+            if (p1 == 0) {
+                fork("malo");
+            }
+        }
+    }
+
     struct stats st1, st2, st3;
 
     while (gettime() < 1003);
@@ -111,6 +88,10 @@ int __attribute__ ((__section__(".text.main")))
     print_stats(st1);
 
     while (gettime() < 2000);
+
+    if (pid != 0) ps();
+
+    exit();
 
     // Time 2
     write_msg_n_num("Time 2: ", gettime());

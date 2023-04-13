@@ -11,5 +11,6 @@ void syscall_handler_sysenter();
 void keyboard_handler();
 void clock_handler();
 void pf_handler();
+void ps_handler();
 
 #endif  /* __ENTRY_H__ */

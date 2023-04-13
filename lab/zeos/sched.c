@@ -2,6 +2,7 @@
  * sched.c - initializes struct for task 0 anda task 1
  */
 
+#include "libc.h"
 #include <sched.h>
 #include <mm.h>
 #include <io.h>
@@ -32,6 +33,7 @@ struct task_struct *idle_task;
 
 int pids;
 int current_ticks;
+char *init_name = "init\0";
 
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 
@@ -153,6 +155,8 @@ void init_task1(void)
     // self explanatory.
     pcb->task.PID = pids++;
     pcb->task.quantum = INIT_QUANTUM;
+
+    copy_task_name((struct task_struct*)pcb, init_name);
 
     // Inicializamos las estructuras de estadísticas.
     init_process_stats(&pcb->task.stats);
@@ -303,6 +307,9 @@ void schedule() {
     if (needs_sched_rr()) {
         if (current() != idle_task)
             update_process_state_rr(current(), &readyqueue);
+        
+        // int addr = (int)task>>12;
+        // int phys = current()->dir_pages_baseAddr[addr].bits.pbase_addr;
         sched_next_rr();
     }
 }

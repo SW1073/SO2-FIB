@@ -20,12 +20,12 @@ void perror(void);
 
 int getpid();
 
-int fork();
+int fork(char *name);
 
 void exit();
 
 int get_stats(int pid, struct stats *st);
 
-int get_stats(int pid, struct stats *st);
+void ps(void);
 
 #endif  /* __LIBC_H__ */

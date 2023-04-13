@@ -16,6 +16,7 @@
 
 #define INIT_QUANTUM 10
 #define MAX_CHILDREN 10
+#define MAX_NAME_LENGTH 13
 
 enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
 
@@ -26,6 +27,7 @@ struct task_struct {
   DWord* kernel_esp;
   DWord quantum;
   struct stats stats;
+  char name[13];
 };
 
 union task_union {

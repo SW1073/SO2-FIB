@@ -3,6 +3,14 @@
 
 #include <mm_address.h>
 
+
+void copy_task_name(struct task_struct* t, char *buff) {
+    for (int i = 0; MAX_NAME_LENGTH; ++i) {
+        t->name[i] = buff[i];
+        if (buff[i] == '\0') break;
+    }
+}
+
 void copy_data(void *start, void *dest, int size)
 {
   DWord *p = start, *q = dest;

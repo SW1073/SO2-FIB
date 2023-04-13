@@ -146,6 +146,18 @@ ENTRY(pf_handler)
     call pf_routine
     iret
 
+ENTRY(ps_handler)
+    SAVE_ALL // Save the current context
+
+    // sé que no hace falta pero realmente me hace ilusión que ps() esté en la syscall table. merece estarlo.
+    // si no estuviese simplemente sería hacer un "call sys_ps".
+
+    movl $5, %eax // ps() está en la posición número 5 de la syscall table.
+    call *sys_call_table(, %eax, 0x04)
+
+    RESTORE_ALL // Restore the context
+    iret
+
 ENTRY(task_switch)
     pushl %ebp
     mov %esp, %ebp
@@ -167,3 +179,4 @@ ENTRY(task_switch)
     popl %ebp
     
     ret
+

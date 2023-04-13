@@ -1,0 +1,50 @@
+1.a
+    - Se encuentra en la página lógica número 16.
+    - La he encontrado usando el comando "nm system | grep task".
+    -
+
+1.b
+    - En el fichero sched.c, en la línea 164.
+
+1.c
+    - Se añadiría en la lista de requerimientos de objetos de USROBJ.
+    - Ahora pasaría a ser:
+        USROBJ = \
+            libc.o \
+            wrappers.o \
+            examen.o \
+
+// ---------------------------------
+
+3.a
+    - Hay que poner 20 porque entre esp y el parámetro se encuentran: ebx, esi, edi, ebp y @ret.
+    - Eso son 5 posiciones, es decir, 5*4 bytes (20 bytes).
+
+3.b
+    - Falta hacer un set_cr3 para hacer flush del TLB y así solo pillar las traducciones de página del nuevo proceso
+        ejecutarse.
+
+3.c
+    - En nuestro caso, kernel_esp se encuentra debajo de PID, así que su dirección sería la dirección base del 
+        task_struct más 4:
+
+        ENTRY (get_next_EBP)
+            pushl %ebp
+            movl %esp, %ebp
+
+            pushl %ebx
+
+            movl 8(%ebp), %ebx
+            addl $4, %ebx
+            movl (%ebx), %eax
+
+            popl %ebx
+
+            leave
+            ret
+
+3.d
+    - Para que funcione el idle cuando se le haga un cambio de contexto, se debería poner en la pila los registros
+        extra que quita la nueva versión de task_switch. 
+    - La pila entonces sería 0 (ebx), 0 (esi), 0 (edi), 0 (ebp), cpu_idle.
+

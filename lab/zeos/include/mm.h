@@ -24,6 +24,11 @@ void free_user_pages( struct task_struct* task );
 void free_frame( unsigned int frame );
 void set_user_pages( struct task_struct *task );
 int copy_and_allocate_pages(struct task_struct *parent, struct task_struct *child);
+
+// ---------
+int copy_user_data(char* src, char* dst, struct task_struct* PCB);
+// ---------
+
 int get_free_page(page_table_entry *PT);
 void free_user_pages(struct task_struct *task);
 void del_ss_extra_pages(page_table_entry *PT);
