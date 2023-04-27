@@ -27,6 +27,11 @@
 /** Screen functions **/
 /**********************/
 
+// === CIRCULAR BUFFER ===
+void circ_buff_append(char c);
+char circ_buff_get_last();
+void circ_buff_print();
+
 Byte inb (unsigned short port);
 void printc(char c);
 void printc_color(char c, Byte foreground_color, Byte background_color, Byte blink);
