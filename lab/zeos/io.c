@@ -12,7 +12,7 @@
 
 #define NUM_COLUMNS 80
 #define NUM_ROWS    25
-#define TAM_BUF 4
+#define TAM_BUF 16
 
 char circ_buffer[TAM_BUF];
 char *circ_buff_head = &circ_buffer[0];
@@ -20,16 +20,9 @@ char *circ_buff_tail = &circ_buffer[0];
 
 
 void circ_buff_append(char c) {
-    // if (circ_buf_head == circ_buf_tail) {
-    //     // buffer full
-    //     circ_buf_tail++;
-    //     if (circ_buf_tail > &circ_buffer[TAM_BUF]) {
-    //         circ_buf_tail = &circ_buffer[0];
-    //     }
-    // }
-
     *circ_buff_tail = c;
     circ_buff_tail++;
+
     if (circ_buff_tail == &circ_buffer[TAM_BUF]) {
         circ_buff_tail = &circ_buffer[0];
     }
@@ -40,6 +33,7 @@ char circ_buff_get_last() {
         // buffer empty
         return '\0';
     }
+
     circ_buff_head--;
     if (circ_buff_head < &circ_buffer[0]) {
         circ_buff_head = &circ_buffer[TAM_BUF-1];

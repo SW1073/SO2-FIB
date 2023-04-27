@@ -61,6 +61,8 @@ main(void)
         write(1, "W\n", 2);
     }
 
+    while(1);
+
     // Test or sum
     int ret = fork();
     if ( ret== 0 ) {
