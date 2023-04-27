@@ -18,10 +18,10 @@ Byte x, y=19;
 /* Read a byte from 'port' */
 Byte inb (unsigned short port)
 {
-  Byte v;
+    Byte v;
 
-  __asm__ __volatile__ ("inb %w1,%0":"=a" (v):"Nd" (port));
-  return v;
+    __asm__ __volatile__ ("inb %w1,%0":"=a" (v):"Nd" (port));
+    return v;
 }
 
 void scroll_screen(Word* screen) { 
@@ -106,27 +106,27 @@ void printc_color(char c, Byte foreground_color, Byte background_color, Byte bli
 
 void printc_xy(Byte mx, Byte my, char c)
 {
-  Byte cx, cy;
-  cx=x;
-  cy=y;
-  x=mx;
-  y=my;
-  printc(c);
-  x=cx;
-  y=cy;
+    Byte cx, cy;
+    cx=x;
+    cy=y;
+    x=mx;
+    y=my;
+    printc(c);
+    x=cx;
+    y=cy;
 }
 
 void printk(char *string)
 {
-  int i;
-  for (i = 0; string[i]; i++)
-    printc(string[i]);
+    int i;
+    for (i = 0; string[i]; i++)
+        printc(string[i]);
 }
 
 
 void printk_color(char *string, Byte foreground_color, Byte background_color, Byte blink)
 {
-  int i;
-  for (i = 0; string[i]; i++)
-    printc_color(string[i], foreground_color, background_color, blink);
+    int i;
+    for (i = 0; string[i]; i++)
+        printc_color(string[i], foreground_color, background_color, blink);
 }

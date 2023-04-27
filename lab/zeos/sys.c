@@ -19,19 +19,19 @@ char sys_buffer[4096];
 
 int check_fd(int fd, int permissions)
 {
-  if (fd!=1) return EBADF; /*EBADF*/
-  if (permissions!=ESCRIPTURA) return EACCES; /*EACCES*/
-  return 0;
+    if (fd!=1) return EBADF; /*EBADF*/
+    if (permissions!=ESCRIPTURA) return EACCES; /*EACCES*/
+    return 0;
 }
 
 int sys_ni_syscall()
 {
-	return ENOSYS; /*ENOSYS*/
+    return ENOSYS; /*ENOSYS*/
 }
 
 int sys_getpid()
 {
-	return current()->PID;
+    return current()->PID;
 }
 
 
@@ -62,7 +62,7 @@ int sys_fork()
 
     pcb_union->stack[KERNEL_STACK_SIZE-19] = 0;
     pcb_union->stack[KERNEL_STACK_SIZE-18] = (DWord)ret_from_fork;
- 
+
     if (copy_and_allocate_pages(current(), pcb) < 0) {
         list_add_tail(free_list_pos, &freequeue);
         return ENOMEM;
@@ -94,14 +94,14 @@ void sys_exit() {
 
 int sys_wait() {
     /*
-        - mira los hijos a ver si tiene algun zombie.
-        - si tiene algún zombie:
-                - pilla el exit status del pcb.
-                - pilla el pid del pcb.
-                - guarda el exit status en algún lugar (??)
-                - libera el pcb.
-                - retorna el pid.
-     */
+       - mira los hijos a ver si tiene algun zombie.
+       - si tiene algún zombie:
+       - pilla el exit status del pcb.
+       - pilla el pid del pcb.
+       - guarda el exit status en algún lugar (??)
+       - libera el pcb.
+       - retorna el pid.
+       */
 
     return 0;
 }
@@ -144,7 +144,7 @@ unsigned long sys_gettime() {
  * get_stats syscall implementation
  */
 int sys_get_stats(int pid, struct stats *st) {
-    
+
     if (!access_ok(VERIFY_WRITE, st, sizeof(struct stats)))
         return EFAULT; // Invalid st argument address
 
