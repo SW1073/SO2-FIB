@@ -18,28 +18,45 @@ char circ_buffer[TAM_BUF];
 char *circ_buff_head = &circ_buffer[0];
 char *circ_buff_tail = &circ_buffer[0];
 
+int end = 0;
+int start = 0;
+
 
 void circ_buff_append(char c) {
-    *circ_buff_tail = c;
-    circ_buff_tail++;
+    if (circ_buff_head+1 == circ_buff_tail) {
+        // buffer full
+        printk("buffer full\n");
+        return;
+    }
 
-    if (circ_buff_tail == &circ_buffer[TAM_BUF]) {
-        circ_buff_tail = &circ_buffer[0];
+    *circ_buff_head = c;
+    circ_buff_head++;
+
+    if (circ_buff_head == &circ_buffer[TAM_BUF]) {
+
+        if (&circ_buffer[0] == circ_buff_tail) {
+            // buffer full
+            printk("buffer full\n");
+            circ_buff_head--;
+            return;
+        }
+
+        circ_buff_head = &circ_buffer[0];
     }
 }
 
-char circ_buff_get_last() {
-    if (circ_buff_head == circ_buff_tail) {
+char circ_buff_read() {
+    if (circ_buff_tail == circ_buff_head) {
         // buffer empty
         return '\0';
     }
 
-    circ_buff_head--;
-    if (circ_buff_head < &circ_buffer[0]) {
-        circ_buff_head = &circ_buffer[TAM_BUF-1];
+    circ_buff_tail--;
+    if (circ_buff_tail < &circ_buffer[0]) {
+        circ_buff_tail = &circ_buffer[TAM_BUF-1];
     }
 
-    return *circ_buff_head;
+    return *circ_buff_tail;
 }
 
 void circ_buff_print() {
