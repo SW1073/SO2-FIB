@@ -37,6 +37,7 @@ extern union task_union task[NR_TASKS]; /* Vector de tasques */
 
 extern struct list_head freequeue;
 extern struct list_head readyqueue;
+extern struct list_head blocked;
 
 extern struct task_struct *idle_task;
 extern struct task_struct *init_task; // TODO quitar esto, era solo para probar el task_switch

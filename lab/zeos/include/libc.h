@@ -26,6 +26,6 @@ void exit();
 
 int get_stats(int pid, struct stats *st);
 
-int get_stats(int pid, struct stats *st);
+int read(char *b, int maxsize);
 
 #endif  /* __LIBC_H__ */

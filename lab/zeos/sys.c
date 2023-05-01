@@ -160,3 +160,21 @@ int sys_get_stats(int pid, struct stats *st) {
     }
     return ESRCH; // No such process
 }
+
+int read(char *b, int maxchars) {
+    if (maxchars <= 0) return EINVAL;
+
+    update_process_state_rr(current(), &blocked);
+
+    char c = 0;
+    // TODO bloquear el proceso hasta esto que termine
+    for (int i = 0; i < maxchars; ++i) {
+        while (c == '\0') c = circ_buff_get_last();
+
+        sys_buffer[i] = c;
+    }
+
+    update_process_state_rr(current(), &freequeue);
+
+    return 0;
+}

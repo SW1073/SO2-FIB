@@ -18,10 +18,6 @@ char circ_buffer[TAM_BUF];
 char *circ_buff_head = &circ_buffer[0];
 char *circ_buff_tail = &circ_buffer[0];
 
-int end = 0;
-int start = 0;
-
-
 void circ_buff_append(char c) {
     if (circ_buff_head+1 == circ_buff_tail) {
         // buffer full
