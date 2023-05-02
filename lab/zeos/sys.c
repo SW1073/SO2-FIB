@@ -164,17 +164,21 @@ int sys_get_stats(int pid, struct stats *st) {
 int read(char *b, int maxchars) {
     if (maxchars <= 0) return EINVAL;
 
+    char buff[maxchars];
+
     update_process_state_rr(current(), &blocked);
 
     char c = 0;
     // TODO bloquear el proceso hasta esto que termine
     for (int i = 0; i < maxchars; ++i) {
-        while (c == '\0') c = circ_buff_get_last();
-
-        sys_buffer[i] = c;
+        while (c == '\0') c = circ_buff_read();
+        buff[i] = c;
     }
 
+    copy_to_user(buff, b, maxchars);
+
     update_process_state_rr(current(), &freequeue);
+    sched_next_rr();
 
     return 0;
 }

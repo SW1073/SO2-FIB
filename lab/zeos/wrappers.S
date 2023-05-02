@@ -222,3 +222,44 @@ get_stats_fin:
 
     // Return to the caller
     ret
+
+ENTRY (read)
+    pushl %ebp
+    mov %esp, %ebp
+
+    pushl %ebx
+    pushl %ecx
+    pushl %edx
+
+    mov 8(%ebp), %ebx       // first argument to ebx
+    mov 12(%ebp), %ecx      // second argument to ecx
+
+    pushl $rd_return_user
+    pushl %ebp
+    mov %esp, %ebp
+
+    mov $11, %eax         // index to sys_call_table -> 4 is write()
+    sysenter
+    // after this the return value of the syscall will be in eax.
+rd_return_user:
+
+    // if eax<0 -> neg eax, save eax to errno and return -1
+    // else return eax
+    cmpl $0, %eax
+    jge rd_fin
+
+    // save -eax to errno here.
+    neg %eax
+    movl %eax, errno
+    mov $-1, %eax
+
+rd_fin:
+    popl %ebp
+    add $4, %esp    // quitar wr_return
+
+    popl %edx
+    popl %ecx
+    popl %ebx
+
+    leave
+    ret

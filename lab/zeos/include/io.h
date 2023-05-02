@@ -29,7 +29,7 @@
 
 // === CIRCULAR BUFFER ===
 void circ_buff_append(char c);
-char circ_buff_get_last();
+char circ_buff_read();
 void circ_buff_print();
 
 Byte inb (unsigned short port);
