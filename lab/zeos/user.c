@@ -61,6 +61,15 @@ main(void)
         write(1, "W\n", 2);
     }
 
+    // if (fork() == 0) {
+    //     while(1);
+    // }
+
+    char b[2];
+    read(b, 2);
+
+    write_wrapper("is over\n");
+
     while(1);
 
     // Test or sum

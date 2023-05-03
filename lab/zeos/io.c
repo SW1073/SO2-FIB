@@ -19,6 +19,11 @@ char *circ_buff_head = &circ_buffer[0];
 char *circ_buff_tail = &circ_buffer[0];
 
 void circ_buff_append(char c) {
+    if (circ_buff_head+1 == circ_buff_tail) {
+        // printk("buffer lleno\n");
+        return;
+    }
+
     *circ_buff_head = c;
     circ_buff_head++;
 
@@ -26,13 +31,13 @@ void circ_buff_append(char c) {
         circ_buff_head = &circ_buffer[0];
     }
 
-    if (circ_buff_head == circ_buff_tail) {
-        // buffer full
-        circ_buff_tail++;
-        if (circ_buff_tail == &circ_buffer[TAM_BUF]) {
-            circ_buff_tail = &circ_buffer[0];
-        }
-    }
+    // if (circ_buff_head == circ_buff_tail) {
+    //     // buffer full
+    //     circ_buff_tail++;
+    //     if (circ_buff_tail == &circ_buffer[TAM_BUF]) {
+    //         circ_buff_tail = &circ_buffer[0];
+    //     }
+    // }
 }
 
 char circ_buff_read() {
@@ -41,12 +46,14 @@ char circ_buff_read() {
         return '\0';
     }
 
-    circ_buff_tail--;
-    if (circ_buff_tail < &circ_buffer[0]) {
-        circ_buff_tail = &circ_buffer[TAM_BUF-1];
+    char c = *circ_buff_tail;
+
+    circ_buff_tail++;
+    if (circ_buff_tail == &circ_buffer[TAM_BUF]) {
+        circ_buff_tail = &circ_buffer[0];
     }
 
-    return *circ_buff_tail;
+    return c;
 }
 
 Byte x, y=19;

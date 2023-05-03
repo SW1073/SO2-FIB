@@ -7,6 +7,7 @@
 #include <io.h>
 #include <system.h>
 #include <utils.h>
+#include <devices.h>
 
 union task_union task[NR_TASKS]
 __attribute__((__section__(".data.task")));
@@ -17,8 +18,6 @@ struct task_struct *list_head_to_task_struct(struct list_head *l)
     return list_entry( l, struct task_struct, list);
 }
 #endif
-
-struct list_head blocked;
 
 // HEAD de la freequeue
 struct list_head freequeue;
@@ -174,6 +173,7 @@ void init_sched()
 
     // Init free queue
     INIT_LIST_HEAD( &freequeue );
+    INIT_LIST_HEAD( &blocked );
     // Si insertamos los elementos como se muestra en el codigo, con list_add_tail,
     // los elementos quedan correctamente ordenados, tal que:
     // +-------------------------------------------------------------------------+
@@ -254,6 +254,8 @@ void sched_next_rr() {
     // Seteamos el quantum de la siguiente ejecucion
     current_ticks_left = get_quantum(next_process);
     stats_reset_remaining_ticks(next_process);
+
+    printk("haciendo task switch");
 
     // Hacemos el task switch en si. Esta funcion no devuelve por aqui
     task_switch((union task_union*)next_process);

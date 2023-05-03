@@ -13,7 +13,7 @@ ENTRY (sys_call_table)
     .long sys_ni_syscall    // 8
     .long sys_ni_syscall    // 9
     .long sys_gettime       // 10
-    .long sys_read    // 11
+    .long sys_read          // 11
     .long sys_ni_syscall    // 12
     .long sys_ni_syscall    // 13
     .long sys_ni_syscall    // 14
