@@ -130,3 +130,30 @@ void printk_color(char *string, Byte foreground_color, Byte background_color, By
     for (i = 0; string[i]; i++)
         printc_color(string[i], foreground_color, background_color, blink);
 }
+
+
+// ==== CIRCULAR BUFFER ====
+#define TAM_BUF 128
+
+char circ_buf[TAM_BUF];
+char *circ_buf_head = &circ_buf[0];
+char *circ_buf_tail = &circ_buf[0];
+
+void circ_buf_append(char c) {
+    *circ_buf_head = c;
+    circ_buf_head++;
+    if (circ_buf_head == &circ_buf[TAM_BUF])
+        circ_buf_head = circ_buf; // Retornem el head a l'inici
+
+    if (circ_buf_head == circ_buf_tail)
+        // Hem donat la volta i ens quedem sense espai, machaquem l'últim element per la cua
+        circ_buf_tail++;
+}
+char circ_buf_read() {
+    if (circ_buf_tail == circ_buf_head)
+        // No hi ha elements al buffer
+        // TODO something
+        return '\0';
+    // Retornem el caràcter i augmentem el punter
+    return *circ_buf_tail++;
+}

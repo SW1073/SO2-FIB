@@ -34,4 +34,8 @@ void printc_xy(Byte x, Byte y, char c);
 void printk(char *string);
 void printk_color(char *string, Byte foreground_color, Byte background_color, Byte blink);
 
+// ==== CIRCULAR BUFFER ====
+void circ_buf_append(char c);
+char circ_buf_read();
+
 #endif  /* __IO_H__ */
