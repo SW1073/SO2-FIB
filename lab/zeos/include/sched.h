@@ -25,6 +25,8 @@ struct task_struct {
     struct list_head list; // Entrada para las colas.
     DWord* kernel_esp;
     DWord quantum;
+    int circ_buff_chars_to_read;
+    int circ_buff_maxchars;
     struct stats stats;
 };
 

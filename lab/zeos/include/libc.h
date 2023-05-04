@@ -28,4 +28,8 @@ int get_stats(int pid, struct stats *st);
 
 int read(char *b, int maxchars);
 
+int create_thread(void (*start_routine)(void* arg), void *parameter);
+
+void exit_thread(void); 
+
 #endif  /* __LIBC_H__ */

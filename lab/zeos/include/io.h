@@ -32,6 +32,9 @@ void circ_buff_append(char c);
 char circ_buff_read();
 void circ_buff_print();
 
+extern char circ_buff_to_copy[128];
+extern int chars_to_copy;
+
 Byte inb (unsigned short port);
 void printc(char c);
 void printc_color(char c, Byte foreground_color, Byte background_color, Byte blink);

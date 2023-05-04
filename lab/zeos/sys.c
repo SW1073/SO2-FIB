@@ -1,6 +1,7 @@
 /*
  * sys.c - Syscalls implementation
  */
+#include "list.h"
 #include <devices.h>
 #include <utils.h>
 #include <io.h>
@@ -162,41 +163,73 @@ int sys_get_stats(int pid, struct stats *st) {
 }
 
 int sys_read(char *b, int maxchars) {
-    if (maxchars <= 0) return EINVAL;
+    if (maxchars <= 0 || maxchars > 128) return EINVAL;
     if (!access_ok(VERIFY_WRITE, b, maxchars)) return EFAULT;
+
+    current()->circ_buff_chars_to_read = maxchars;
+    current()->circ_buff_maxchars = maxchars;
 
     // poner proceso en blocked para que el scheduler no le pille.
     update_process_state_rr(current(), &blocked);
-
-    char buff[maxchars];
-
-    char c = 0;
-    for (int i = 0; i < maxchars; ++i) {
-        // leer del buffer circular
-        c = circ_buff_read();
-
-        while (c == '\0') {
-            // si el buffer está lleno, se llamar al scheduler.
-            sched_next_rr();
-
-            //===================================
-            // Solo se llega aqui por task_switch.
-            // Como antes se estaba en otro proceso, las interrupciones de teclado se vuelven a activar.
-            //
-            // En el keyboard routine (al detectar una tecla nueva) se pone el caracter nuevo en el buffer circular y
-            // es donde se mira si hay algún proceso bloqueado. Si lo hay se hace task_switch a ese proceso bloqueado pero
-            // dejándolo en la cola de blocked. Al acabar el task_switch se vuelve a aquí y
-            // entonces es cuando mira el nuevo caracter introducido en el buffer circular en la keyboard routine.
-            c = circ_buff_read();
-        }
-
-        buff[i] = c;
-    }
-
-    update_process_state_rr(current(), &readyqueue);
     sched_next_rr();
 
-    copy_to_user(buff, b, maxchars);
+    while (current()->circ_buff_chars_to_read > 0) {
+
+    }
+
+    // char c = 0;
+    // for (int i = 0; i < maxchars; ++i) {
+    //     // leer del buffer circular
+    //     c = circ_buff_read();
+    //
+    //     while (c == '\0') {
+    //         // si el buffer está lleno, se llamar al scheduler.
+    //         sched_next_rr();
+    //
+    //         //===================================
+    //         // Solo se llega aqui por task_switch.
+    //         // Como antes se estaba en otro proceso, las interrupciones de teclado se vuelven a activar.
+    //         //
+    //         // En el keyboard routine (al detectar una tecla nueva) se pone el caracter nuevo en el buffer circular y
+    //         // es donde se mira si hay algún proceso bloqueado. Si lo hay se hace task_switch a ese proceso bloqueado pero
+    //         // dejándolo en la cola de blocked. Al acabar el task_switch se vuelve a aquí y
+    //         // entonces es cuando mira el nuevo caracter introducido en el buffer circular en la keyboard routine.
+    //         c = circ_buff_read();
+    //     }
+    //
+    //     buff[i] = c;
+    // }
+
+    // update_process_state_rr(current(), &readyqueue);
+    list_del(&current()->list);
+    list_add(&current()->list, &readyqueue);
+    sched_next_rr();
+
+    // copy_to_user(buff, b, maxchars);
 
     return 0;
+}
+
+int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
+    if (list_empty(&freequeue)) {
+        return ENOMEM;
+    }
+
+    struct list_head *free_list_pos = list_first(&freequeue);
+    list_del(free_list_pos);
+
+    struct task_struct* pcb = list_head_to_task_struct(free_list_pos);
+    union task_union* pcb_union = (union task_union*)pcb;
+
+    copy_data(current(), pcb_union, sizeof(union task_union));
+
+    int *tope_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
+
+    // asignar nueva pagina para el stack de usuario
+
+    return 0;
+}
+
+void sys_exit_thread(void) {
+
 }

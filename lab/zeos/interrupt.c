@@ -125,12 +125,21 @@ void keyboard_routine () {
     circ_buff_append(c);
 
     // if no processes are blocked waiting for the keyboard input, nothing more needs to be done
-    if (list_empty(&blocked)) return;
-
     struct list_head *l = list_first(&blocked);
     struct task_struct *t = list_head_to_task_struct(l);
-    // list_del(l);
-    task_switch((union task_union*)t);
+
+    if (t->circ_buff_chars_to_read > 0) {
+        t->circ_buff_chars_to_read--;
+
+        int i = t->circ_buff_maxchars - (t->circ_buff_chars_to_read);
+        circ_buff_to_copy[i] = c;
+
+        if (i == 128 || t->circ_buff_chars_to_read == 0) {
+            list_del(l);
+            list_add(l, &readyqueue);
+        }
+    }
+
 } 
 
 
