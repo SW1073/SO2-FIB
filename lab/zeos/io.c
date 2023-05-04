@@ -140,19 +140,19 @@ char *circ_buf_head = &circ_buf[0];
 char *circ_buf_tail = &circ_buf[0];
 
 void circ_buf_append(char c) {
-    *circ_buf_head = c;
-    circ_buf_head++;
-    if (circ_buf_head == &circ_buf[TAM_BUF])
-        circ_buf_head = circ_buf; // Retornem el head a l'inici
+    char *next_head = (circ_buf_head+1 == &circ_buf[TAM_BUF]) ? (circ_buf) : (circ_buf_head+1);
 
-    if (circ_buf_head == circ_buf_tail)
-        // Hem donat la volta i ens quedem sense espai, machaquem l'últim element per la cua
-        circ_buf_tail++;
+    if (next_head == circ_buf_tail)
+        // Hem donat la volta i ens quedem sense espai, es perd el caràcter
+        return;
+
+    circ_buf_head = next_head;
+    *circ_buf_head = c;
 }
+
 char circ_buf_read() {
     if (circ_buf_tail == circ_buf_head)
         // No hi ha elements al buffer
-        // TODO something
         return '\0';
     // Retornem el caràcter i augmentem el punter
     return *circ_buf_tail++;
