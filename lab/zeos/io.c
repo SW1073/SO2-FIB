@@ -12,13 +12,12 @@
 
 #define NUM_COLUMNS 80
 #define NUM_ROWS    25
-#define TAM_BUF 16
 
 char circ_buffer[TAM_BUF];
 char *circ_buff_head = &circ_buffer[0];
 char *circ_buff_tail = &circ_buffer[0];
 
-char circ_buff_to_copy[128];
+char circ_buff_to_copy[MAX_CHARS_TO_COPY];
 int chars_to_copy = -1;
 
 void circ_buff_append(char c) {

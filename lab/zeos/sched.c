@@ -255,7 +255,7 @@ void sched_next_rr() {
     current_ticks_left = get_quantum(next_process);
     stats_reset_remaining_ticks(next_process);
 
-    printk("haciendo task switch");
+    // printk("haciendo task switch\n");
 
     // Hacemos el task switch en si. Esta funcion no devuelve por aqui
     task_switch((union task_union*)next_process);

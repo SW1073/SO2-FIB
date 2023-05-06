@@ -65,10 +65,13 @@ main(void)
     //     while(1);
     // }
 
-    char b[2];
-    read(b, 2);
+    char b[4];
+    read(b, 4);
 
-    write_wrapper("is over\n");
+    write_wrapper(b);
+    write_wrapper("\n");
+
+    // write_wrapper("is over\n");
 
     while(1);
 

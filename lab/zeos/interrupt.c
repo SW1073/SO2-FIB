@@ -2,6 +2,7 @@
  * interrupt.c -
  */
 
+#include "list.h"
 #include <entry.h>
 #include <libc.h>
 #include <types.h>
@@ -122,22 +123,31 @@ void keyboard_routine () {
     if (c == '\0') c = not_ascii_char;
 
     printc_xy(0, 0, c);
-    circ_buff_append(c);
 
     // if no processes are blocked waiting for the keyboard input, nothing more needs to be done
+    if (list_empty(&blocked)) return;
+
     struct list_head *l = list_first(&blocked);
     struct task_struct *t = list_head_to_task_struct(l);
 
+    circ_buff_append(c);
+
     if (t->circ_buff_chars_to_read > 0) {
+        int i = (t->circ_buff_maxchars - (t->circ_buff_chars_to_read));
+        // circ_buff_to_copy[i] = c;
+
         t->circ_buff_chars_to_read--;
 
-        int i = t->circ_buff_maxchars - (t->circ_buff_chars_to_read);
-        circ_buff_to_copy[i] = c;
-
-        if (i == 128 || t->circ_buff_chars_to_read == 0) {
-            list_del(l);
-            list_add(l, &readyqueue);
+        // mirar si buffer lleno
+        if (i%MAX_CHARS_TO_COPY == MAX_CHARS_TO_COPY-1) {
+            task_switch((union task_union*)t);
         }
+    } 
+
+    if (t->circ_buff_chars_to_read == 0) {
+        list_del(l);
+        list_add(l, &readyqueue);
+        sched_next_rr();
     }
 
 } 

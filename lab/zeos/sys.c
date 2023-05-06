@@ -1,7 +1,6 @@
 /*
  * sys.c - Syscalls implementation
  */
-#include "list.h"
 #include <devices.h>
 #include <utils.h>
 #include <io.h>
@@ -163,19 +162,37 @@ int sys_get_stats(int pid, struct stats *st) {
 }
 
 int sys_read(char *b, int maxchars) {
-    if (maxchars <= 0 || maxchars > 128) return EINVAL;
+    if (maxchars <= 0) return EINVAL;
     if (!access_ok(VERIFY_WRITE, b, maxchars)) return EFAULT;
 
-    current()->circ_buff_chars_to_read = maxchars;
-    current()->circ_buff_maxchars = maxchars;
+    struct task_struct *t = current();
+
+    t->circ_buff_chars_to_read = maxchars;
+    t->circ_buff_maxchars = maxchars;
 
     // poner proceso en blocked para que el scheduler no le pille.
-    update_process_state_rr(current(), &blocked);
-    sched_next_rr();
+    update_process_state_rr(t, &blocked);
 
-    while (current()->circ_buff_chars_to_read > 0) {
+    int diff = t->circ_buff_maxchars - t->circ_buff_chars_to_read;
+    char buff[MAX_CHARS_TO_COPY];
+    while (t->circ_buff_chars_to_read > 0) {
+        sched_next_rr();
 
+        int i = 0;
+        char c = circ_buff_read();
+        while (c != '\0') {
+            buff[i] = c;
+            ++i;
+            c = circ_buff_read();
+        }
+
+        copy_to_user(buff, b + diff, MAX_CHARS_TO_COPY);
+
+        diff = t->circ_buff_maxchars - t->circ_buff_chars_to_read;
     }
+
+    // null terminate b
+    b[t->circ_buff_maxchars] = '\0';
 
     // char c = 0;
     // for (int i = 0; i < maxchars; ++i) {
@@ -201,8 +218,8 @@ int sys_read(char *b, int maxchars) {
     // }
 
     // update_process_state_rr(current(), &readyqueue);
-    list_del(&current()->list);
-    list_add(&current()->list, &readyqueue);
+    list_del(&t->list);
+    list_add(&t->list, &readyqueue);
     sched_next_rr();
 
     // copy_to_user(buff, b, maxchars);
