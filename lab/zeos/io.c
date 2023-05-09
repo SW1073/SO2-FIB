@@ -16,46 +16,44 @@
 char circ_buffer[TAM_BUF];
 char *circ_buff_head = &circ_buffer[0];
 char *circ_buff_tail = &circ_buffer[0];
+int circ_buff_num_items = 0;
 
-char circ_buff_to_copy[MAX_CHARS_TO_COPY];
-int chars_to_copy = -1;
-
-void circ_buff_append(char c) {
-    if (circ_buff_head+1 == circ_buff_tail) {
-        // printk("buffer lleno\n");
-        return;
+char circ_buff_append(char c) {
+    if (circ_buff_is_full()) {
+        return -1;
     }
 
     *circ_buff_head = c;
     circ_buff_head++;
+    circ_buff_num_items++;
 
     if (circ_buff_head == &circ_buffer[TAM_BUF]) {
         circ_buff_head = &circ_buffer[0];
     }
 
-    // if (circ_buff_head == circ_buff_tail) {
-    //     // buffer full
-    //     circ_buff_tail++;
-    //     if (circ_buff_tail == &circ_buffer[TAM_BUF]) {
-    //         circ_buff_tail = &circ_buffer[0];
-    //     }
-    // }
+    return 1;
 }
 
 char circ_buff_read() {
-    if (circ_buff_tail == circ_buff_head) {
-        // buffer empty
+    // se mira esta vacio
+    if (circ_buff_num_items == 0) {
         return '\0';
     }
 
     char c = *circ_buff_tail;
 
     circ_buff_tail++;
+    circ_buff_num_items--;
+
     if (circ_buff_tail == &circ_buffer[TAM_BUF]) {
         circ_buff_tail = &circ_buffer[0];
     }
 
     return c;
+}
+
+char circ_buff_is_full() {
+    return circ_buff_num_items == TAM_BUF;
 }
 
 Byte x, y=19;

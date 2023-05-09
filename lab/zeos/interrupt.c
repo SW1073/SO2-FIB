@@ -133,22 +133,13 @@ void keyboard_routine () {
     circ_buff_append(c);
 
     if (t->circ_buff_chars_to_read > 0) {
-        int i = (t->circ_buff_maxchars - (t->circ_buff_chars_to_read));
-        // circ_buff_to_copy[i] = c;
-
         t->circ_buff_chars_to_read--;
 
         // mirar si buffer lleno
-        if (i%MAX_CHARS_TO_COPY == MAX_CHARS_TO_COPY-1) {
+        if (t->circ_buff_chars_to_read == 0 || circ_buff_is_full()) {
             task_switch((union task_union*)t);
         }
     } 
-
-    if (t->circ_buff_chars_to_read == 0) {
-        list_del(l);
-        list_add(l, &readyqueue);
-        sched_next_rr();
-    }
 
 } 
 

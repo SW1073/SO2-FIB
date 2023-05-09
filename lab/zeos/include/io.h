@@ -28,15 +28,11 @@
 /**********************/
 
 // === CIRCULAR BUFFER ===
-#define MAX_CHARS_TO_COPY 2
-#define TAM_BUF 16
+#define TAM_BUF 4
 
-void circ_buff_append(char c);
+char circ_buff_append(char c);
 char circ_buff_read();
-void circ_buff_print();
-
-extern char circ_buff_to_copy[MAX_CHARS_TO_COPY];
-extern int chars_to_copy;
+char circ_buff_is_full();
 
 Byte inb (unsigned short port);
 void printc(char c);

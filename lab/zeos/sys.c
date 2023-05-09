@@ -174,7 +174,7 @@ int sys_read(char *b, int maxchars) {
     update_process_state_rr(t, &blocked);
 
     int diff = t->circ_buff_maxchars - t->circ_buff_chars_to_read;
-    char buff[MAX_CHARS_TO_COPY];
+    char buff[TAM_BUF];
     while (t->circ_buff_chars_to_read > 0) {
         sched_next_rr();
 
@@ -186,45 +186,17 @@ int sys_read(char *b, int maxchars) {
             c = circ_buff_read();
         }
 
-        copy_to_user(buff, b + diff, MAX_CHARS_TO_COPY);
+        copy_to_user(buff, b + diff, i);
 
         diff = t->circ_buff_maxchars - t->circ_buff_chars_to_read;
     }
 
-    // null terminate b
-    b[t->circ_buff_maxchars] = '\0';
+    copy_to_user((void*)"\0", b+diff, 1);
 
-    // char c = 0;
-    // for (int i = 0; i < maxchars; ++i) {
-    //     // leer del buffer circular
-    //     c = circ_buff_read();
-    //
-    //     while (c == '\0') {
-    //         // si el buffer está lleno, se llamar al scheduler.
-    //         sched_next_rr();
-    //
-    //         //===================================
-    //         // Solo se llega aqui por task_switch.
-    //         // Como antes se estaba en otro proceso, las interrupciones de teclado se vuelven a activar.
-    //         //
-    //         // En el keyboard routine (al detectar una tecla nueva) se pone el caracter nuevo en el buffer circular y
-    //         // es donde se mira si hay algún proceso bloqueado. Si lo hay se hace task_switch a ese proceso bloqueado pero
-    //         // dejándolo en la cola de blocked. Al acabar el task_switch se vuelve a aquí y
-    //         // entonces es cuando mira el nuevo caracter introducido en el buffer circular en la keyboard routine.
-    //         c = circ_buff_read();
-    //     }
-    //
-    //     buff[i] = c;
-    // }
-
-    // update_process_state_rr(current(), &readyqueue);
-    list_del(&t->list);
-    list_add(&t->list, &readyqueue);
+    update_process_state_rr(current(), &readyqueue);
     sched_next_rr();
 
-    // copy_to_user(buff, b, maxchars);
-
-    return 0;
+    return maxchars;
 }
 
 int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
