@@ -27,6 +27,13 @@
 /** Screen functions **/
 /**********************/
 
+// === CIRCULAR BUFFER ===
+#define TAM_BUF 4
+
+char circ_buff_append(char c);
+char circ_buff_read();
+char circ_buff_is_full();
+
 Byte inb (unsigned short port);
 void printc(char c);
 void printc_color(char c, Byte foreground_color, Byte background_color, Byte blink);

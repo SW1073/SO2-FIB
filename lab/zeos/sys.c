@@ -165,13 +165,62 @@ int sys_get_stats(int pid, struct stats *st) {
  * read sysacall implementation
  */
 int sys_read(char *b, int maxchars) {
-    // Check params
-    if (maxchars < 0) return EINVAL; // Invalid maxchars argument
-    if (!access_ok(VERIFY_WRITE, b, maxchars)) return EFAULT; // Invalid b argument address
+    if (maxchars <= 0) return EINVAL;
+    if (!access_ok(VERIFY_WRITE, b, maxchars)) return EFAULT;
 
+    struct task_struct *t = current();
 
-    // TODO: Block de process and copy data to user address space and shiet
-    // But only as much as we are told to, maybe we don't want to copy the
-    // whole buffer
-    return ENOSYS;
+    t->circ_buff_chars_to_read = maxchars;
+    t->circ_buff_maxchars = maxchars;
+
+    // poner proceso en blocked para que el scheduler no le pille.
+    update_process_state_rr(t, &blocked);
+
+    int diff = t->circ_buff_maxchars - t->circ_buff_chars_to_read;
+    char buff[TAM_BUF];
+    while (t->circ_buff_chars_to_read > 0) {
+        sched_next_rr();
+
+        int i = 0;
+        char c = circ_buff_read();
+        while (c != '\0') {
+            buff[i] = c;
+            ++i;
+            c = circ_buff_read();
+        }
+
+        copy_to_user(buff, b + diff, i);
+
+        diff = t->circ_buff_maxchars - t->circ_buff_chars_to_read;
+    }
+
+    copy_to_user((void*)"\0", b+diff, 1);
+
+    update_process_state_rr(current(), &readyqueue);
+    sched_next_rr();
+
+    return maxchars;
+}
+
+int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
+    if (list_empty(&freequeue)) {
+        return ENOMEM;
+    }
+
+    struct list_head *free_list_pos = list_first(&freequeue);
+    list_del(free_list_pos);
+
+    struct task_struct* pcb = list_head_to_task_struct(free_list_pos);
+    union task_union* pcb_union = (union task_union*)pcb;
+
+    copy_data(current(), pcb_union, sizeof(union task_union));
+
+    int *tope_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
+
+    // asignar nueva pagina para el stack de usuario
+
+    return 0;
+}
+
+void sys_exit_thread(void) {
 }

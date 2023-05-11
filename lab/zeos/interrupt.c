@@ -12,6 +12,7 @@
 #include <io.h>
 #include <system.h>
 #include <sched.h>
+#include <devices.h>
 
 #include <zeos_interrupt.h>
 
@@ -112,16 +113,34 @@ void keyboard_routine () {
 
     key = inb(0x60); // Llegim el regisre
     is_break = (key & msb_mask) >> 7; // Make = 0, Break = 1
-    if (!is_break) { //When the action of the keyboard is Make
-        scan_code = key & scan_code_mask;
-        c = char_map[scan_code];
 
-        circ_buf_append((c == '\0') ? not_ascii_char : c);
-    }
+    //Only continue when the action of the keyboard is Make
+    if (is_break) return;
 
-    // Llamar al task switch en caso que sea necesario (si hay procesos bloqueados por read())
+    scan_code = key & scan_code_mask;
+    c = char_map[scan_code];
+
+    if (c == '\0') c = not_ascii_char;
+
+    printc_xy(0, 0, c);
+
+    // if no processes are blocked waiting for the keyboard input, nothing more needs to be done
     if (list_empty(&blocked)) return;
-    // list_first(&blocked)
+
+    struct list_head *l = list_first(&blocked);
+    struct task_struct *t = list_head_to_task_struct(l);
+
+    circ_buff_append(c);
+
+    if (t->circ_buff_chars_to_read > 0) {
+        t->circ_buff_chars_to_read--;
+
+        // mirar si buffer lleno
+        if (t->circ_buff_chars_to_read == 0 || circ_buff_is_full()) {
+            task_switch((union task_union*)t);
+        }
+    } 
+
 } 
 
 

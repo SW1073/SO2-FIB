@@ -13,6 +13,49 @@
 #define NUM_COLUMNS 80
 #define NUM_ROWS    25
 
+char circ_buffer[TAM_BUF];
+char *circ_buff_head = &circ_buffer[0];
+char *circ_buff_tail = &circ_buffer[0];
+int circ_buff_num_items = 0;
+
+char circ_buff_append(char c) {
+    if (circ_buff_is_full()) {
+        return -1;
+    }
+
+    *circ_buff_head = c;
+    circ_buff_head++;
+    circ_buff_num_items++;
+
+    if (circ_buff_head == &circ_buffer[TAM_BUF]) {
+        circ_buff_head = &circ_buffer[0];
+    }
+
+    return 1;
+}
+
+char circ_buff_read() {
+    // se mira esta vacio
+    if (circ_buff_num_items == 0) {
+        return '\0';
+    }
+
+    char c = *circ_buff_tail;
+
+    circ_buff_tail++;
+    circ_buff_num_items--;
+
+    if (circ_buff_tail == &circ_buffer[TAM_BUF]) {
+        circ_buff_tail = &circ_buffer[0];
+    }
+
+    return c;
+}
+
+char circ_buff_is_full() {
+    return circ_buff_num_items == TAM_BUF;
+}
+
 Byte x, y=19;
 
 /* Read a byte from 'port' */
