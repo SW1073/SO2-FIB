@@ -60,45 +60,12 @@ main(void)
     if (write(1, "\nHola que tal\n", 14) > 0) {
         write(1, "W\n", 2);
     }
+    
+    char b[128];
+    // Test read syscall
+    read(b, 10);
 
-    // Test or sum
-    int ret = fork();
-    if ( ret== 0 ) {
-        write_msg_n_num("Soy el hijo. PID: ", getpid());
-        ret = fork();
-        if (ret == 0) {
-            write_msg_n_num("Soy el hijo. PID: ", getpid());
-            ret = fork();
-            if (ret == 0) {
-                write_msg_n_num("Soy el hijo. PID: ", getpid());
-                ret = fork();
-                if (ret == 0) {
-                    write_msg_n_num("Soy el hijo. PID: ", getpid());
-                    ret = fork();
-                    if (ret == 0) {
-                        write_msg_n_num("Soy el hijo. PID: ", getpid());
-                        ret = fork();
-                        if (ret == 0) {
-                            write_msg_n_num("Soy el hijo. PID: ", getpid());
-                            ret = fork();
-                            if (ret == 0) {
-                                write_msg_n_num("Soy el hijo. PID: ", getpid());
-                                ret = fork();
-                                if (ret == 0) {
-                                    write_msg_n_num("Soy el hijo. PID: ", getpid());
-                                    ret = fork();
-                                    if (ret == 0) {
-                                        write_msg_n_num("Soy el hijo. PID: ", getpid());
-                                        ret = fork();
-                                    }else if (ret == -1) { perror(); }
-                                }else if (ret == -1) { perror(); }
-                            }else if (ret == -1) { perror(); }
-                        }else if (ret == -1) { perror(); }
-                    }else if (ret == -1) { perror(); }
-                }else if (ret == -1) { perror(); }
-            }else if (ret == -1) { perror(); }
-        }else if (ret == -1) { perror(); }
-    }else if (ret == -1) { perror(); }  
+    while(1);
 
     struct stats st1, st2, st3;
 

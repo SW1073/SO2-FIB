@@ -120,6 +120,7 @@ void keyboard_routine () {
     }
 
     // Llamar al task switch en caso que sea necesario (si hay procesos bloqueados por read())
+    if (list_empty(&blocked)) return;
     // list_first(&blocked)
 } 
 

@@ -160,3 +160,18 @@ int sys_get_stats(int pid, struct stats *st) {
     }
     return ESRCH; // No such process
 }
+
+/**
+ * read sysacall implementation
+ */
+int sys_read(char *b, int maxchars) {
+    // Check params
+    if (maxchars < 0) return EINVAL; // Invalid maxchars argument
+    if (!access_ok(VERIFY_WRITE, b, maxchars)) return EFAULT; // Invalid b argument address
+
+
+    // TODO: Block de process and copy data to user address space and shiet
+    // But only as much as we are told to, maybe we don't want to copy the
+    // whole buffer
+    return ENOSYS;
+}

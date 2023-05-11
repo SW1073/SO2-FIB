@@ -222,3 +222,64 @@ get_stats_fin:
 
     // Return to the caller
     ret
+
+
+// read
+ENTRY (read)
+    pushl %ebp
+    mov %esp, %ebp
+
+    // Store the values of ecx and edx in the user stack
+    // (El registro ebx lo guardamos por convencion de
+    // parametros entre funciones)
+    pushl %ebx
+    pushl %edx
+    pushl %ecx
+
+    // Parameter passing through registers
+    mov 8(%ebp), %ebx       // first param : *b -> ebx
+    mov 12(%ebp), %ecx      // second param: maxchars -> ecx
+
+    // Put the identifier of the system call in the EAX register
+    mov $11, %eax           // 35 is get_stats()
+
+    // Store the return address to user mode in the user stack
+    pushl $get_stats_return_user
+
+    // Create a fake dynamic link
+    pushl %ebp
+    mov %esp, %ebp
+
+    // Enter the system
+    sysenter
+
+    // After this the return value of the syscall will be in eax.
+read_return_user:
+
+    // if eax<0 -> neg eax, save eax to errno and return -1
+    // else return eax
+    cmpl $0, %eax
+    jge get_stats_fin
+
+    // save -eax to errno
+    neg %eax
+    movl %eax, errno
+    mov $-1, %eax
+
+read_fin:
+    // Pop our ebp
+    popl %ebp
+    
+    // Skip the return address we pushed
+    add $4, %esp    // quitar @return
+
+    // Pop both ecx and edx, in inverse order to the pushing one
+    popl %ecx
+    popl %edx
+    popl %ebx
+
+    // Pop the caller ebp and restore the esp 
+    leave
+
+    // Return to the caller
+    ret
