@@ -263,3 +263,67 @@ rd_fin:
 
     leave
     ret
+
+ENTRY (create_thread)
+    pushl %ebp
+    mov %esp, %ebp
+
+    pushl %ebx
+    pushl %ecx
+    pushl %edx
+
+    mov 8(%ebp), %ebx       // first argument to ebx
+    mov 12(%ebp), %ecx      // second argument to ecx
+
+    pushl $rd_return_user
+    pushl %ebp
+    mov %esp, %ebp
+
+    mov $12, %eax         // index to sys_call_table -> 4 is write()
+    sysenter
+    // after this the return value of the syscall will be in eax.
+ct_return_user:
+
+    // if eax<0 -> neg eax, save eax to errno and return -1
+    // else return eax
+    cmpl $0, %eax
+    jge rd_fin
+
+    // save -eax to errno here.
+    neg %eax
+    movl %eax, errno
+    mov $-1, %eax
+
+ct_fin:
+    popl %ebp
+    add $4, %esp    // quitar wr_return
+
+    popl %edx
+    popl %ecx
+    popl %ebx
+
+    leave
+    ret
+
+ENTRY (exit_thread)
+    pushl %ebp
+    movl %esp, %ebp
+
+    movl $13, %eax // id de la syscall exit() -> 1
+
+    pushl $ext_thr_return_user // @ a la que sysenter debe devolver
+    pushl %ebp              // el ebp actual, que debera usarse al volver
+    movl %esp, %ebp
+
+    sysenter                // saltamos a la primera entrada de la sys_call_table
+
+    // Exit no devuelve error. Es más, nunca devuelve por donde
+    // se la ha llamado. Por lo tanto, las siguientes lineas de
+    // codigo nunca se ejecutan.
+
+ext_thr_return_user:
+    popl %ebp
+    add $4, %esp // pop of return address.
+
+    leave
+    ret

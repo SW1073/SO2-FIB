@@ -49,6 +49,14 @@ void print_stats(struct stats st) {
 }
 /* ==================================== */
 
+void func(int i) {
+    // while (i < 100000000) {
+    //     ++i;
+    // }
+    write_wrapper("Func is over\n");
+    // exit();
+}
+
 
     int __attribute__ ((__section__(".text.main")))
 main(void)
@@ -61,9 +69,8 @@ main(void)
         write(1, "W\n", 2);
     }
 
-    if (fork() == 0) {
-        while(1);
-    }
+    int i = 0;
+    create_thread((void*)func, &i);
 
     char b[4];
     read(b, 4);

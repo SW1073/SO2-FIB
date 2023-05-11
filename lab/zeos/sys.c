@@ -200,7 +200,7 @@ int sys_read(char *b, int maxchars) {
 }
 
 void sys_exit_thread(void) {
-
+    printk("saleidno de de exit thread\n");
 }
 
 int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
@@ -212,9 +212,9 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
         return EFAULT;
     }
 
-    if (!access_ok(VERIFY_READ, parameter, sizeof(void*))) {
-        return EFAULT;
-    }
+    // if (!access_ok(VERIFY_READ, parameter, sizeof(void*))) {
+    //     return EFAULT;
+    // }
 
     struct list_head *free_list_pos = list_first(&freequeue);
     list_del(free_list_pos);
@@ -225,13 +225,19 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
     copy_data(current(), pcb_union, sizeof(union task_union));
 
     DWord *new_stack = get_new_stack(get_PT(pcb));
-    DWord *tope_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
+    DWord *base_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
 
-    tope_stack[-5] = (DWord)start_routine;
-    tope_stack[-2] = (DWord)new_stack;
+    new_stack[(PAGE_SIZE/4)-1] = (DWord)parameter;
+    new_stack[(PAGE_SIZE/4)-2] = (DWord)sys_exit_thread;
 
-    new_stack[PAGE_SIZE-1] = (DWord)parameter;
-    new_stack[PAGE_SIZE-2] = (DWord)sys_exit_thread;
+    pcb->kernel_esp = &(pcb_union->stack[KERNEL_STACK_SIZE-19]); // 17-2 por el @ret_from_fork y el ebp.
+    pcb_union->stack[KERNEL_STACK_SIZE-19] = 0;
+    pcb_union->stack[KERNEL_STACK_SIZE-18] = (DWord)ret_from_fork;
+
+    base_stack[-5] = (DWord)start_routine;
+    base_stack[-2] = (DWord)&new_stack[(PAGE_SIZE/4)-2];
+
+    list_add_tail(free_list_pos, &readyqueue);
 
     return 0;
 }
