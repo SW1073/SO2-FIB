@@ -49,6 +49,9 @@ void print_stats(struct stats st) {
 }
 /* ==================================== */
 
+void func(int i) {
+    write_wrapper("holaqutal soy el thread\n");
+}
 
     int __attribute__ ((__section__(".text.main")))
 main(void)
@@ -60,6 +63,9 @@ main(void)
     if (write(1, "\nHola que tal\n", 14) > 0) {
         write(1, "W\n", 2);
     }
+
+    // Provem el create thread
+    create_thread((void*)func, (void*)0);
     
     char b[128];
     // Test read syscall

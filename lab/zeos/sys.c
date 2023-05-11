@@ -1,6 +1,7 @@
 /*
  * sys.c - Syscalls implementation
  */
+#include "list.h"
 #include "types.h"
 #include <devices.h>
 #include <utils.h>
@@ -236,7 +237,7 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
 
     // Alocatem un nou user stack
     DWord* new_user_stack;
-    if ((new_user_stack = get_new_stack(current()->dir_pages_baseAddr)) == 0)
+    if ((new_user_stack = get_new_stack(get_PT(pcb))) == 0)
         return ENOMEM;
 
     DWord *base_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
@@ -244,11 +245,19 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
     // cambiamos el EIP
     base_stack[-5] = (DWord)start_routine;
     // Cambiamos el ESP
-    base_stack[-2] = (DWord)new_user_stack;
-    
+    base_stack[-2] = (DWord)&new_user_stack[(PAGE_SIZE/4)-2];
+
     // Preparamos el user stack
-    new_user_stack[PAGE_SIZE-1] = (DWord)parameter;
-    new_user_stack[PAGE_SIZE-2] = (DWord)sys_exit_thread;
+    new_user_stack[(PAGE_SIZE/4)-1] = (DWord)parameter;
+    new_user_stack[(PAGE_SIZE/4)-2] = (DWord)sys_exit_thread;
+
+    pcb->kernel_esp = &(pcb_union->stack[KERNEL_STACK_SIZE-19]); // 17-2 por el @ret_from_fork y el ebp.
+
+    pcb_union->stack[KERNEL_STACK_SIZE-19] = 0;
+    pcb_union->stack[KERNEL_STACK_SIZE-18] = (DWord)ret_from_fork;
+
+    // Ponemos en thread en la readyqueue
+    list_add_tail(&(pcb->list), &readyqueue);
 
     return 0;
 }
