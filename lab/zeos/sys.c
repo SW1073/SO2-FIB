@@ -1,6 +1,7 @@
 /*
  * sys.c - Syscalls implementation
  */
+#include "types.h"
 #include <devices.h>
 #include <utils.h>
 #include <io.h>
@@ -202,11 +203,29 @@ int sys_read(char *b, int maxchars) {
     return maxchars;
 }
 
-int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
-    if (list_empty(&freequeue)) {
-        return ENOMEM;
-    }
+void sys_exit_thread(void) {
+    // Sugerido por el sr Copilot
+    /*
+    struct task_struct* current_proc = current();
+    // page_table_entry* current_proc_pt = get_PT(current_proc);
 
+    // Free user pages
+    free_user_pages(current_proc);
+    // Free pcb
+    list_add_tail(&current_proc->list, &freequeue);
+
+    // Let rr decide next proc to execute
+    // This function will not return
+    sched_next_rr();
+    */
+}
+
+int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
+    // Miramos si hay pcb libres en la freequeue. Devolvemos error sino
+    if (list_empty(&freequeue))
+        return ENOMEM;
+
+    // Cogemos un PCB libre y lo borramos de la freequeue
     struct list_head *free_list_pos = list_first(&freequeue);
     list_del(free_list_pos);
 
@@ -215,12 +234,22 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
 
     copy_data(current(), pcb_union, sizeof(union task_union));
 
-    int *tope_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
+    // Alocatem un nou user stack
+    DWord* new_user_stack;
+    if ((new_user_stack = get_new_stack(current()->dir_pages_baseAddr)) == 0)
+        return ENOMEM;
 
-    // asignar nueva pagina para el stack de usuario
+    DWord *base_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
+
+    // cambiamos el EIP
+    base_stack[-5] = (DWord)start_routine;
+    // Cambiamos el ESP
+    base_stack[-2] = (DWord)new_user_stack;
+    
+    // Preparamos el user stack
+    new_user_stack[PAGE_SIZE-1] = (DWord)parameter;
+    new_user_stack[PAGE_SIZE-2] = (DWord)sys_exit_thread;
 
     return 0;
 }
 
-void sys_exit_thread(void) {
-}

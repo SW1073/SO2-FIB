@@ -47,6 +47,7 @@ unsigned int get_frame(page_table_entry *PT, unsigned int page);
 // Utils propis
 int copy_pages_to_child(struct task_struct *child, struct task_struct *parent);
 int get_free_page(page_table_entry *pt);
+DWord* get_new_stack(page_table_entry *pt);
 void del_ss_extra_pages(page_table_entry *pt);
 
 #endif  /* __MM_H__ */

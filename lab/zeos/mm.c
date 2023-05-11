@@ -188,6 +188,20 @@ int get_free_page(page_table_entry *pt) {
 }
 
 /**
+ * Retorna 0 if error
+ */
+DWord* get_new_stack(page_table_entry *pt) {
+    int free_page = get_free_page(pt);
+    int free_frame = alloc_frame();
+
+    if (free_page < 0 || free_frame < 0) return 0;
+
+    set_ss_pag(pt, free_page, free_frame);
+
+    return (DWord*)(free_page << 12);
+}
+
+/**
  * Pone a 0 todas las entradas de la tabla de paginas
  * mas allá del espacio de datos y de codigo.
  */
