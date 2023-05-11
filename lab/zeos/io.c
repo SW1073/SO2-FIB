@@ -18,9 +18,9 @@ char *circ_buff_head = &circ_buffer[0];
 char *circ_buff_tail = &circ_buffer[0];
 int circ_buff_num_items = 0;
 
-char circ_buff_append(char c) {
+void circ_buff_append(char c) {
     if (circ_buff_is_full()) {
-        return -1;
+        return;
     }
 
     *circ_buff_head = c;
@@ -31,7 +31,7 @@ char circ_buff_append(char c) {
         circ_buff_head = &circ_buffer[0];
     }
 
-    return 1;
+    return;
 }
 
 char circ_buff_read() {

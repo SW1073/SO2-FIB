@@ -61,9 +61,9 @@ main(void)
         write(1, "W\n", 2);
     }
 
-    // if (fork() == 0) {
-    //     while(1);
-    // }
+    if (fork() == 0) {
+        while(1);
+    }
 
     char b[4];
     read(b, 4);

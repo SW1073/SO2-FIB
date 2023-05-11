@@ -194,14 +194,26 @@ int sys_read(char *b, int maxchars) {
     copy_to_user((void*)"\0", b+diff, 1);
 
     update_process_state_rr(current(), &readyqueue);
-    sched_next_rr();
+    // sched_next_rr();
 
     return maxchars;
+}
+
+void sys_exit_thread(void) {
+
 }
 
 int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
     if (list_empty(&freequeue)) {
         return ENOMEM;
+    }
+
+    if (!access_ok(VERIFY_READ, start_routine, sizeof(void*))) {
+        return EFAULT;
+    }
+
+    if (!access_ok(VERIFY_READ, parameter, sizeof(void*))) {
+        return EFAULT;
     }
 
     struct list_head *free_list_pos = list_first(&freequeue);
@@ -212,13 +224,14 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
 
     copy_data(current(), pcb_union, sizeof(union task_union));
 
-    int *tope_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
+    DWord *new_stack = get_new_stack(get_PT(pcb));
+    DWord *tope_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
 
-    // asignar nueva pagina para el stack de usuario
+    tope_stack[-5] = (DWord)start_routine;
+    tope_stack[-2] = (DWord)new_stack;
+
+    new_stack[PAGE_SIZE-1] = (DWord)parameter;
+    new_stack[PAGE_SIZE-2] = (DWord)sys_exit_thread;
 
     return 0;
-}
-
-void sys_exit_thread(void) {
-
 }
