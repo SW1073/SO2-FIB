@@ -18,6 +18,8 @@ extern Byte phys_mem[TOTAL_PAGES];
 
 extern page_table_entry dir_pages[NR_TASKS][TOTAL_PAGES];
 
+extern unsigned int pcbs_in_dir[NR_TASKS];
+
 int init_frames( void );
 int alloc_frame( void );
 void free_user_pages( struct task_struct* task );
@@ -29,6 +31,7 @@ void free_user_pages(struct task_struct *task);
 void del_ss_extra_pages(page_table_entry *PT);
 void abort_copy(struct task_struct *parent, struct task_struct *child);
 DWord* get_new_stack(page_table_entry *PT);
+int get_DIR_pos(struct task_struct *t);
 
 extern Descriptor  *gdt;
 

@@ -31,6 +31,7 @@ __attribute__((__section__(".data.task")));
 TSS         tss; 
 
 
+unsigned int pcbs_in_dir[NR_TASKS];
 
 /***********************************************/
 /************** PAGING MANAGEMENT **************/
@@ -49,8 +50,13 @@ void init_dir_pages()
         dir_pages[i][ENTRY_DIR_PAGES].bits.rw = 1;
         dir_pages[i][ENTRY_DIR_PAGES].bits.present = 1;
 
+        pcbs_in_dir[i] = 0;
     }
 
+}
+
+int get_DIR_pos(struct task_struct *t) {
+    return ((int)get_DIR(t)-(int)dir_pages)/(sizeof(page_table_entry)*TOTAL_PAGES);
 }
 
 /* Initializes the page table (kernel pages only) */

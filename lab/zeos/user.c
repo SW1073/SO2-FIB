@@ -54,7 +54,7 @@ void func(int i) {
     //     ++i;
     // }
     write_wrapper("Func is over\n");
-    // exit();
+    exit_thread();
 }
 
 
@@ -72,13 +72,13 @@ main(void)
     int i = 0;
     create_thread((void*)func, &i);
 
-    char b[4];
-    read(b, 4);
-
-    write_wrapper(b);
-    write_wrapper("\n");
-
-    // write_wrapper("is over\n");
+    // char b[4];
+    // read(b, 4);
+    //
+    // write_wrapper(b);
+    // write_wrapper("\n");
+    //
+    write_wrapper("is over\n");
 
     while(1);
 

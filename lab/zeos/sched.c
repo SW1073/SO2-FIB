@@ -53,6 +53,8 @@ int allocate_DIR(struct task_struct *t)
 
     t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos]; 
 
+    pcbs_in_dir[get_DIR_pos(t)]++;
+
     return 1;
 }
 
@@ -79,8 +81,12 @@ void init_idle (void)
     // el stack después.
     union task_union *pcb = (union task_union*)list_head_to_task_struct(free_list);
 
+    // -----------
+    //      - Esto se quita porque ya se le alocata uno en init_mm().
+    //      - Si se le pone otro aquí, pcbs_in_dir[0] sería 2.
+
     // se le pone un page directory al task.
-    allocate_DIR(&(pcb->task));
+    // allocate_DIR(&(pcb->task));
 
     // self explanatory.
     pcb->task.PID = pids++;

@@ -1,6 +1,7 @@
 /*
  * sys.c - Syscalls implementation
  */
+#include "entry.h"
 #include <devices.h>
 #include <utils.h>
 #include <io.h>
@@ -86,6 +87,8 @@ void sys_exit() {
     free_user_pages(current_proc);
     // Free pcb
     list_add_tail(&current_proc->list, &freequeue);
+
+    pcbs_in_dir[get_DIR_pos(current_proc)]--;
 
     // Let rr decide next proc to execute
     // This function will not return
@@ -200,7 +203,22 @@ int sys_read(char *b, int maxchars) {
 }
 
 void sys_exit_thread(void) {
-    printk("saleidno de de exit thread\n");
+    struct task_struct* t = current();
+
+    // TODO reemplazar esto con bithack raro para pillar
+    // la página del esp. Esto borra todo lo que hay después de
+    // las páginas de código en la tabla de páginas.
+    del_ss_extra_pages(get_PT(t));
+
+    int dir_pos = get_DIR_pos(t);
+    if (pcbs_in_dir[dir_pos] == 1) {
+        sys_exit();
+    } else {
+        pcbs_in_dir[dir_pos]--;
+    }
+
+    update_process_state_rr(current(), &freequeue);
+    sched_next_rr();
 }
 
 int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
@@ -224,11 +242,16 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
 
     copy_data(current(), pcb_union, sizeof(union task_union));
 
+    int dir_pos = get_DIR_pos(pcb);
+    pcbs_in_dir[dir_pos]++;
+
     DWord *new_stack = get_new_stack(get_PT(pcb));
+    if (new_stack == NULL) return ENOMEM;
+
     DWord *base_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
 
     new_stack[(PAGE_SIZE/4)-1] = (DWord)parameter;
-    new_stack[(PAGE_SIZE/4)-2] = (DWord)sys_exit_thread;
+    new_stack[(PAGE_SIZE/4)-2] = (DWord)0;
 
     pcb->kernel_esp = &(pcb_union->stack[KERNEL_STACK_SIZE-19]); // 17-2 por el @ret_from_fork y el ebp.
     pcb_union->stack[KERNEL_STACK_SIZE-19] = 0;

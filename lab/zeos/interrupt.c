@@ -2,6 +2,7 @@
  * interrupt.c -
  */
 
+#include "include/mm.h"
 #include "list.h"
 #include <entry.h>
 #include <libc.h>
