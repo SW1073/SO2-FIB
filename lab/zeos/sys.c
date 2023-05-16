@@ -196,8 +196,10 @@ int sys_read(char *b, int maxchars) {
 
     copy_to_user((void*)"\0", b+diff, 1);
 
-    update_process_state_rr(current(), &readyqueue);
+    // update_process_state_rr(current(), &readyqueue);
     // sched_next_rr();
+    list_del(&current()->list);
+    list_add_tail(&current()->list, &readyqueue);
 
     return maxchars;
 }
@@ -263,4 +265,30 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
     list_add_tail(free_list_pos, &readyqueue);
 
     return 0;
+}
+
+int sys_mutex_init(int *m) {
+    *m = 0;
+    return 0;
+}
+
+int sys_mutex_lock(int *m) {
+    *m -= 1;
+    if (m < 0) {
+        update_process_state_rr(current(), &mutex_blocked);
+        sched_next_rr();
+    }
+
+    return *m;
+}
+
+int sys_mutex_unlock(int *m) {
+    *m += 1;
+    if (m <= 0) {
+        struct task_struct *t = list_head_to_task_struct(list_first(&mutex_blocked));
+        list_del(&t->list);
+        list_add(&t->list, &readyqueue);
+    }
+
+    return *m;
 }

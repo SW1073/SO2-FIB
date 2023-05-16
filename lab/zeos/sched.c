@@ -25,6 +25,8 @@ struct list_head freequeue;
 // HEAD de la freequeue
 struct list_head readyqueue;
 
+struct list_head mutex_blocked;
+
 // Declaracion del idle_task. 
 // Apunta al PCB (o task struct) del proceso idle.
 struct task_struct *idle_task;

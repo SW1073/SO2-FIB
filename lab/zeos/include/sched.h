@@ -35,10 +35,20 @@ union task_union {
     unsigned long stack[KERNEL_STACK_SIZE];    /* pila de sistema, per procés */
 };
 
+// ---------------------------------
+int mutex_init(int *m);
+
+int mutex_lock(int *m);
+
+int mutex_unlock(int *m);
+
+// ---------------------------------
+
 extern union task_union task[NR_TASKS]; /* Vector de tasques */
 
 extern struct list_head freequeue;
 extern struct list_head readyqueue;
+extern struct list_head mutex_blocked;
 
 extern struct task_struct *idle_task;
 extern struct task_struct *init_task; // TODO quitar esto, era solo para probar el task_switch
