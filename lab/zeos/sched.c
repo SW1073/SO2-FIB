@@ -182,6 +182,7 @@ void init_sched()
     // Init free queue
     INIT_LIST_HEAD( &freequeue );
     INIT_LIST_HEAD( &blocked );
+    INIT_LIST_HEAD( &mutex_blocked );
     // Si insertamos los elementos como se muestra en el codigo, con list_add_tail,
     // los elementos quedan correctamente ordenados, tal que:
     // +-------------------------------------------------------------------------+

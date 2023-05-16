@@ -268,27 +268,47 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
 }
 
 int sys_mutex_init(int *m) {
-    *m = 0;
+    if (!access_ok(VERIFY_WRITE, m, sizeof(int))) {
+        return EFAULT;
+    }
+
+    int m_sys = 0;
+    copy_to_user((void*)&m_sys, m, sizeof(int));
+
     return 0;
 }
 
 int sys_mutex_lock(int *m) {
-    *m -= 1;
-    if (m < 0) {
+    if (!access_ok(VERIFY_WRITE, m, sizeof(int)) || !access_ok(VERIFY_READ, m, sizeof(int))) {
+        return EFAULT;
+    }
+
+    if (*m >= 1) {
         update_process_state_rr(current(), &mutex_blocked);
         sched_next_rr();
     }
 
-    return *m;
+    int m_sys = 1;
+    copy_to_user((void*)&m_sys, m, sizeof(int));
+
+    return 0;
 }
 
 int sys_mutex_unlock(int *m) {
-    *m += 1;
-    if (m <= 0) {
+    if (!access_ok(VERIFY_WRITE, m, sizeof(int)) || !access_ok(VERIFY_READ, m, sizeof(int))) {
+        return EFAULT;
+    }
+
+    if (*m == 0) return 0; // nose cuando puede pasar esto.
+
+    int m_sys = 0;
+    copy_to_user((void*)&m_sys, m, sizeof(int));
+
+    if (!list_empty(&mutex_blocked)) {
         struct task_struct *t = list_head_to_task_struct(list_first(&mutex_blocked));
         list_del(&t->list);
         list_add(&t->list, &readyqueue);
     }
 
-    return *m;
+    return 0;
 }

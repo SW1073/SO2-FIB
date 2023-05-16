@@ -378,7 +378,7 @@ ENTRY (mutex_lock)
 
     mov 8(%ebp), %ebx       // first argument to ebx
 
-    pushl $mt_return_user
+    pushl $mt_lock_return_user
     pushl %ebp
     mov %esp, %ebp
 

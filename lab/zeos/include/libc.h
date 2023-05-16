@@ -32,4 +32,10 @@ int create_thread(void (*start_routine)(void* arg), void *parameter);
 
 void exit_thread(void); 
 
+int mutex_init(int *m);
+
+int mutex_lock(int *m);
+
+int mutex_unlock(int *m);
+
 #endif  /* __LIBC_H__ */

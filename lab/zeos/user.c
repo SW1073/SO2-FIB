@@ -2,7 +2,8 @@
 
 char buff[24];
 
-int pid;
+int pid = 0;
+int mutex = 0;
 
 /* ============== HEADERS ============= */
 void trigger_page_fault();
@@ -53,6 +54,11 @@ void func(int i) {
     // while (i < 100000000) {
     //     ++i;
     // }
+
+    mutex_lock(&mutex);
+    pid = 10;
+    mutex_unlock(&mutex);
+
     write_wrapper("Func is over\n");
     exit_thread();
 }
@@ -69,8 +75,14 @@ main(void)
         write(1, "W\n", 2);
     }
 
+    mutex_init(&mutex);
+
     int i = 0;
     create_thread((void*)func, &i);
+
+    mutex_lock(&mutex);
+    pid = 5;
+    mutex_unlock(&mutex);
 
     // char b[4];
     // read(b, 4);
