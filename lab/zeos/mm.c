@@ -12,6 +12,8 @@
 
 Byte phys_mem[TOTAL_PAGES];
 
+char* sbrk;
+
 /* SEGMENTATION */
 /* Memory segements description table */
 Descriptor  *gdt = (Descriptor *) GDT_START;
@@ -248,6 +250,7 @@ void init_mm()
     allocate_DIR(&task[0].task);
     set_cr3(get_DIR(&task[0].task));
     set_pe_flag();
+    sbrk = (void*)(TOTAL_PAGES<<12);
 }
 /***********************************************/
 /************** SEGMENTATION MANAGEMENT ********/

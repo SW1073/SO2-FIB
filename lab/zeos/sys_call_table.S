@@ -16,7 +16,7 @@ ENTRY (sys_call_table)
     .long sys_read          // 11
     .long sys_create_thread // 12
     .long sys_exit_thread   // 13
-    .long sys_ni_syscall    // 14
+    .long sys_dyn_mem       // 14
     .long sys_ni_syscall    // 15
     .long sys_ni_syscall    // 16
     .long sys_ni_syscall    // 17

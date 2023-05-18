@@ -75,6 +75,12 @@ main(void)
         write(1, "W\n", 2);
     }
 
+    char* pointer = (int*)dyn_mem(8);
+
+    for (int i = 0; i < 8; ++i) {
+        pointer[i] = 'a'+i;
+    }
+
     mutex_init(&mutex);
 
     int i = 0;
@@ -90,7 +96,7 @@ main(void)
     // write_wrapper(b);
     // write_wrapper("\n");
     //
-    write_wrapper("is over\n");
+    // write_wrapper("is over\n");
 
     while(1);
 

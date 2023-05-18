@@ -312,3 +312,20 @@ int sys_mutex_unlock(int *m) {
 
     return 0;
 }
+
+char* sys_dyn_mem(int num_bytes) {
+    if (num_bytes <= 0) return NULL;
+
+    page_table_entry *pt = get_PT(current());
+
+    sbrk -= num_bytes;
+
+    if (pt[(int)sbrk>>12].bits.present == 0)  {
+        int frame = alloc_frame();
+        if (frame == -1) return NULL;
+
+        set_ss_pag(pt, (int)sbrk>>12, frame);
+    }
+
+    return sbrk;
+}
