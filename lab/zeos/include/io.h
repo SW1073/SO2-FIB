@@ -35,10 +35,12 @@ char circ_buff_read();
 char circ_buff_is_full();
 
 Byte inb (unsigned short port);
+void scroll_screen();
 void printc(char c);
 void printc_color(char c, Byte foreground_color, Byte background_color, Byte blink);
 void printc_xy(Byte x, Byte y, char c);
 void printk(char *string);
 void printk_color(char *string, Byte foreground_color, Byte background_color, Byte blink);
+void erase_current_char();
 
 #endif  /* __IO_H__ */

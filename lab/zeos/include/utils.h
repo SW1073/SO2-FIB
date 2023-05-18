@@ -14,4 +14,7 @@ int access_ok(int type, const void *addr, unsigned long size);
 unsigned long get_ticks(void);
 int ret_from_fork();
 
+char is_number(char c);
+char is_letter(char c);
+
 #endif

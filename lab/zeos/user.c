@@ -75,6 +75,14 @@ main(void)
         write(1, "W\n", 2);
     }
 
+    write_wrapper("a");
+    // Test scroll down
+    write_wrapper("[D");
+    write_wrapper("[D");
+    write_wrapper("[D");
+
+    while(1);
+
     mutex_init(&mutex);
 
     int i = 0;
