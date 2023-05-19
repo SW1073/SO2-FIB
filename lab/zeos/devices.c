@@ -49,25 +49,31 @@ int sys_write_console(char *buffer,int size)
 
 int execute_command (char op, char *args, int size) {
     switch (op) {
-        case 'D': // Scroll down screen
+        // Scroll down screen
+        case 'D':
             scroll_screen();
             break;
 
-        case 'K': // Erase character
+        // Erase character
+        case 'K':
             erase_current_char();
             break;
-
-        case 'H': // Channge cursor position
+        
+        // Change cursor position
+        case 'H':
         case 'f':
             // TODO: parse 2 values out of args
             // TODO: set x and y
-
             break;
 
-
-        // TODO: Change color (bg and fg)
-
+        // Change screen attributes
+        case 'm':
+            // TODO: parse all numbers out of args
+            // TODO: set the values as some kind of default somewhere
+            // IDEA ^^^: Es poden fer els colors globals i que tots els printc siguin printc_color
+            break;
         
+        // Command not implemented
         default:
             return -1;
     }
