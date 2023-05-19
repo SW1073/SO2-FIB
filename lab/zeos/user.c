@@ -77,9 +77,7 @@ main(void)
 
     write_wrapper("a");
     // Test scroll down
-    write_wrapper("[D");
-    write_wrapper("[D");
-    write_wrapper("[D");
+    write_wrapper("\[D\[[[JHola Hola Caracola\[");
 
     while(1);
 

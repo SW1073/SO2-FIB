@@ -132,35 +132,6 @@ int sys_write(int fd, char * buffer, int size) {
     if ((err = copy_from_user(buffer, sys_buffer, size)) < 0)
         return err;
 
-    // Check if the characters contain a command
-    if (size > 1 && sys_buffer[0] == '\[') { // We may have a command, the start sequence is invoqued.
-        Byte complete_command = 0;
-        int i;
-        for (i = 1; i < size; ++i) {
-            // Skip if empty character
-            if (sys_buffer[i] == ' ')
-                continue;
-            // If there is a character, we might have a command
-            if (is_letter(sys_buffer[i])) {
-                complete_command = 1;
-                break;
-            }
-        }
-
-        // we either found a letter or not
-        if (complete_command) {
-            // Right now, we have the last letter of the command in sys_buffer[i] This letter is actually the command type
-            switch (sys_buffer[i]) {
-                case 'D': // Scroll down screen
-                    scroll_screen();
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-
     return sys_write_console(sys_buffer, size); // return number of bytes written
 }
 

@@ -4,4 +4,5 @@
 extern struct list_head blocked;
 
 int sys_write_console(char *buffer,int size);
+int execute_command (char op, char *args, int size);
 #endif /* DEVICES_H__*/
