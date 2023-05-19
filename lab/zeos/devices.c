@@ -6,7 +6,10 @@
 // Queue for blocked processes in I/O 
 struct list_head blocked;
 
+int params[3];
+
 const char command_starter = '\[';
+const char command_argument_separator = ';';
 
 int sys_write_console(char *buffer,int size)
 {
@@ -47,7 +50,8 @@ int sys_write_console(char *buffer,int size)
     return chars_written;
 }
 
-int execute_command (char op, char *args, int size) {
+int execute_command (char op, char *args, int args_size) {
+    int n_params= parse_params(args, args_size);
     switch (op) {
         // Scroll down screen
         case 'D':
@@ -64,6 +68,12 @@ int execute_command (char op, char *args, int size) {
         case 'f':
             // TODO: parse 2 values out of args
             // TODO: set x and y
+            if (n_params < 2) {
+                // Bad arguments or insuficient arguments
+                return -1;
+            }
+
+            printc_xy(params[0], params[1], 'X');
             break;
 
         // Change screen attributes
@@ -71,6 +81,11 @@ int execute_command (char op, char *args, int size) {
             // TODO: parse all numbers out of args
             // TODO: set the values as some kind of default somewhere
             // IDEA ^^^: Es poden fer els colors globals i que tots els printc siguin printc_color
+            if (n_params < 0) {
+                // Bad arguments or insuficient arguments
+                return -1;
+            }
+
             break;
         
         // Command not implemented
@@ -79,4 +94,46 @@ int execute_command (char op, char *args, int size) {
     }
     // Command was executed successfully
     return 0;
+}
+
+/**
+ * Parse parameters and return the number of parameters parsed or -1 if there was an error
+ */
+int parse_params(char* args, int args_size) {
+    int i = 0,
+        init_i = i;
+    int num_params = 0;
+
+    while (i < args_size) {
+        if (args[i] == command_argument_separator) {
+            // We have a parameter
+            if (i > init_i && num_params < 3) {
+                params[num_params] = atoi_n(&args[init_i], i-init_i);
+                num_params++;
+            }
+            else {
+                // Too many parameters
+                return -1;
+            }
+            init_i = i;
+        }
+        i++;
+    }
+
+    if (i > init_i && num_params < 3) {
+        params[num_params] = atoi_n(&args[init_i], i-init_i);
+        num_params++;
+    }
+    else return -1;
+    
+    return num_params;
+}
+
+int atoi_n(char *args, int n) {
+    int i, num = 0;
+    for (i = 0; i < n; ++i) {
+        if (is_number(args[i]))
+            num = num*10 + (args[i] - '0');
+    }
+    return num;
 }
