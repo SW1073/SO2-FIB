@@ -54,13 +54,18 @@ void func(int i) {
     // while (i < 100000000) {
     //     ++i;
     // }
-
+    // char b[4];
+    // read(b, 4);
+    //
+    // write_wrapper(b);
+    // write_wrapper("\n");
     mutex_lock(&mutex);
     pid = 10;
     mutex_unlock(&mutex);
 
     write_wrapper("Func is over\n");
-    exit_thread();
+    while(1);
+    // exit_thread();
 }
 
 
@@ -75,28 +80,25 @@ main(void)
         write(1, "W\n", 2);
     }
 
-    char* pointer = (int*)dyn_mem(8);
-
-    for (int i = 0; i < 8; ++i) {
-        pointer[i] = 'a'+i;
-    }
-
+    // char* pointer = dyn_mem(8);
+    //
+    // for (int i = 0; i < 8; ++i) {
+    //     pointer[i] = 'a'+i;
+    // }
+    //
     mutex_init(&mutex);
 
     int i = 0;
     create_thread((void*)func, &i);
 
     mutex_lock(&mutex);
+    while (gettime() < 2000);
     pid = 5;
     mutex_unlock(&mutex);
 
-    // char b[4];
-    // read(b, 4);
-    //
-    // write_wrapper(b);
-    // write_wrapper("\n");
-    //
-    // write_wrapper("is over\n");
+    write_wrapper("is over\n");
+
+    exit();
 
     while(1);
 

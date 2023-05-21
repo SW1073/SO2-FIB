@@ -83,12 +83,17 @@ void sys_exit() {
     struct task_struct* current_proc = current();
     // page_table_entry* current_proc_pt = get_PT(current_proc);
 
-    // Free user pages
-    free_user_pages(current_proc);
-    // Free pcb
-    list_add_tail(&current_proc->list, &freequeue);
-
     pcbs_in_dir[get_DIR_pos(current_proc)]--;
+
+    // TODO !!! preegunta!!!
+    // se deberia liberar el task_struct si aun hay gente en el directorio?   
+
+    if (pcbs_in_dir[get_DIR_pos(current_proc)] == 0) {
+        // Free user pages
+        free_user_pages(current_proc);
+        // Free pcb
+        list_add_tail(&current_proc->list, &freequeue);
+    }
 
     // Let rr decide next proc to execute
     // This function will not return
@@ -207,20 +212,22 @@ int sys_read(char *b, int maxchars) {
 void sys_exit_thread(void) {
     struct task_struct* t = current();
 
-    // TODO reemplazar esto con bithack raro para pillar
-    // la página del esp. Esto borra todo lo que hay después de
-    // las páginas de código en la tabla de páginas.
-    del_ss_extra_pages(get_PT(t));
-
     int dir_pos = get_DIR_pos(t);
+
     if (pcbs_in_dir[dir_pos] == 1) {
-        sys_exit();
-    } else {
+        // TODO reemplazar esto con bithack raro para pillar
+        // la página del esp. Esto borra todo lo que hay después de
+        // las páginas de código en la tabla de páginas.
+        del_ss_extra_pages(get_PT(t));
         pcbs_in_dir[dir_pos]--;
+    } else {
+        sys_exit();
     }
 
-    update_process_state_rr(current(), &freequeue);
-    sched_next_rr();
+
+    // free_user_pages(t);
+    // update_process_state_rr(current(), &freequeue);
+    // sched_next_rr();
 }
 
 int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
