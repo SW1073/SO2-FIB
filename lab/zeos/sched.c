@@ -25,11 +25,11 @@ struct list_head freequeue;
 // HEAD de la freequeue
 struct list_head readyqueue;
 
-struct list_head mutex_blocked;
-
 // Declaracion del idle_task. 
 // Apunta al PCB (o task struct) del proceso idle.
 struct task_struct *idle_task;
+
+struct mutex_t mutexes[MAX_MUTEXES];
 
 int pids;
 int current_ticks;
@@ -182,7 +182,14 @@ void init_sched()
     // Init free queue
     INIT_LIST_HEAD( &freequeue );
     INIT_LIST_HEAD( &blocked );
-    INIT_LIST_HEAD( &mutex_blocked );
+    INIT_LIST_HEAD( &readyqueue );
+
+    for (int i = 0; i < MAX_MUTEXES; ++i) {
+        INIT_LIST_HEAD( &mutexes[i].blocked_queue );
+        mutexes[i].id = -1;
+        mutexes[i].count = 0;
+    }
+
     // Si insertamos los elementos como se muestra en el codigo, con list_add_tail,
     // los elementos quedan correctamente ordenados, tal que:
     // +-------------------------------------------------------------------------+
@@ -192,8 +199,6 @@ void init_sched()
     for (int i = 0; i < NR_TASKS; ++i)
         list_add_tail(&(task[i].task.list), &freequeue);
 
-    // Init ready queue (initially empty)
-    INIT_LIST_HEAD( &readyqueue );
 }
 
 struct task_struct* current()
@@ -383,3 +388,25 @@ void stats_reset_remaining_ticks(struct task_struct *t) {
     t->stats.remaining_ticks = t->quantum;
 }
 
+struct mutex_t* mutex_get(int id) {
+    for (int i = 0; i < MAX_MUTEXES; ++i) {
+        if (mutexes[i].id == id) {
+            return &mutexes[i];
+        }
+    }
+
+    return NULL;
+}
+
+int mutex_add(int id) {
+    if (id == -1) return -1;
+
+    for (int i = 0; i < MAX_MUTEXES; ++i) {
+        if (mutexes[i].id == -1) {
+            mutexes[i].id = id;
+            return 0;
+        }
+    }
+
+    return -1;
+}

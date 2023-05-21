@@ -253,7 +253,7 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
     DWord *base_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
 
     new_stack[(PAGE_SIZE/4)-1] = (DWord)parameter;
-    new_stack[(PAGE_SIZE/4)-2] = (DWord)0;
+    new_stack[(PAGE_SIZE/4)-2] = (DWord)0x114b62; // evil floating point bit level hacking
 
     pcb->kernel_esp = &(pcb_union->stack[KERNEL_STACK_SIZE-19]); // 17-2 por el @ret_from_fork y el ebp.
     pcb_union->stack[KERNEL_STACK_SIZE-19] = 0;
@@ -268,12 +268,21 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
 }
 
 int sys_mutex_init(int *m) {
-    if (!access_ok(VERIFY_WRITE, m, sizeof(int))) {
+    if (!access_ok(VERIFY_READ, m, sizeof(int))) {
         return EFAULT;
     }
 
     int m_sys = 0;
-    copy_to_user((void*)&m_sys, m, sizeof(int));
+    copy_from_user(m, &m_sys, sizeof(int));
+
+    mutex_add(m_sys);
+
+    // for (int i = 0; i < MAX_MUTEXES; ++i) {
+    //     if (mutexes[i].id == NULL) {
+    //         mutexes[i].id = m_sys;
+    //         return 0;
+    //     }
+    // }
 
     return 0;
 }
@@ -283,13 +292,18 @@ int sys_mutex_lock(int *m) {
         return EFAULT;
     }
 
-    if (*m >= 1) {
-        update_process_state_rr(current(), &mutex_blocked);
+    int m_sys;
+    copy_from_user(m, &m_sys, sizeof(int));
+
+    struct mutex_t *mutex = mutex_get(m_sys);
+    if (mutex == NULL) return -1;
+
+    if (mutex->count >= 1) {
+        update_process_state_rr(current(), &mutex->blocked_queue);
         sched_next_rr();
     }
 
-    int m_sys = 1;
-    copy_to_user((void*)&m_sys, m, sizeof(int));
+    mutex->count++;
 
     return 0;
 }
@@ -299,15 +313,19 @@ int sys_mutex_unlock(int *m) {
         return EFAULT;
     }
 
-    if (*m == 0) return 0; // nose cuando puede pasar esto.
+    int m_sys;
+    copy_from_user(m, &m_sys, sizeof(int));
 
-    int m_sys = 0;
-    copy_to_user((void*)&m_sys, m, sizeof(int));
+    struct mutex_t *mutex = mutex_get(m_sys);
+    if (mutex == NULL) return -1;
 
-    if (!list_empty(&mutex_blocked)) {
-        struct task_struct *t = list_head_to_task_struct(list_first(&mutex_blocked));
+    if (mutex->count == 0) return 0; // nose cuando puede pasar esto.
+
+    if (!list_empty(&mutex->blocked_queue)) {
+        struct task_struct *t = list_head_to_task_struct(list_first(&mutex->blocked_queue));
         list_del(&t->list);
         list_add(&t->list, &readyqueue);
+        mutex->count--;
     }
 
     return 0;

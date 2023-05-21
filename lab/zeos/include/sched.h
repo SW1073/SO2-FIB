@@ -15,7 +15,7 @@
 #define KERNEL_STACK_SIZE	1024
 
 #define INIT_QUANTUM 10
-#define MAX_CHILDREN 10
+#define MAX_MUTEXES 10
 
 enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
 
@@ -35,11 +35,17 @@ union task_union {
     unsigned long stack[KERNEL_STACK_SIZE];    /* pila de sistema, per procés */
 };
 
+struct mutex_t {
+    int id;
+    int count;
+    struct list_head blocked_queue;
+};
+
 extern union task_union task[NR_TASKS]; /* Vector de tasques */
+extern struct mutex_t mutexes[MAX_MUTEXES];
 
 extern struct list_head freequeue;
 extern struct list_head readyqueue;
-extern struct list_head mutex_blocked;
 
 extern struct task_struct *idle_task;
 extern struct task_struct *init_task; // TODO quitar esto, era solo para probar el task_switch
@@ -79,6 +85,10 @@ void sched_next_rr();
 void update_process_state_rr(struct task_struct *t, struct list_head *dest);
 int needs_sched_rr();
 void update_sched_data_rr();
+
+// tema mutex
+struct mutex_t* mutex_get(int id);
+int mutex_add(int id);
 
 void schedule();
 
