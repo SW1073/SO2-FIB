@@ -73,7 +73,7 @@ int execute_command (char op, char *args, int args_size) {
                 return -1;
             }
 
-            printc_xy(params[0], params[1], 'X');
+            set_cursor(params[0], params[1]);
             break;
 
         // Change screen attributes
@@ -101,8 +101,8 @@ int execute_command (char op, char *args, int args_size) {
  */
 int parse_params(char* args, int args_size) {
     int i = 0,
-        init_i = i;
-    int num_params = 0;
+        init_i = i,
+        num_params = 0;
 
     while (i < args_size) {
         if (args[i] == command_argument_separator) {

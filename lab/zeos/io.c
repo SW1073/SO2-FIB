@@ -184,3 +184,11 @@ void erase_current_char() {
 
     // 114b62
 }
+
+void set_cursor(Byte new_x, Byte new_y) {
+    if (x >= NUM_COLUMNS || y >= NUM_ROWS) {
+        return;
+    }
+    x = new_x;
+    y = new_y;
+}

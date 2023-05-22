@@ -42,5 +42,7 @@ void printc_xy(Byte x, Byte y, char c);
 void printk(char *string);
 void printk_color(char *string, Byte foreground_color, Byte background_color, Byte blink);
 void erase_current_char();
+void set_cursor(Byte new_x, Byte new_y);
+
 
 #endif  /* __IO_H__ */

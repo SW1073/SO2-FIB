@@ -77,7 +77,7 @@ main(void)
 
     write_wrapper("a");
     // Test scroll down
-    write_wrapper("\[10;9H");
+    write_wrapper("\[20;5;HHolaquetalestotendriaqueestaratomarporculo");
 
     while(1);
 
