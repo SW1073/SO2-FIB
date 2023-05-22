@@ -107,6 +107,9 @@ int parse_params(char* args, int args_size) {
         init_i = i,
         num_params = 0;
 
+    // Necessary case to avoid errors
+    if (args_size == 0) return 0;
+
     while (i < args_size) {
         if (args[i] == command_argument_separator) {
             // We have a parameter
