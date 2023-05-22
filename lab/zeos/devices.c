@@ -17,6 +17,10 @@ int sys_write_console(char *buffer,int size)
         init_i;     // Pointer to the beginning of the command
     int chars_written = 0; // Number of characters written to the screen
 
+    // int bg_color = DEFAULT_BG_COLOR;
+    // int fg_color = DEFAULT_FG_COLOR;
+
+
     for (i=0; i<size; i++) {
         if (buffer[i] == command_starter) {
             // ====== A command has started ======
@@ -66,13 +70,12 @@ int execute_command (char op, char *args, int args_size) {
         // Change cursor position
         case 'H':
         case 'f':
-            // TODO: parse 2 values out of args
-            // TODO: set x and y
             if (n_params < 2) {
-                // Bad arguments or insuficient arguments
-                return -1;
+                if (n_params == 0) // Return to home cursor position
+                    set_cursor(0, 0);
+                else // Insuficient valid arguments
+                    return -1;
             }
-
             set_cursor(params[0], params[1]);
             break;
 
