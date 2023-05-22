@@ -31,7 +31,7 @@ int sys_write_console(char *buffer,int size)
 
             if (is_letter(buffer[i])) {
                 // We have a complete command
-                if (execute_command(buffer[i], &buffer[init_i+1], i-init_i-2) < 0) {
+                if (execute_command(buffer[i], &buffer[init_i+1], i-init_i-1) < 0) {
                     for (; init_i <= i; ++init_i) {
                         printc(buffer[init_i]);
                         chars_written++;
