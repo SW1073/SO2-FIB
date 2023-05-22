@@ -24,6 +24,9 @@
 #define YELLOW          0x0E
 #define WHITE           0x0F
 
+extern const Byte DEFAULT_BG_COLOR;
+extern const Byte DEFAULT_FG_COLOR;
+extern const Byte DEFAULT_BLINK;
 // === CIRCULAR BUFFER ===
 #define TAM_BUF 4
 

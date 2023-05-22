@@ -10,6 +10,11 @@
 /** Screen  ***/
 /**************/
 
+const Byte  DEFAULT_FG_COLOR = GREEN;
+const Byte  DEFAULT_BG_COLOR = BLACK;
+const Byte  DEFAULT_BLINK = 0;
+const short DEFAULT_COLOR = ((DEFAULT_BLINK ? 1 : 0) << 7) | ((DEFAULT_BG_COLOR & 0x7) << 4) | (DEFAULT_FG_COLOR & 0xF);
+
 #define NUM_COLUMNS 80
 #define NUM_ROWS    25
 
@@ -102,7 +107,7 @@ void printc(char c)
     }
     else
     {
-        Word ch = (Word) (c & 0x00FF) | 0x0200;
+        Word ch = (Word) (c & 0x00FF) | (DEFAULT_COLOR << 8);
         screen[(y * NUM_COLUMNS + x)] = ch;
         if (++x >= NUM_COLUMNS) {
             x = 0;
