@@ -15,19 +15,17 @@ Byte bg_color;
 Byte fg_color;
 Byte blink;
 
-int sys_write_console(char *buffer,int size)
-{
+int sys_write_console(char *buffer, int size) {
     int i,          // Pointer to the character being processed
         init_i,     // Pointer to the beginning of the command
         chars_written = 0; // Number of characters written to the screen
-
     bg_color = DEFAULT_BG_COLOR;
     fg_color = DEFAULT_FG_COLOR;
     blink = DEFAULT_BLINK;
 
     for (i=0; i<size; i++) {
         if (buffer[i] == command_starter) {
-            // ====== A command has started ======
+            // A command has started
             init_i = i;
             while (i < size && !is_letter(buffer[i])) {
                 i++; // Advance the pointer until the end of a command or the end of the buffer
@@ -75,8 +73,10 @@ int execute_command (char op, char *args, int args_size) {
         case 'H':
         case 'f':
             if (n_params < 2) {
-                if (n_params == 0) // Return to home cursor position
+                if (n_params == 0) {// Return to home cursor position
                     set_cursor(0, 0);
+                    break;
+                }
                 else // Insuficient valid arguments
                     return -1;
             }
