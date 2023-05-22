@@ -176,13 +176,12 @@ void printk_color(char *string, Byte foreground_color, Byte background_color, By
 
 void erase_current_char() {
     Word ch = (Word) ('\0' & 0x00FF) | 0x0200;
+    if (--x < 0) {
+        x = NUM_COLUMNS - 1;
+        y = (y - 1) % NUM_ROWS;
+    }
     screen[(y * NUM_COLUMNS + x)] = ch;
-    
-    if (--y < 0)
-        y = NUM_ROWS - 1;
 
-
-    // 114b62
 }
 
 void set_cursor(Byte new_x, Byte new_y) {

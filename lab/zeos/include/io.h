@@ -24,9 +24,6 @@
 #define YELLOW          0x0E
 #define WHITE           0x0F
 
-/** Screen functions **/
-/**********************/
-
 // === CIRCULAR BUFFER ===
 #define TAM_BUF 4
 
@@ -34,6 +31,8 @@ void circ_buff_append(char c);
 char circ_buff_read();
 char circ_buff_is_full();
 
+/** Screen functions **/
+/**********************/
 Byte inb (unsigned short port);
 void scroll_screen();
 void printc(char c);
