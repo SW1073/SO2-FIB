@@ -6,7 +6,7 @@
 // Queue for blocked processes in I/O 
 struct list_head blocked;
 
-int params[3];
+#define MAX_PARAMS 3
 
 const char command_starter = '\[';
 const char command_argument_separator = ';';
@@ -17,8 +17,12 @@ Byte blink;
 
 int sys_write_console(char *buffer, int size) {
     int i,          // Pointer to the character being processed
+        init_param, // Pointer to the beginning of the parameter
         init_i,     // Pointer to the beginning of the command
-        chars_written = 0; // Number of characters written to the screen
+        chars_written = 0, // Number of characters written to the screen
+        params[MAX_PARAMS],
+        n_params;
+
     bg_color = DEFAULT_BG_COLOR;
     fg_color = DEFAULT_FG_COLOR;
     blink = DEFAULT_BLINK;
@@ -26,24 +30,41 @@ int sys_write_console(char *buffer, int size) {
     for (i=0; i<size; i++) {
         if (buffer[i] == command_starter) {
             // A command has started
-            init_i = i;
-            while (i < size && !is_letter(buffer[i])) {
-                i++; // Advance the pointer until the end of a command or the end of the buffer
-            }
-
-            if (is_letter(buffer[i])) {
-                // We have a complete command
-                if (execute_command(buffer[i], &buffer[init_i+1], i-init_i-1) < 0) {
-                    for (; init_i <= i; ++init_i) {
-                        printc_color(buffer[init_i], fg_color, bg_color, blink);
-                        chars_written++;
-                    }
+            init_i = init_param = ++i;
+            n_params = 0;
+            while (i < size) {
+                if (is_number(buffer[i])) {
+                    ++i;
                 }
-            }
-            else {
-                for (; init_i <= i; ++init_i) {
-                    printc_color(buffer[init_i], fg_color, bg_color, blink);
-                    chars_written++;
+                else if (buffer[i] == command_argument_separator) {
+                    if (i > init_param && n_params < MAX_PARAMS) {
+                        params[n_params] = atoi_n(&buffer[init_param], i-init_param);
+                        n_params++;
+                        init_param = i+1;
+                    }
+                    ++i;
+                }
+                else if (is_letter(buffer[i])) {
+                    // We have a complete command
+                    // Parse the last element if needed to
+                    if (i > init_param && n_params < MAX_PARAMS) {
+                        params[n_params] = atoi_n(&buffer[init_param], i-init_param);
+                        n_params++;
+                    }
+                    // (Try to) execute the command
+                    if (execute_command(buffer[i], params, n_params) < 0) {
+                        for (; init_i <= i; ++init_i)
+                            printc_color(buffer[init_i], fg_color, bg_color, blink);
+                        chars_written += i - init_i + 1;
+                    }
+                    break;
+                }
+                else {
+                    // Invalid character
+                    for (; init_i <= i; ++init_i)
+                        printc_color(buffer[init_i], fg_color, bg_color, blink);
+                    chars_written += i - init_i + 1;
+                    break;
                 }
             }
         }
@@ -56,8 +77,7 @@ int sys_write_console(char *buffer, int size) {
     return chars_written;
 }
 
-int execute_command (char op, char *args, int args_size) {
-    int n_params= parse_params(args, args_size);
+int execute_command (char op, int *params, int n_params) {
     switch (op) {
         // Scroll down screen
         case 'D':
@@ -97,42 +117,6 @@ int execute_command (char op, char *args, int args_size) {
 
     // Command was executed successfully
     return 0;
-}
-
-/**
- * Parse parameters and return the number of parameters parsed or -1 if there was an error
- */
-int parse_params(char* args, int args_size) {
-    int i = 0,
-        init_i = i,
-        num_params = 0;
-
-    // Necessary case to avoid errors
-    if (args_size == 0) return 0;
-
-    while (i < args_size) {
-        if (args[i] == command_argument_separator) {
-            // We have a parameter
-            if (i > init_i && num_params < 3) {
-                params[num_params] = atoi_n(&args[init_i], i-init_i);
-                num_params++;
-            }
-            else {
-                // Too many parameters
-                return -1;
-            }
-            init_i = i;
-        }
-        i++;
-    }
-
-    if (i > init_i && num_params < 3) {
-        params[num_params] = atoi_n(&args[init_i], i-init_i);
-        num_params++;
-    }
-    else return -1;
-    
-    return num_params;
 }
 
 int atoi_n(char *args, int n) {

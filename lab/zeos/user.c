@@ -76,8 +76,9 @@ main(void)
     }
 
     write_wrapper("a");
-    // Test scroll down
-    write_wrapper("\[0;20f\[5;34;45mJola\[05;30;47mJola\[D\[D");
+    // write_wrapper("\[H\[5;34;45mJola\[05;30;47mJola");
+    write_wrapper("\[10;2H\[46;8m                                                             ");
+    write_wrapper("\[10;22H\[46;8m                                                            ");
     while(1);
 
     mutex_init(&mutex);
