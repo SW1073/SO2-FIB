@@ -80,98 +80,33 @@ main(void)
         write(1, "W\n", 2);
     }
 
-    // char* pointer = dyn_mem(8);
-    //
-    // for (int i = 0; i < 8; ++i) {
-    //     pointer[i] = 'a'+i;
-    // }
-    //
-    mutex_init(&mutex);
+    // write_wrapper("\[H\[5;34;45mJola\[05;30;47mJola");
 
-    int i = 0;
-    create_thread((void*)func, &i);
+    // 20x60
+    write_wrapper("\[10;2H\[2;46;8m                                                             ");
+    write_wrapper("\[10;3H\[46;8m ");write_wrapper("\[70;3H\[46;8m ");
+    write_wrapper("\[10;4H\[46;8m ");write_wrapper("\[70;4H\[46;8m ");
+    write_wrapper("\[10;5H\[46;8m ");write_wrapper("\[70;5H\[46;8m ");
+    write_wrapper("\[10;6H\[46;8m ");write_wrapper("\[70;6H\[46;8m ");
+    write_wrapper("\[10;7H\[46;8m ");write_wrapper("\[70;7H\[46;8m ");
+    write_wrapper("\[10;8H\[46;8m ");write_wrapper("\[70;8H\[46;8m ");
+    write_wrapper("\[10;9H\[46;8m ");write_wrapper("\[70;9H\[46;8m ");
+    write_wrapper("\[10;10H\[46;8m ");write_wrapper("\[70;10H\[46;8m ");
+    write_wrapper("\[10;11H\[46;8m ");write_wrapper("\[70;11H\[46;8m ");
+    write_wrapper("\[10;12H\[46;8m ");write_wrapper("\[70;12H\[46;8m ");
+    write_wrapper("\[10;13H\[46;8m ");write_wrapper("\[70;13H\[46;8m ");
+    write_wrapper("\[10;14H\[46;8m ");write_wrapper("\[70;14H\[46;8m ");
+    write_wrapper("\[10;15H\[46;8m ");write_wrapper("\[70;15H\[46;8m ");
+    write_wrapper("\[10;16H\[46;8m ");write_wrapper("\[70;16H\[46;8m ");
+    write_wrapper("\[10;17H\[46;8m ");write_wrapper("\[70;17H\[46;8m ");
+    write_wrapper("\[10;18H\[46;8m ");write_wrapper("\[70;18H\[46;8m ");
+    write_wrapper("\[10;19H\[46;8m ");write_wrapper("\[70;19H\[46;8m ");
+    write_wrapper("\[10;20H\[46;8m ");write_wrapper("\[70;20H\[46;8m ");
+    write_wrapper("\[10;21H\[46;8m ");write_wrapper("\[70;21H\[46;8m ");
+    write_wrapper("\[10;22H\[2;46;8m                                                             ");
 
-    mutex_lock(&mutex);
-    while (gettime() < 2000);
-    pid = 5;
-    mutex_unlock(&mutex);
+    write_wrapper("\[0;0H\[2;44m Soy dim");
+    write_wrapper("\[0;1H\[1;44m Soy light");
 
-    write_wrapper("is over\n");
-
-    exit();
-
-    while(1);
-
-    // Test or sum
-    int ret = fork();
-    if ( ret== 0 ) {
-        write_msg_n_num("Soy el hijo. PID: ", getpid());
-        ret = fork();
-        if (ret == 0) {
-            write_msg_n_num("Soy el hijo. PID: ", getpid());
-            ret = fork();
-            if (ret == 0) {
-                write_msg_n_num("Soy el hijo. PID: ", getpid());
-                ret = fork();
-                if (ret == 0) {
-                    write_msg_n_num("Soy el hijo. PID: ", getpid());
-                    ret = fork();
-                    if (ret == 0) {
-                        write_msg_n_num("Soy el hijo. PID: ", getpid());
-                        ret = fork();
-                        if (ret == 0) {
-                            write_msg_n_num("Soy el hijo. PID: ", getpid());
-                            ret = fork();
-                            if (ret == 0) {
-                                write_msg_n_num("Soy el hijo. PID: ", getpid());
-                                ret = fork();
-                                if (ret == 0) {
-                                    write_msg_n_num("Soy el hijo. PID: ", getpid());
-                                    ret = fork();
-                                    if (ret == 0) {
-                                        write_msg_n_num("Soy el hijo. PID: ", getpid());
-                                        ret = fork();
-                                    }else if (ret == -1) { perror(); }
-                                }else if (ret == -1) { perror(); }
-                            }else if (ret == -1) { perror(); }
-                        }else if (ret == -1) { perror(); }
-                    }else if (ret == -1) { perror(); }
-                }else if (ret == -1) { perror(); }
-            }else if (ret == -1) { perror(); }
-        }else if (ret == -1) { perror(); }
-    }else if (ret == -1) { perror(); }  
-
-    struct stats st1, st2, st3;
-
-    while (gettime() < 1003);
-
-    // Time 1
-    write_msg_n_num("Time 1: ", gettime());
-    write_msg_n_num("PID: ", getpid());
-    get_stats(getpid(), &st1);
-    print_stats(st1);
-
-    while (gettime() < 2000);
-
-    // Time 2
-    write_msg_n_num("Time 2: ", gettime());
-    write_msg_n_num("PID: ", getpid());
-    get_stats(getpid(), &st2);
-    print_stats(st2);
-
-    while (gettime() < 3000);
-
-    // Time 3
-    write_msg_n_num("Time 3: ", gettime());
-    write_msg_n_num("PID: ", getpid());
-    get_stats(getpid(), &st3);
-    print_stats(st3);
-
-    // Trigger a page fault
-    // trigger_page_fault();
-
-    // This point shall never be reached, since the page
-    // fault exception never returns
-    write_wrapper("This point shall never be reached if page fault is activated.");
     for(;;);
 }

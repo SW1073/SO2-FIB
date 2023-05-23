@@ -134,3 +134,11 @@ unsigned long get_ticks(void) {
 int ret_from_fork() {
     return 0;
 }
+
+char is_number(char c) {
+    return (c >= '0' && c <= '9');
+}
+
+char is_letter(char c) {
+    return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
+}

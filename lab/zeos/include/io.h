@@ -24,8 +24,10 @@
 #define YELLOW          0x0E
 #define WHITE           0x0F
 
-/** Screen functions **/
-/**********************/
+extern const Byte DEFAULT_BG_COLOR;
+extern const Byte DEFAULT_FG_COLOR;
+extern const Byte DEFAULT_BLINK;
+extern const Byte DEFAULT_BRIGHT;
 
 // === CIRCULAR BUFFER ===
 #define TAM_BUF 4
@@ -34,11 +36,17 @@ void circ_buff_append(char c);
 char circ_buff_read();
 char circ_buff_is_full();
 
+/** Screen functions **/
+/**********************/
 Byte inb (unsigned short port);
+void scroll_screen();
 void printc(char c);
 void printc_color(char c, Byte foreground_color, Byte background_color, Byte blink);
 void printc_xy(Byte x, Byte y, char c);
 void printk(char *string);
 void printk_color(char *string, Byte foreground_color, Byte background_color, Byte blink);
+void erase_current_char();
+void set_cursor(Byte new_x, Byte new_y);
+
 
 #endif  /* __IO_H__ */
