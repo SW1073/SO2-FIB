@@ -78,7 +78,7 @@ main(void)
     // write_wrapper("\[H\[5;34;45mJola\[05;30;47mJola");
 
     // 20x60
-    write_wrapper("\[10;2H\[46;8m                                                             ");
+    write_wrapper("\[10;2H\[2;46;8m                                                             ");
     write_wrapper("\[10;3H\[46;8m ");write_wrapper("\[70;3H\[46;8m ");
     write_wrapper("\[10;4H\[46;8m ");write_wrapper("\[70;4H\[46;8m ");
     write_wrapper("\[10;5H\[46;8m ");write_wrapper("\[70;5H\[46;8m ");
@@ -98,7 +98,10 @@ main(void)
     write_wrapper("\[10;19H\[46;8m ");write_wrapper("\[70;19H\[46;8m ");
     write_wrapper("\[10;20H\[46;8m ");write_wrapper("\[70;20H\[46;8m ");
     write_wrapper("\[10;21H\[46;8m ");write_wrapper("\[70;21H\[46;8m ");
-    write_wrapper("\[10;22H\[46;8m                                                             ");
+    write_wrapper("\[10;22H\[2;46;8m                                                             ");
+
+    write_wrapper("\[0;0H\[2;44m Soy dim");
+    write_wrapper("\[0;1H\[1;44m Soy light");
 
     for(;;);
 }

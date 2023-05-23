@@ -27,6 +27,8 @@
 extern const Byte DEFAULT_BG_COLOR;
 extern const Byte DEFAULT_FG_COLOR;
 extern const Byte DEFAULT_BLINK;
+extern const Byte DEFAULT_BRIGHT;
+
 // === CIRCULAR BUFFER ===
 #define TAM_BUF 4
 

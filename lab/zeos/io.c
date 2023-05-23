@@ -13,6 +13,8 @@
 const Byte  DEFAULT_FG_COLOR = GREEN;
 const Byte  DEFAULT_BG_COLOR = BLACK;
 const Byte  DEFAULT_BLINK = 0;
+const Byte  DEFAULT_BRIGHT = 1;
+
 const short DEFAULT_COLOR = ((DEFAULT_BLINK ? 1 : 0) << 7) | ((DEFAULT_BG_COLOR & 0x7) << 4) | (DEFAULT_FG_COLOR & 0xF);
 
 #define NUM_COLUMNS 80

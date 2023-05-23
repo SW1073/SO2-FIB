@@ -14,6 +14,7 @@ const char command_argument_separator = ';';
 Byte bg_color;
 Byte fg_color;
 Byte blink;
+Byte bright;
 
 int sys_write_console(char *buffer, int size) {
     int i,          // Pointer to the character being processed
@@ -26,6 +27,7 @@ int sys_write_console(char *buffer, int size) {
     bg_color = DEFAULT_BG_COLOR;
     fg_color = DEFAULT_FG_COLOR;
     blink = DEFAULT_BLINK;
+    bright = DEFAULT_BRIGHT;
 
     for (i=0; i<size; i++) {
         if (buffer[i] == command_starter) {
@@ -135,11 +137,14 @@ void set_attribute(int a) {
             fg_color = DEFAULT_FG_COLOR;
             bg_color = DEFAULT_BG_COLOR;
             blink = DEFAULT_BLINK;
+            bright = DEFAULT_BRIGHT;
             break;
-            // case 1: // Bright
-            //     break;
-            // case 2: // Dim
-            //     break;
+        case 1: // Bright
+            bright = 1;
+            break;
+        case 2: // Dim
+            bright = 0;
+            break;
         case 5: // Blink
             blink = !blink;
             break;
@@ -151,56 +156,72 @@ void set_attribute(int a) {
             fg_color = DEFAULT_BG_COLOR;
             break;
 
-            // Background colors
-        case 30: // Black
-            fg_color = BLACK;
+        // Background colors
+        case 30: // BLACK
+            if (bright) fg_color = DARK_GRAY;
+            else fg_color = BLACK;
             break;
-        case 31: // Red
-            fg_color = RED;
+        case 31: // RED
+            if (bright) fg_color = LIGHT_RED;
+            else fg_color = RED;
             break;
-        case 32: // Green
-            fg_color = GREEN;
+        case 32: // GREEN
+            if (bright) fg_color = LIGHT_GREEN;
+            else fg_color = GREEN;
             break;
-        case 33: // Yellow
-            fg_color = YELLOW;
+        case 33: // YELLOW
+            if (bright) fg_color = YELLOW;
+            else fg_color = BROWN;
             break;
-        case 34: // Blue
-            fg_color = BLUE;
+        case 34: // BLUE
+            if (bright) fg_color = LIGHT_BLUE;
+            else fg_color = BLUE;
             break;
-        case 35: // Magenta
-            fg_color = MAGENTA;
+        case 35: // MAGENTA
+            if (bright) fg_color = LIGHT_MAGENTA;
+            else MAGENTA;
             break;
-        case 36: // Cyan
-            fg_color = CYAN;
+        case 36: // CYAN
+            if (bright) fg_color = LIGHT_CYAN;
+            else fg_color = CYAN;
             break;
-        case 37: // White
-            fg_color = WHITE;
+        case 37: // WHITE
+            if (bright) fg_color = WHITE;
+            else fg_color = LIGHT_GRAY;
             break;
 
-            // Foreground colors
+        // Foreground colors
         case 40: // BLACK
-            bg_color = BLACK;
+            if (bright) bg_color = DARK_GRAY;
+            else bg_color = BLACK;
             break;
         case 41: // RED
-            bg_color = RED;
+            if (bright) bg_color = LIGHT_RED;
+            else bg_color = RED;
             break;
         case 42: // GREEN
-            bg_color = GREEN;
+            if (bright) bg_color = LIGHT_GREEN;
+            else bg_color = GREEN;
             break;
         case 43: // YELLOW
-            bg_color = YELLOW;
+            if (bright) bg_color = YELLOW;
+            else bg_color = BROWN;
             break;
         case 44: // BLUE
-            bg_color = BLUE;
+            if (bright) bg_color = LIGHT_BLUE;
+            else bg_color = BLUE;
             break;
         case 45: // MAGENTA
-            bg_color = MAGENTA;
+            if (bright) bg_color = LIGHT_MAGENTA;
+            else bg_color = MAGENTA;
             break;
         case 46: // CYAN
-            bg_color = CYAN;
+            if (bright == 1) bg_color = LIGHT_CYAN;
+            else bg_color = CYAN;
             break;
         case 47: // WHITE
-            bg_color = WHITE;
+            if (bright) bg_color = LIGHT_GRAY;
+            else bg_color = WHITE;
             break;
     }
 
