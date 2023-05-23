@@ -36,7 +36,6 @@ union task_union {
 };
 
 struct mutex_t {
-    int id;
     int count;
     struct list_head blocked_queue;
 };
@@ -88,7 +87,6 @@ void update_sched_data_rr();
 
 // tema mutex
 struct mutex_t* mutex_get(int id);
-int mutex_add(int id);
 
 void schedule();
 

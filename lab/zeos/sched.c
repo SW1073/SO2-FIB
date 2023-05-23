@@ -186,8 +186,6 @@ void init_sched()
 
     for (int i = 0; i < MAX_MUTEXES; ++i) {
         INIT_LIST_HEAD( &mutexes[i].blocked_queue );
-        mutexes[i].id = -1;
-        mutexes[i].count = 0;
     }
 
     // Si insertamos los elementos como se muestra en el codigo, con list_add_tail,
@@ -389,24 +387,9 @@ void stats_reset_remaining_ticks(struct task_struct *t) {
 }
 
 struct mutex_t* mutex_get(int id) {
-    for (int i = 0; i < MAX_MUTEXES; ++i) {
-        if (mutexes[i].id == id) {
-            return &mutexes[i];
-        }
-    }
+    if (id < 0) return NULL;
+    if (id >= MAX_MUTEXES) return NULL;
 
-    return NULL;
+    return &mutexes[id];
 }
 
-int mutex_add(int id) {
-    if (id == -1) return -1;
-
-    for (int i = 0; i < MAX_MUTEXES; ++i) {
-        if (mutexes[i].id == -1) {
-            mutexes[i].id = id;
-            return 0;
-        }
-    }
-
-    return -1;
-}

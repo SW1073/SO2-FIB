@@ -260,7 +260,7 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
     DWord *base_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
 
     new_stack[(PAGE_SIZE/4)-1] = (DWord)parameter;
-    new_stack[(PAGE_SIZE/4)-2] = (DWord)0x114b62; // evil floating point bit level hacking
+    new_stack[(PAGE_SIZE/4)-2] = (DWord)0; // evil floating point bit level hacking
 
     pcb->kernel_esp = &(pcb_union->stack[KERNEL_STACK_SIZE-19]); // 17-2 por el @ret_from_fork y el ebp.
     pcb_union->stack[KERNEL_STACK_SIZE-19] = 0;
@@ -282,14 +282,10 @@ int sys_mutex_init(int *m) {
     int m_sys = 0;
     copy_from_user(m, &m_sys, sizeof(int));
 
-    mutex_add(m_sys);
+    struct mutex_t *mutex = mutex_get(m_sys);
+    if (mutex == NULL) return -1;
 
-    // for (int i = 0; i < MAX_MUTEXES; ++i) {
-    //     if (mutexes[i].id == NULL) {
-    //         mutexes[i].id = m_sys;
-    //         return 0;
-    //     }
-    // }
+    mutex->count = 0;
 
     return 0;
 }
@@ -303,7 +299,7 @@ int sys_mutex_lock(int *m) {
     copy_from_user(m, &m_sys, sizeof(int));
 
     struct mutex_t *mutex = mutex_get(m_sys);
-    if (mutex == NULL) return -1;
+    if (mutex == NULL || mutex->count == -1) return -1;
 
     if (mutex->count >= 1) {
         update_process_state_rr(current(), &mutex->blocked_queue);
@@ -324,7 +320,7 @@ int sys_mutex_unlock(int *m) {
     copy_from_user(m, &m_sys, sizeof(int));
 
     struct mutex_t *mutex = mutex_get(m_sys);
-    if (mutex == NULL) return -1;
+    if (mutex == NULL || mutex->count == -1) return -1;
 
     if (mutex->count == 0) return 0; // nose cuando puede pasar esto.
 

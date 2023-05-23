@@ -59,13 +59,13 @@ void func(int i) {
     //
     // write_wrapper(b);
     // write_wrapper("\n");
+
     mutex_lock(&mutex);
     pid = 10;
     mutex_unlock(&mutex);
 
     write_wrapper("Func is over\n");
-    while(1);
-    // exit_thread();
+    exit_thread();
 }
 
 
@@ -79,6 +79,14 @@ main(void)
     if (write(1, "\nHola que tal\n", 14) > 0) {
         write(1, "W\n", 2);
     }
+
+    mutex_init(&mutex);
+
+    create_thread((void*)func, 0);
+
+    mutex_lock(&mutex);
+    while (gettime() < 1000) pid++;
+    mutex_unlock(&mutex);
 
     // write_wrapper("\[H\[5;34;45mJola\[05;30;47mJola");
 
