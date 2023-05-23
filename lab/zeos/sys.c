@@ -91,9 +91,10 @@ void sys_exit() {
     if (pcbs_in_dir[get_DIR_pos(current_proc)] == 0) {
         // Free user pages
         free_user_pages(current_proc);
-        // Free pcb
-        list_add_tail(&current_proc->list, &freequeue);
     }
+
+    // Free pcb
+    list_add_tail(&current_proc->list, &freequeue);
 
     // Let rr decide next proc to execute
     // This function will not return
@@ -212,22 +213,19 @@ int sys_read(char *b, int maxchars) {
 void sys_exit_thread(void) {
     struct task_struct* t = current();
 
-    int dir_pos = get_DIR_pos(t);
+    // TODO reemplazar esto con bithack raro para pillar
+    // la página del esp. Esto borra todo lo que hay después de
+    // las páginas de código en la tabla de páginas.
+    // del_ss_extra_pages(get_PT(t));
 
-    if (pcbs_in_dir[dir_pos] == 1) {
-        // TODO reemplazar esto con bithack raro para pillar
-        // la página del esp. Esto borra todo lo que hay después de
-        // las páginas de código en la tabla de páginas.
-        del_ss_extra_pages(get_PT(t));
-        pcbs_in_dir[dir_pos]--;
-    } else {
-        sys_exit();
-    }
+    union task_union* t_union = (union task_union*)t;
+    DWord *base_stack = &(t_union->stack[KERNEL_STACK_SIZE]);
 
+    DWord page = base_stack[-2] >> 12;
 
-    // free_user_pages(t);
-    // update_process_state_rr(current(), &freequeue);
-    // sched_next_rr();
+    del_ss_pag(get_PT(t), page);
+
+    sys_exit();
 }
 
 int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
@@ -328,8 +326,9 @@ int sys_mutex_unlock(int *m) {
         struct task_struct *t = list_head_to_task_struct(list_first(&mutex->blocked_queue));
         list_del(&t->list);
         list_add(&t->list, &readyqueue);
-        mutex->count--;
     }
+
+    mutex->count--;
 
     return 0;
 }

@@ -51,12 +51,9 @@ void print_stats(struct stats st) {
 /* ==================================== */
 
 void func(int i) {
-    // while (i < 100000000) {
-    //     ++i;
-    // }
     // char b[4];
     // read(b, 4);
-    //
+
     // write_wrapper(b);
     // write_wrapper("\n");
 
@@ -85,7 +82,7 @@ main(void)
     create_thread((void*)func, 0);
 
     mutex_lock(&mutex);
-    while (gettime() < 1000) pid++;
+    pid = 10;
     mutex_unlock(&mutex);
 
     // write_wrapper("\[H\[5;34;45mJola\[05;30;47mJola");
@@ -115,6 +112,10 @@ main(void)
 
     write_wrapper("\[0;0H\[2;44m Soy dim");
     write_wrapper("\[0;1H\[1;44m Soy light");
+
+    while (gettime() > 1000);
+
+    write_wrapper("saliendo del padre");
 
     for(;;);
 }
