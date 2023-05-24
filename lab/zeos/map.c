@@ -7,7 +7,7 @@ void draw_map(Map map_bmp) {
         for (int j = 0; j < MAP_WIDTH/8; j++) {
             mask = 0x80;
             while (mask != 0) {
-                if (!(map_bmp[i*(MAP_WIDTH/8) + j] & mask))
+                if (EQ_WALL(map_bmp[i*(MAP_WIDTH/8) + j] & mask))
                     // Draw a wall
                     color = 6;
                 else
@@ -27,4 +27,14 @@ void draw_player_xy(unsigned char x, unsigned char y) {
 
 void erase_player_xy(unsigned char x, unsigned char y) {
     erase_xy(x+MAP_X_OFFSET, y+MAP_Y_OFFSET);
+}
+
+int is_wall(Map map, unsigned char x, unsigned char y) {
+    unsigned char j = x/8;
+    unsigned char i = y;
+    unsigned char mask = 0x80 >> (x%8);
+    if (EQ_WALL(map[i*MAP_WIDTH/8 + j] & mask))
+        return 1;
+    else
+        return 0;
 }

@@ -9,10 +9,14 @@
 #define MAP_X_OFFSET 0
 #define MAP_Y_OFFSET 3
 
+#define EQ_WALL(b) ((b) == 0)
+
 typedef unsigned char Map[MAP_HEIGHT*MAP_WIDTH/8];
 
 void draw_map(Map map_bmp);
 void draw_player_xy(unsigned char x, unsigned char y);
 void erase_player_xy(unsigned char x, unsigned char y);
+
+int is_wall(Map map, unsigned char x, unsigned char y);
 
 #endif

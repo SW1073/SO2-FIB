@@ -101,5 +101,10 @@ main(void)
     erase_player_xy(1, 1);
     draw_player_xy(2, 2);
 
+    if (is_wall(level1, 0, 1))
+        write_wrapper("is wall\n");
+    else
+        write_wrapper("is not wall\n");
+
     for(;;);
 }
