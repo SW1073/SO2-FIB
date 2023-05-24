@@ -85,10 +85,25 @@ char mapa_bmp[HEIGHT * WIDTH / 8] = {
     0x00, 0x00
 };
 
-char line_buffer[WIDTH+12] = "\[0;03H\[46;8mXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+#define CHAR_BUFFER_SIZE 14
+char char_buffer[CHAR_BUFFER_SIZE] = "\[00;03H\[46;8m ";
+
+void draw_ij(char c, unsigned char i, unsigned char j, unsigned char color) {
+    char_buffer[1] = j / 10 + '0';
+    char_buffer[2] = j % 10 + '0';
+    
+    char_buffer[4] = i / 10 + '0';
+    char_buffer[5] = i % 10 + '0';
+    
+    char_buffer[9] = color + '0';
+
+    char_buffer[CHAR_BUFFER_SIZE - 1] = c;
+
+    write(1, char_buffer, CHAR_BUFFER_SIZE);
+}
 
 void draw_map() {
-    unsigned char mask, jj, ii;
+    unsigned char mask, jj;
     for (int i = 0; i < HEIGHT; i++) {
         jj = 0;
         for (int j = 0; j < WIDTH/8; j++) {
@@ -96,26 +111,14 @@ void draw_map() {
             while (mask != 0) {
                 if (!(mapa_bmp[i*(WIDTH/8) + j] & mask))
                     // Draw a wall
-                    line_buffer[12+jj] = 'X';
+                    draw_ij(' ', i+3, jj, 6);
                 else
                     // Draw a space
-                    line_buffer[12+jj] = '\0';
+                    draw_ij(' ', i+3, jj, 0);
                 mask >>= 1;
                 jj++;
             }
         }
-        ii = i + 3;
-        char c[2] = {'\0', '\0'};
-        itoa(ii, c);
-        if (ii < 10) {
-            line_buffer[3] = '0';
-            line_buffer[4] = c[0];
-        }
-        else {
-            line_buffer[3] = c[0];
-            line_buffer[4] = c[1];
-        }
-        write(1, line_buffer, WIDTH+12);
     }
 }
 
