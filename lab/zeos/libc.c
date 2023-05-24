@@ -8,6 +8,16 @@
 #include <types.h>
 
 int errno;
+int nSeed = 5323;
+
+void srand(unsigned int seed) {
+    nSeed = seed;
+}
+
+int rand(void) {
+    nSeed = (8253729 * nSeed + 2396403);
+    return nSeed % 32767;
+}
 
 void itoa(int a, char *b)
 {

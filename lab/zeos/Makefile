@@ -45,6 +45,7 @@ LIBZEOS = -L . -l zeos
 USROBJ = \
 	libc.o \
 	wrappers.o \
+	game.o \
 	# suma.o \
 	# libjp.a \
 
@@ -88,6 +89,8 @@ io.o:io.c $(INCLUDEDIR)/io.h
 sched.o:sched.c $(INCLUDEDIR)/sched.h
 
 libc.o:libc.c $(INCLUDEDIR)/libc.h
+
+game.o:game.c $(INCLUDEDIR)/libc.h
 
 mm.o:mm.c $(INCLUDEDIR)/types.h $(INCLUDEDIR)/mm.h
 

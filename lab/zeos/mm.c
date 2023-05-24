@@ -183,7 +183,7 @@ void abort_copy(struct task_struct *parent, struct task_struct *child) {
 }
 
 /**
- * Retorna un frame libre del espacio logico del padre.
+ * Retorna una página libre del espacio lógico del padre.
  * Util af para hacer mapeos temporales y asi copiar
  * datos entre dos espacios logicos de direccines.
  * Retorna -1 si no hay paginas extra libres.

@@ -8,6 +8,10 @@
 
 #include <stats.h>
 
+void srand(unsigned int seed);
+
+int rand(void);
+
 int write(int fd, char *buffer, int size);
 
 unsigned long gettime();
