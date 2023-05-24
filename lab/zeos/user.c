@@ -1,4 +1,5 @@
 #include <libc.h>
+#include <map.h>
 
 char buff[24];
 
@@ -65,8 +66,6 @@ void func(int i) {
     exit_thread();
 }
 
-#define HEIGHT 21
-#define WIDTH 80
 
 char level1[HEIGHT * WIDTH / 8] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -85,63 +84,21 @@ char level1[HEIGHT * WIDTH / 8] = {
     0x00, 0x00
 };
 
-#define FORMAT_BUFFER_SIZE 12
-char format_buffer[FORMAT_BUFFER_SIZE] = "\[00;03H\[46m ";
-
-void draw_ij(char c, unsigned char i, unsigned char j, unsigned char color) {
-    format_buffer[1] = j / 10 + '0';
-    format_buffer[2] = j % 10 + '0';
-    format_buffer[4] = i / 10 + '0';
-    format_buffer[5] = i % 10 + '0';
-    format_buffer[9] = color + '0';
-    format_buffer[FORMAT_BUFFER_SIZE - 1] = c;
-    write(1, format_buffer, FORMAT_BUFFER_SIZE);
-}
-
-void draw_xy(char c, unsigned char x, unsigned char y, unsigned char color) {
-    format_buffer[1] = x / 10 + '0';
-    format_buffer[2] = x % 10 + '0';
-    format_buffer[4] = y / 10 + '0';
-    format_buffer[5] = y % 10 + '0';
-    format_buffer[9] = color + '0';
-    format_buffer[FORMAT_BUFFER_SIZE - 1] = c;
-    write(1, format_buffer, FORMAT_BUFFER_SIZE);
-}
-
-#define MAP_X_OFFSET 0
-#define MAP_Y_OFFSET 3
-
-void draw_map(char *map_bmp) {
-    unsigned char mask, jj, color = 0;
-    for (int i = 0; i < HEIGHT; i++) {
-        jj = 0;
-        for (int j = 0; j < WIDTH/8; j++) {
-            mask = 0x80;
-            while (mask != 0) {
-                if (!(map_bmp[i*(WIDTH/8) + j] & mask))
-                    // Draw a wall
-                    color = 6;
-                else
-                    // Draw a space
-                    color = 0;
-                draw_ij(' ', i+MAP_Y_OFFSET, jj+MAP_X_OFFSET, color);
-                mask >>= 1;
-                jj++;
-            }
-        }
-    }
-}
-
     int __attribute__ ((__section__(".text.main")))
 main(void)
 {
     /* Next line, tries to move value 0 to CR3 register. This register is a privileged one, and so it will raise an exception */
     /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */    
 
+    erase_screen();
+
     write_wrapper("\[0;1H Score: ");
     write_wrapper("\[9;1H   69");
-
     draw_map(level1);
+    draw_player_xy(1, 1);
+    while (gettime() < 1000);
+    erase_player_xy(1, 1);
+    draw_player_xy(2, 2);
 
     for(;;);
 }
