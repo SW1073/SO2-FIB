@@ -59,25 +59,9 @@ main(void)
     /* Next line, tries to move value 0 to CR3 register. This register is a privileged one, and so it will raise an exception */
     /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */    
 
-    g_erase_screen();
-
     struct game* game = game_new(1);
-
-    game_loop(game);
-
-    while(1);
-
-    // write_wrapper("\[0;1H Score: ");
-    // write_wrapper("\[9;1H   69");
-    // map_draw(level2);
-    //
-    // while (gettime() < 1000);
-    //
-    // if (map_is_wall(level2, 1, 1))
-    //     write_wrapper("is wall\n");
-    // else
-    //     write_wrapper("is not wall\n");
-    // g_erase_screen();
+    if (game == 0) write_wrapper("Error creating game\n");
+    else game_loop(game);
 
     g_draw_line('a', 10, 10, 20, 25, GREEN, GREEN);
 

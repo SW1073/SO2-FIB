@@ -1,3 +1,5 @@
+#include "graphics.h"
+#include "map.h"
 #include <game.h>
 
 Map level_1 = {
@@ -54,12 +56,14 @@ Map level_3 = {
 unsigned char *levels[NUM_LEVELS] = {level_1, level_2, level_3};
 
 struct game* game_new(int diff) {
+    if (diff < 0) return 0;
+
     struct game* game = (struct game*)dyn_mem(sizeof(struct game));
 
     game->score = 0;
     game->level = 0;
-    game->time_left = 30;
-    game->last_ticks = 0;
+    game->should_exit = 0;
+    mutex_init(&game->mutex);
 
     // bigger diff, less lives.
     game->lives = 6 - (diff/2);
@@ -81,64 +85,105 @@ struct game* game_new(int diff) {
 }
 
 void game_loop(struct game* game) {
-    // clear_screen();
+    g_erase_screen();
 
-    char should_exit = 0;
 
-    while (!should_exit) {
-        game_draw(game);
-        game_update_time(game);
+    map_draw(levels[game->level]);
 
-        // TODO esto hay que hacerlo en otro thread
-        game_process_input(game);
+    int last_score = -1; 
+    int last_lives = -1;
+    int last_level = -1;
+
+    char needs_redraw = 1;
+
+    create_thread((void*)game_process_input, game);
+
+    while (!game->should_exit) {
+        if (needs_redraw) game_draw(game);
 
         game_process_collisions(game);
+
         if (game->manzanitas_left <= 0) game_advance_level(game);
-        should_exit = game_should_exit(game);
+
+        needs_redraw = (last_score != game->score) || (last_lives != game->lives) || (last_level != game->level);
+
+        last_score = game->score;
+        last_lives = game->lives;
+        last_level = game->level;
+
+        game->should_exit = game_should_exit(game);
     }
 
-    // TODO mostrar score y game over title??? 
+    g_erase_screen();
+
+    // g_draw_line('a', 10, 10, 20, 25, GREEN, GREEN);
+    write_wrapper("GAME OVER\n");
+
+    if (game->lives <= 0) {
+        write_wrapper("You lost all your lives!\n");
+    } else {
+        write_wrapper("You won!\n");
+    }
 }
 
 // --------------------------------------------------------
 
 void game_draw(struct game *game) {
-    // pintar mapa
-    // pintar score
-    // pintar tiempo
-    // pintar vidas
-    // pintar player
-    // pintar manzanitas
-        // si la posición de la manzanita es < 0 ignora manzanita
+    char buffer[] = "\[0;1H Score:00";
+    buffer[12] = '0' + (game->score / 10);
+    buffer[13] = '0' + (game->score % 10);
+    write(1, buffer, strlen(buffer));
+
+    char buffer2[] = "\[20;1H Lives:00";
+    buffer2[13] = '0' + (game->lives / 10);
+    buffer2[14] = '0' + (game->lives % 10);
+    write(1, buffer2, strlen(buffer2));
+
+    char buffer4[] = "\[60;1H Level:00";
+    buffer4[13] = '0' + (game->level / 10);
+    buffer4[14] = '0' + (game->level % 10);
+    write(1, buffer4, strlen(buffer4));
+}
+
+void game_draw_objects(struct game* game) {
+    g_draw_xy(PLAYER_CHAR, game->player.x+MAP_X_OFFSET, game->player.y+MAP_Y_OFFSET, BLACK, YELLOW);
+
+    for (int i = 0; i < game->num_manzanitas; ++i) {
+        if (game->manzanitas[i].x >= 0 && game->manzanitas[i].y >= 0) {
+            g_draw_xy(MANZANITA_CHAR, game->manzanitas[i].x+MAP_X_OFFSET, game->manzanitas[i].y+MAP_Y_OFFSET, BLACK, BLACK);
+        }
+    }
 }
 
 int game_should_exit(struct game* game) {
-    if (game->time_left <= 0) return 1;
     if (game->lives <= 0) return 1;
-    if (game->level == NUM_LEVELS) return 1;
+    if (game->level >= NUM_LEVELS) return 1;
 
     return 0;
 }
 
 void game_advance_level(struct game* game) {
     game->level++;
-    game->time_left = 30;
-    game->lives++;
     game->manzanitas_left = game->num_manzanitas;
     for (int i = 0; i < game->num_manzanitas; i++) game_move_manzanita_random(game, i);
-}
+    game_move_player_random(game);
 
-void game_update_time(struct game *game) {
-    unsigned long ticks = gettime();
-
-    if (ticks > (game->last_ticks + TICKS_PER_SECOND)) {
-        game->time_left--;
+    if (game->level >= NUM_LEVELS) {
+        game->should_exit = 1;
+        return;
     }
+
+    map_draw(levels[game->level]);
+    game_draw_objects(game);
 }
 
 char game_is_wall(struct game* game, int x, int y) {
-    // bithack to raro
-    return 0;
+    if (game->level >= NUM_LEVELS) {
+        game->should_exit = 1;
+        return 1;
+    }
+
+    return map_is_wall(levels[game->level], x, y);
 }
 
 int game_is_manzanita(struct game* game, int x, int y, int manzanita) {
@@ -153,39 +198,41 @@ int game_is_manzanita(struct game* game, int x, int y, int manzanita) {
 }
 
 void game_process_input(struct game *game) {
-    // TODO handling de threads y tal
-        // mutexes, etc.
-
     char c;
 
-    read(&c, 1);
+    while (!game->should_exit) {
+        game_draw_objects(game);
 
-    // delta time?
-    switch (c) {
-        case 'w':
-            game_move_player_up(game);
-            break;
-        case 'a':
-            game_move_player_left(game);
-            break;
-        case 's':
-            game_move_player_down(game);
-            break;
-        case 'd':
-            game_move_player_right(game);
-            break;
-        case 'q':
-            game->lives = 0;
-            break;
-        default:
-            break;
+        read(&c, 1);
+
+        switch (c) {
+            case 'w':
+                game_move_player_up(game);
+                break;
+            case 'a':
+                game_move_player_left(game);
+                break;
+            case 's':
+                game_move_player_down(game);
+                break;
+            case 'd':
+                game_move_player_right(game);
+                break;
+            default:
+                break;
+        }
+
     }
+
+    exit_thread();
 }
 
 void game_process_collisions(struct game* game) {
     if (game_is_wall(game, game->player.x, game->player.y)) {
         game->lives--;
+        map_draw(levels[game->level]);
         game_move_player_random(game);
+        game_draw_objects(game);
         return;
     }
 
@@ -193,52 +240,61 @@ void game_process_collisions(struct game* game) {
     if (manzanita == -1) return;
 
     game->score++;
+    if (game->score > 99) game->score = 99;
     game->manzanitas_left--;
     game->manzanitas[manzanita].x = -1;
     game->manzanitas[manzanita].y = -1;
+    game_draw_objects(game);
 }
 
 void game_move_player_left(struct game* game) {
-    if (game->player.x > 0 && !game_is_wall(game, game->player.x - 1, game->player.y)) {
-        game->player.x--;
-    }
+    mutex_lock(&game->mutex);
+    g_erase_xy(game->player.x+MAP_X_OFFSET, game->player.y+MAP_Y_OFFSET);
+    game->player.x--;
+    mutex_unlock(&game->mutex);
 }
 
 void game_move_player_right(struct game* game) {
-    if (game->player.x < MAP_WIDTH-1 && !game_is_wall(game, game->player.x + 1, game->player.y)) {
-        game->player.x++;
-    }
+    mutex_lock(&game->mutex);
+    g_erase_xy(game->player.x+MAP_X_OFFSET, game->player.y+MAP_Y_OFFSET);
+    game->player.x++;
+    mutex_unlock(&game->mutex);
 }
 
 void game_move_player_up(struct game* game) {
-    if (game->player.y > 0 && !game_is_wall(game, game->player.x, game->player.y - 1)) {
-        game->player.y--;
-    }
+    mutex_lock(&game->mutex);
+    g_erase_xy(game->player.x+MAP_X_OFFSET, game->player.y+MAP_Y_OFFSET);
+    game->player.y--;
+    mutex_unlock(&game->mutex);
 }
 
 void game_move_player_down(struct game* game) {
-    if (game->player.y < MAP_HEIGHT-1 && !game_is_wall(game, game->player.x, game->player.y + 1)) {
-        game->player.y++;
-    }
+    mutex_lock(&game->mutex);
+    g_erase_xy(game->player.x+MAP_X_OFFSET, game->player.y+MAP_Y_OFFSET);
+    game->player.y++;
+    mutex_unlock(&game->mutex);
 }
 
 void game_move_player_random(struct game* game) {
     int x = rand() % MAP_WIDTH;
     int y = rand() % MAP_HEIGHT;
 
-    if (!game_is_wall(game, x, y) && (game_is_manzanita(game, x, y, -1) < 0)) {
-        game->player.x = x;
-        game->player.y = y;
-    } else {
-        game_move_player_random(game);
+    while (game_is_wall(game, x, y) || (game_is_manzanita(game, x, y, -1) >= 0)) {
+        x = rand() % MAP_WIDTH;
+        y = rand() % MAP_HEIGHT;
     }
+
+    mutex_lock(&game->mutex);
+    g_erase_xy(game->player.x+MAP_X_OFFSET, game->player.y+MAP_Y_OFFSET);
+    game->player.x = x;
+    game->player.y = y;
+    mutex_unlock(&game->mutex);
 }
 
 void game_move_manzanita_random(struct game* game, int manzanita) {
     int x = rand() % MAP_WIDTH;
     int y = rand() % MAP_HEIGHT;
 
-    // if (!game_is_wall(game, x, y) && !game_is_manzanita(game, x, y)) {
     if (!game_is_wall(game, x, y)) {
         game->manzanitas[manzanita].x = x;
         game->manzanitas[manzanita].y = y;

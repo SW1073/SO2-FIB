@@ -7,6 +7,9 @@
 #define TICKS_PER_SECOND 18
 #define NUM_LEVELS 3
 
+#define PLAYER_CHAR 'X'
+#define MANZANITA_CHAR 'M'
+
 extern Map level_1;
 extern Map level_2;
 extern Map level_3;
@@ -22,12 +25,12 @@ struct game {
     int score;
     int level;
     int lives;
-    int time_left;
+    char should_exit;
+    int mutex;
     struct object player;
     int num_manzanitas;
     int manzanitas_left;
     struct object *manzanitas;
-    unsigned long last_ticks;
 };
 
 struct game* game_new(int diff);
@@ -38,7 +41,7 @@ void game_loop(struct game* game);
 
 void game_draw(struct game* game);
 
-void game_update_time(struct game* game);
+void game_draw_objects(struct game* game);
 
 char game_is_wall(struct game* game, int x, int y);
 

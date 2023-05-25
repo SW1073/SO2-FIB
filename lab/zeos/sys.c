@@ -179,15 +179,31 @@ int sys_read(char *b, int maxchars) {
     t->circ_buff_chars_to_read = maxchars;
     t->circ_buff_maxchars = maxchars;
 
+    char buff[TAM_BUF];
+    int diff = t->circ_buff_maxchars - t->circ_buff_chars_to_read;
+    int i = 0;
+
+    // TODO mirar buffer si hay algo.
+    if (!circ_buff_is_full()) {
+        char c = circ_buff_read();
+        while (c != '\0') {
+            buff[i] = c;
+            ++i;
+            c = circ_buff_read();
+            t->circ_buff_chars_to_read--;
+        }
+
+        copy_to_user(buff, b + diff, i);
+
+        diff = t->circ_buff_maxchars - t->circ_buff_chars_to_read;
+    }
+
     // poner proceso en blocked para que el scheduler no le pille.
     update_process_state_rr(t, &blocked);
-
-    int diff = t->circ_buff_maxchars - t->circ_buff_chars_to_read;
-    char buff[TAM_BUF];
     while (t->circ_buff_chars_to_read > 0) {
         sched_next_rr();
 
-        int i = 0;
+        i = 0;
         char c = circ_buff_read();
         while (c != '\0') {
             buff[i] = c;
@@ -205,7 +221,6 @@ int sys_read(char *b, int maxchars) {
     // update_process_state_rr(current(), &readyqueue);
     // sched_next_rr();
     list_del(&current()->list);
-    list_add_tail(&current()->list, &readyqueue);
 
     return maxchars;
 }
