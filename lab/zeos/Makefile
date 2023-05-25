@@ -46,8 +46,8 @@ USROBJ = \
 	libc.o \
 	wrappers.o \
 	game.o \
-	# suma.o \
-	# libjp.a \
+	map.o \
+	graphics.o \
 
 all:zeos.bin
 
@@ -97,6 +97,10 @@ mm.o:mm.c $(INCLUDEDIR)/types.h $(INCLUDEDIR)/mm.h
 sys.o:sys.c $(INCLUDEDIR)/devices.h
 
 utils.o:utils.c $(INCLUDEDIR)/utils.h
+
+map.o:map.c $(INCLUDEDIR)/map.h
+
+graphics.o:graphics.c $(INCLUDEDIR)/graphics.h
 
 
 system.o:system.c $(INCLUDEDIR)/hardware.h system.lds $(SYSOBJ) $(INCLUDEDIR)/segment.h $(INCLUDEDIR)/types.h $(INCLUDEDIR)/interrupt.h $(INCLUDEDIR)/system.h $(INCLUDEDIR)/sched.h $(INCLUDEDIR)/mm.h $(INCLUDEDIR)/io.h $(INCLUDEDIR)/mm_address.h 

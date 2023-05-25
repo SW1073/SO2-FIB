@@ -2,18 +2,14 @@
 #define GAME_H
 
 #include <libc.h>
-
-#define HEIGHT 21
-#define WIDTH 80
+#include <map.h>
 
 #define TICKS_PER_SECOND 18
 #define NUM_LEVELS 3
 
-#define SIZE (HEIGHT*WIDTH/8)+1
-
-extern unsigned char level_1[SIZE];
-extern unsigned char level_2[SIZE];
-extern unsigned char level_3[SIZE];
+extern Map level_1;
+extern Map level_2;
+extern Map level_3;
 
 extern unsigned char *levels[NUM_LEVELS];
 
@@ -46,7 +42,7 @@ void game_update_time(struct game* game);
 
 char game_is_wall(struct game* game, int x, int y);
 
-int game_is_manzanita(struct game* game, int x, int y);
+int game_is_manzanita(struct game* game, int x, int y, int manzanita);
 
 int game_should_exit(struct game* game);
 
@@ -66,6 +62,6 @@ void game_move_player_down(struct game* game);
 
 void game_move_player_random(struct game* game);
 
-void game_move_manzanita_random(struct game* game, int i);
+void game_move_manzanita_random(struct game* game, int manzanita);
 
 #endif // !GAME_H

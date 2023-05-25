@@ -1,5 +1,7 @@
+#include "graphics.h"
 #include <libc.h>
 #include <game.h>
+#include <map.h>
 
 char buff[24];
 
@@ -57,18 +59,7 @@ main(void)
     /* Next line, tries to move value 0 to CR3 register. This register is a privileged one, and so it will raise an exception */
     /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */    
 
-    // Test write syscall
-    if (write(1, "\nHola que tal\n", 14) > 0) {
-        write(1, "W\n", 2);
-    }
-
-    // mutex_init(&mutex);
-    //
-    // create_thread((void*)func, 0);
-    //
-    // mutex_lock(&mutex);
-    // pid = 10;
-    // mutex_unlock(&mutex);
+    g_erase_screen();
 
     struct game* game = game_new(1);
 
@@ -76,37 +67,19 @@ main(void)
 
     while(1);
 
-    // write_wrapper("\[H\[5;34;45mJola\[05;30;47mJola");
+    // write_wrapper("\[0;1H Score: ");
+    // write_wrapper("\[9;1H   69");
+    // map_draw(level2);
+    //
+    // while (gettime() < 1000);
+    //
+    // if (map_is_wall(level2, 1, 1))
+    //     write_wrapper("is wall\n");
+    // else
+    //     write_wrapper("is not wall\n");
+    // g_erase_screen();
 
-    // 20x60
-    write_wrapper("\[10;2H\[2;46;8m                                                             ");
-    write_wrapper("\[10;3H\[46;8m ");write_wrapper("\[70;3H\[46;8m ");
-    write_wrapper("\[10;4H\[46;8m ");write_wrapper("\[70;4H\[46;8m ");
-    write_wrapper("\[10;5H\[46;8m ");write_wrapper("\[70;5H\[46;8m ");
-    write_wrapper("\[10;6H\[46;8m ");write_wrapper("\[70;6H\[46;8m ");
-    write_wrapper("\[10;7H\[46;8m ");write_wrapper("\[70;7H\[46;8m ");
-    write_wrapper("\[10;8H\[46;8m ");write_wrapper("\[70;8H\[46;8m ");
-    write_wrapper("\[10;9H\[46;8m ");write_wrapper("\[70;9H\[46;8m ");
-    write_wrapper("\[10;10H\[46;8m ");write_wrapper("\[70;10H\[46;8m ");
-    write_wrapper("\[10;11H\[46;8m ");write_wrapper("\[70;11H\[46;8m ");
-    write_wrapper("\[10;12H\[46;8m ");write_wrapper("\[70;12H\[46;8m ");
-    write_wrapper("\[10;13H\[46;8m ");write_wrapper("\[70;13H\[46;8m ");
-    write_wrapper("\[10;14H\[46;8m ");write_wrapper("\[70;14H\[46;8m ");
-    write_wrapper("\[10;15H\[46;8m ");write_wrapper("\[70;15H\[46;8m ");
-    write_wrapper("\[10;16H\[46;8m ");write_wrapper("\[70;16H\[46;8m ");
-    write_wrapper("\[10;17H\[46;8m ");write_wrapper("\[70;17H\[46;8m ");
-    write_wrapper("\[10;18H\[46;8m ");write_wrapper("\[70;18H\[46;8m ");
-    write_wrapper("\[10;19H\[46;8m ");write_wrapper("\[70;19H\[46;8m ");
-    write_wrapper("\[10;20H\[46;8m ");write_wrapper("\[70;20H\[46;8m ");
-    write_wrapper("\[10;21H\[46;8m ");write_wrapper("\[70;21H\[46;8m ");
-    write_wrapper("\[10;22H\[2;46;8m                                                             ");
-
-    write_wrapper("\[0;0H\[2;44m Soy dim");
-    write_wrapper("\[0;1H\[1;44m Soy light");
-
-    while (gettime() > 1000);
-
-    write_wrapper("saliendo del padre");
+    g_draw_line('a', 10, 10, 20, 25, GREEN, GREEN);
 
     for(;;);
 }

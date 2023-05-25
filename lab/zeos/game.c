@@ -1,7 +1,6 @@
 #include <game.h>
 
-// 'level1', 80x21px
-unsigned char level_1[SIZE] = {
+Map level_1 = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xfc, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfc, 0x7f, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfc, 0x7f, 0xc0, 0x00, 0x00, 0xff, 0xfc, 0x00, 0x00,
@@ -18,7 +17,7 @@ unsigned char level_1[SIZE] = {
     0x00, 0x00
 };
 
-unsigned char level_2[SIZE] = {
+Map level_2 = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xfe, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe, 0x7f, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe, 0x00, 0x03, 0xff, 0x00, 0x7f, 0xc0, 0x1f, 0xfc,
@@ -35,7 +34,7 @@ unsigned char level_2[SIZE] = {
     0x00, 0x00
 };
 
-unsigned char level_3[SIZE] = {
+Map level_3 = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, 0xff, 0xc0, 0x1f, 0xff, 0xff,
     0xff, 0x00, 0x7f, 0xfe, 0x7f, 0xff, 0xc0, 0x1f, 0xff, 0xff, 0xff, 0x00, 0x7f, 0xfe, 0x7f, 0xff,
     0xc0, 0x1f, 0xff, 0xff, 0xff, 0x00, 0x7f, 0xfe, 0x7f, 0xff, 0xc0, 0x1f, 0xff, 0xff, 0xff, 0x00,
@@ -190,7 +189,7 @@ void game_process_collisions(struct game* game) {
         return;
     }
 
-    int manzanita = game_is_manzanita(game, game->player.x, game->player.y);
+    int manzanita = game_is_manzanita(game, game->player.x, game->player.y, -1);
     if (manzanita == -1) return;
 
     game->score++;
@@ -206,7 +205,7 @@ void game_move_player_left(struct game* game) {
 }
 
 void game_move_player_right(struct game* game) {
-    if (game->player.x < WIDTH-1 && !game_is_wall(game, game->player.x + 1, game->player.y)) {
+    if (game->player.x < MAP_WIDTH-1 && !game_is_wall(game, game->player.x + 1, game->player.y)) {
         game->player.x++;
     }
 }
@@ -218,16 +217,16 @@ void game_move_player_up(struct game* game) {
 }
 
 void game_move_player_down(struct game* game) {
-    if (game->player.y < HEIGHT-1 && !game_is_wall(game, game->player.x, game->player.y + 1)) {
+    if (game->player.y < MAP_HEIGHT-1 && !game_is_wall(game, game->player.x, game->player.y + 1)) {
         game->player.y++;
     }
 }
 
 void game_move_player_random(struct game* game) {
-    int x = rand() % WIDTH;
-    int y = rand() % HEIGHT;
+    int x = rand() % MAP_WIDTH;
+    int y = rand() % MAP_HEIGHT;
 
-    if (!game_is_wall(game, x, y) && (game_is_manzanita(game, x, y) < 0)) {
+    if (!game_is_wall(game, x, y) && (game_is_manzanita(game, x, y, -1) < 0)) {
         game->player.x = x;
         game->player.y = y;
     } else {
@@ -235,16 +234,16 @@ void game_move_player_random(struct game* game) {
     }
 }
 
-void game_move_manzanita_random(struct game* game, int i) {
-    int x = rand() % WIDTH;
-    int y = rand() % HEIGHT;
+void game_move_manzanita_random(struct game* game, int manzanita) {
+    int x = rand() % MAP_WIDTH;
+    int y = rand() % MAP_HEIGHT;
 
     // if (!game_is_wall(game, x, y) && !game_is_manzanita(game, x, y)) {
     if (!game_is_wall(game, x, y)) {
-        game->manzanitas[i].x = x;
-        game->manzanitas[i].y = y;
+        game->manzanitas[manzanita].x = x;
+        game->manzanitas[manzanita].y = y;
     } else {
-        game_move_manzanita_random(game, i);
+        game_move_manzanita_random(game, manzanita);
     }
 }
 
