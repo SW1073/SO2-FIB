@@ -91,24 +91,21 @@ main(void)
     /* Next line, tries to move value 0 to CR3 register. This register is a privileged one, and so it will raise an exception */
     /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */    
 
-    erase_screen();
+    g_erase_screen();
 
     write_wrapper("\[0;1H Score: ");
     write_wrapper("\[9;1H   69");
-    draw_map(level2);
+    map_draw(level2);
 
-    draw_player_xy(1, 1);
     while (gettime() < 1000);
-    erase_player_xy(1, 1);
-    draw_player_xy(2, 2);
 
-    if (is_wall(level2, 0, 1))
+    if (map_is_wall(level2, 1, 1))
         write_wrapper("is wall\n");
     else
         write_wrapper("is not wall\n");
-    erase_screen();
+    g_erase_screen();
 
-    draw_line('a', 10, 10, 20, 25, GREEN, GREEN);
+    g_draw_line('a', 10, 10, 20, 25, GREEN, GREEN);
 
     for(;;);
 }
