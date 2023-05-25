@@ -59,14 +59,15 @@ main(void)
     /* Next line, tries to move value 0 to CR3 register. This register is a privileged one, and so it will raise an exception */
     /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */    
 
-    struct game* game = game_new(1);
-    if (game == 0) write_wrapper("Error creating game\n");
-    else game_loop(game);
+    char *buffer = dyn_mem(4096*2);
 
-    g_write_xy("HolaHolacaracola", 15, 20, 10, BLACK, WHITE);
-    g_draw_num(1231, 20, 11, BLACK, WHITE);
+    for (int i = 0; i < 4096*2; ++i) {
+        buffer[i] = 'a';
+    }
 
-    g_draw_line('a', 10, 10, 20, 25, GREEN, GREEN);
+    // struct game* game = game_new(1);
+    // if (game == 0) write_wrapper("Error creating game\n");
+    // else game_loop(game);
 
     for(;;);
 }
