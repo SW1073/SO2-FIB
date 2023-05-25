@@ -76,7 +76,7 @@ main(void)
     // buffer[1] = 'a'; // Deberia dar page_fault
     // write_wrapper("A mi no me deberias ver el pelo\n");
 
-    struct game* game = game_new(300);
+    struct game* game = game_new(5);
     if (game == 0) write_wrapper("Error creating game\n");
     else game_loop(game);
 
