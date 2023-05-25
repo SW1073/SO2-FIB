@@ -61,7 +61,7 @@ struct game* game_new(int diff) {
     struct game* game = (struct game*)dyn_mem(sizeof(struct game));
 
     game->score = 0;
-    game->level = 0;
+    game->level = 2;
     game->should_exit = 0;
     mutex_init(&game->mutex);
 
@@ -86,7 +86,6 @@ struct game* game_new(int diff) {
 
 void game_loop(struct game* game) {
     g_erase_screen();
-
 
     map_draw(levels[game->level]);
 
@@ -122,10 +121,17 @@ void game_loop(struct game* game) {
     g_write_xy(gameover, strlen(gameover), 35, 12, BLACK, WHITE);
 
     if (game->lives <= 0) {
-        write_wrapper("You lost all your lives!\n");
+        char buffer[] = "You lost!\n";
+        g_write_xy(buffer, strlen(buffer), 35, 13, BLACK, WHITE);
     } else {
-        write_wrapper("You won!\n");
+        char buffer[] = "You won!\n";
+        g_write_xy(buffer, strlen(buffer), 35, 13, BLACK, WHITE);
     }
+
+    unsigned long ticks = gettime();
+    while (ticks + 1000 > gettime()) { }
+
+    g_erase_screen();
 }
 
 // --------------------------------------------------------
@@ -148,11 +154,11 @@ void game_draw(struct game *game) {
 }
 
 void game_draw_objects(struct game* game) {
-    g_draw_xy(PLAYER_CHAR, game->player.x+MAP_X_OFFSET, game->player.y+MAP_Y_OFFSET, BLACK, YELLOW);
+    g_draw_xy(PLAYER_CHAR, game->player.x+MAP_X_OFFSET, game->player.y+MAP_Y_OFFSET, YELLOW, BLACK);
 
     for (int i = 0; i < game->num_manzanitas; ++i) {
         if (game->manzanitas[i].x >= 0 && game->manzanitas[i].y >= 0) {
-            g_draw_xy(MANZANITA_CHAR, game->manzanitas[i].x+MAP_X_OFFSET, game->manzanitas[i].y+MAP_Y_OFFSET, BLACK, BLACK);
+            g_draw_xy(MANZANITA_CHAR, game->manzanitas[i].x+MAP_X_OFFSET, game->manzanitas[i].y+MAP_Y_OFFSET, RED, BLACK);
         }
     }
 }
@@ -166,14 +172,15 @@ int game_should_exit(struct game* game) {
 
 void game_advance_level(struct game* game) {
     game->level++;
-    game->manzanitas_left = game->num_manzanitas;
-    for (int i = 0; i < game->num_manzanitas; i++) game_move_manzanita_random(game, i);
-    game_move_player_random(game);
-
     if (game->level >= NUM_LEVELS) {
         game->should_exit = 1;
         return;
     }
+
+    game->manzanitas_left = game->num_manzanitas;
+    for (int i = 0; i < game->num_manzanitas; i++) game_move_manzanita_random(game, i);
+    game_move_player_random(game);
+
 
     map_draw(levels[game->level]);
     game_draw_objects(game);
