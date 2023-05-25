@@ -61,7 +61,7 @@ struct game* game_new(int diff) {
     struct game* game = (struct game*)dyn_mem(sizeof(struct game));
 
     game->score = 0;
-    game->level = 2;
+    game->level = 0;
     game->should_exit = 0;
     mutex_init(&game->mutex);
 
@@ -214,23 +214,18 @@ void game_process_input(struct game *game) {
 
         read(&c, 1);
 
-        switch (c) {
-            case 'w':
-                game_move_player_up(game);
-                break;
-            case 'a':
-                game_move_player_left(game);
-                break;
-            case 's':
-                game_move_player_down(game);
-                break;
-            case 'd':
-                game_move_player_right(game);
-                break;
-            default:
-                break;
-        }
+        // Move keys are WASD and HJKL
+        if (c == 'w' || c == 'k')
+            game_move_player_up(game);
+        
+        else if (c == 'a' || c == 'h')
+            game_move_player_left(game);
+        
+        else if (c == 's' || c == 'j')
+            game_move_player_down(game);
 
+        else if (c == 'd' || c == 'l')
+            game_move_player_right(game);
     }
 
     exit_thread();
