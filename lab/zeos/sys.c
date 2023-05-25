@@ -351,60 +351,29 @@ int sys_mutex_unlock(int *m) {
 char* sys_dyn_mem(int num_bytes) {
     page_table_entry *pt = get_PT(current());
 
-    DWord sbrk_page = (DWord)sbrk >> 12; 
-    DWord final_page = (DWord)(sbrk-num_bytes)>>12;
-    DWord diff_pages = sbrk_page - final_page;
+    int sbrk_page = (int)((DWord)sbrk >> 12);
+    int final_page = (int)((DWord)(sbrk-num_bytes)>>12);
+    int diff_pages = sbrk_page - final_page;
 
-    if ((int)sbrk == (TOTAL_PAGES<<12)) {
-        int frame = alloc_frame();
-        if (frame == -1) return NULL;
-        set_ss_pag(pt, sbrk_page, frame);
-    }
-
-    // if (sbrk_page-diff_pages >= TOTAL_PAGES) return NULL;
+    if (final_page > TOTAL_PAGES) return NULL;
+    if (final_page <= PAG_LOG_INIT_CODE) return NULL;
 
     if (diff_pages >= 0) {
-        if (pt[sbrk_page].bits.present == 0) {
-            int frame = alloc_frame();
-            if (frame == -1) return NULL;
-
-            set_ss_pag(pt, sbrk_page, frame);
-        }
-
-        for (int i = 1; i < diff_pages; i++) {
-            if (pt[sbrk_page-i].bits.present == 0) {
+        for (int i = sbrk_page-1; i >= final_page; --i) {
+            if (pt[i].bits.present == 0) {
                 int frame = alloc_frame();
                 if (frame == -1) return NULL;
-
-                set_ss_pag(pt, sbrk_page-i, frame);
+                set_ss_pag(pt, i, frame);
             }
         }
     } else {
-        for (int i = diff_pages; i >= 0; --i) {
-            del_ss_pag(pt, sbrk_page-i);
+        for (int i = sbrk_page; i < final_page; ++i) {
+            del_ss_pag(pt, i);
         }
-
         set_cr3(get_DIR(current()));
     }
-
-
 
     sbrk -= num_bytes;
 
     return sbrk;
-
-    // if (num_bytes <= 0) return NULL;
-    //
-    // page_table_entry *pt = get_PT(current());
-    //
-    // sbrk -= num_bytes;
-    //
-    // if (pt[(int)sbrk>>12].bits.present == 0)  {
-    //     int frame = alloc_frame();
-    //     if (frame == -1) return NULL;
-    //
-    //     set_ss_pag(pt, (int)sbrk>>12, frame);
-    // }
-    //
-    // return sbrk;
 }

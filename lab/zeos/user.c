@@ -59,11 +59,22 @@ main(void)
     /* Next line, tries to move value 0 to CR3 register. This register is a privileged one, and so it will raise an exception */
     /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */    
 
+    // Alocatamos memoria
     char *buffer = dyn_mem(4096*2);
 
+    // Escribimos en memoria
     for (int i = 0; i < 4096*2; ++i) {
         buffer[i] = 'a';
     }
+    write_wrapper("Recorremos la memoria por primera vez sin ningun problema\n");
+
+    // Hacemos free de parte de la memoria
+    dyn_mem(-4096);
+
+    buffer[4096] = 'a'; // No deberia dar page_fault
+    write_wrapper("A mi SI me deberias ver\n");
+    buffer[1] = 'a'; // Deberia dar page_fault
+    write_wrapper("A mi NO me deberias ver el pelo\n");
 
     // struct game* game = game_new(1);
     // if (game == 0) write_wrapper("Error creating game\n");
