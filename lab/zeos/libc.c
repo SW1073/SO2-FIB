@@ -14,7 +14,7 @@ void srand(unsigned int seed) {
     nSeed = seed;
 }
 
-int rand(void) {
+unsigned int rand(void) {
     nSeed = (8253729 * nSeed + 2396403);
     return nSeed % 32767;
 }
@@ -88,4 +88,21 @@ void perror(void) {
             write(1, "Unknown error\n", strlen("Unknown error\n"));
             break;
     }
+}
+
+/**
+ * Wrapper para simplificar las llamadas 
+ * a write y su control de errores
+ */
+void write_wrapper(char *msg) {
+    if (write(1, msg, strlen(msg)) < 0)
+        perror();
+}
+
+void write_msg_n_num(char *msg, int num) {
+    char* buffer = "\0\0\0\0\0\0\0\0\0\0\0\n";
+    itoa(num, buffer);
+    write_wrapper(msg);
+    write_wrapper(buffer);
+    write_wrapper("\n");
 }

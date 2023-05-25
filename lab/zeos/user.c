@@ -1,4 +1,5 @@
 #include <libc.h>
+#include <game.h>
 
 char buff[24];
 
@@ -7,8 +8,8 @@ int mutex = 0;
 
 /* ============== HEADERS ============= */
 void trigger_page_fault();
-void write_wrapper(char *msg);
-void write_msg_n_num(char *msg, int num);
+// void write_wrapper(char *msg);
+// void write_msg_n_num(char *msg, int num);
 void print_stats(struct stats st);
 /* ==================================== */
 
@@ -19,22 +20,6 @@ void trigger_page_fault() {
     *p = 0x69;
 }
 
-/**
- * Wrapper para simplificar las llamadas 
- * a write y su control de errores
- */
-void write_wrapper(char *msg) {
-    if (write(1, msg, strlen(msg)) < 0)
-        perror();
-}
-
-void write_msg_n_num(char *msg, int num) {
-    char* buffer = "\0\0\0\0\0\0\0\0\0\0\0\n";
-    itoa(num, buffer);
-    write_wrapper(msg);
-    write_wrapper(buffer);
-    write_wrapper("\n");
-}
 
 void print_stats(struct stats st) {
     char *separator = "========================================\n";
@@ -77,13 +62,19 @@ main(void)
         write(1, "W\n", 2);
     }
 
-    mutex_init(&mutex);
+    // mutex_init(&mutex);
+    //
+    // create_thread((void*)func, 0);
+    //
+    // mutex_lock(&mutex);
+    // pid = 10;
+    // mutex_unlock(&mutex);
 
-    create_thread((void*)func, 0);
+    struct game* game = game_new(1);
 
-    mutex_lock(&mutex);
-    pid = 10;
-    mutex_unlock(&mutex);
+    game_loop(game);
+
+    while(1);
 
     // write_wrapper("\[H\[5;34;45mJola\[05;30;47mJola");
 

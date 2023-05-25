@@ -10,7 +10,7 @@
 
 void srand(unsigned int seed);
 
-int rand(void);
+unsigned int rand(void);
 
 int write(int fd, char *buffer, int size);
 
@@ -43,5 +43,8 @@ int mutex_lock(int *m);
 int mutex_unlock(int *m);
 
 char* dyn_mem(int num_bytes);
+
+void write_wrapper(char *msg);
+void write_msg_n_num(char *msg, int num);
 
 #endif  /* __LIBC_H__ */
