@@ -63,6 +63,9 @@ main(void)
     if (game == 0) write_wrapper("Error creating game\n");
     else game_loop(game);
 
+    g_write_xy("HolaHolacaracola", 15, 20, 10, BLACK, WHITE);
+    g_draw_num(1231, 20, 11, BLACK, WHITE);
+
     g_draw_line('a', 10, 10, 20, 25, GREEN, GREEN);
 
     for(;;);

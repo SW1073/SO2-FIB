@@ -117,7 +117,9 @@ void game_loop(struct game* game) {
     g_erase_screen();
 
     // g_draw_line('a', 10, 10, 20, 25, GREEN, GREEN);
-    write_wrapper("GAME OVER\n");
+    char gameover[] = "GAME OVER\n";
+
+    g_write_xy(gameover, strlen(gameover), 35, 12, BLACK, WHITE);
 
     if (game->lives <= 0) {
         write_wrapper("You lost all your lives!\n");
