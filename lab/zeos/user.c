@@ -93,8 +93,7 @@ main(void)
 
     g_erase_screen();
 
-    write_wrapper("\[0;1H Score: ");
-    write_wrapper("\[9;1H   69");
+    write_wrapper("\[0;1H Score: 69");
     map_draw(level2);
 
     while (gettime() < 1000);
@@ -104,6 +103,9 @@ main(void)
     else
         write_wrapper("is not wall\n");
     g_erase_screen();
+
+    g_write_xy("HolaHolacaracola", 15, 20, 10, BLACK, WHITE);
+    g_draw_num(1231, 20, 11, BLACK, WHITE);
 
     g_draw_line('a', 10, 10, 20, 25, GREEN, GREEN);
 

@@ -8,8 +8,8 @@ void g_draw_ij(char c, unsigned char i, unsigned char j, Color fg, Color bg) {
     format_buffer[2] = j % 10 + '0';
     format_buffer[4] = i / 10 + '0';
     format_buffer[5] = i % 10 + '0';
-    format_buffer[9] = fg + '0';
-    format_buffer[12] = bg + '0';
+    format_buffer[9] = bg + '0';
+    format_buffer[12] = fg + '0';
     format_buffer[FORMAT_BUFFER_SIZE - 1] = c;
     write(1, format_buffer, FORMAT_BUFFER_SIZE);
 }
@@ -81,4 +81,15 @@ void g_draw_line(char c, int x0, int y0, int x1, int y1, Color fg, Color bg) {
             g_draw_xy(c,x,y,fg,bg);
         }
     }
+}
+
+void g_draw_num(int n, int x, int y, Color fg, Color bg) {
+    char buffer[10] = "\0\0\0\0\0\0\0\0\0\0";
+    itoa(n, buffer);
+    g_write_xy(buffer, 10, x, y, fg, bg);
+}
+
+void g_write_xy(char *buffer, int size, unsigned char x, unsigned char y, Color fg, Color bg) {
+    for (int i = 0; i < size && buffer[i] != '\0'; i++)
+        g_draw_xy(buffer[i], x + i, y, fg, bg);
 }
