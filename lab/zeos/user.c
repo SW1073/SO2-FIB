@@ -1,3 +1,4 @@
+#include "graphics.h"
 #include <libc.h>
 #include <map.h>
 
@@ -105,6 +106,9 @@ main(void)
         write_wrapper("is wall\n");
     else
         write_wrapper("is not wall\n");
+    erase_screen();
+
+    draw_line('a', 10, 10, 20, 25, GREEN, GREEN);
 
     for(;;);
 }
