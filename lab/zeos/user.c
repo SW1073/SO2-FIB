@@ -10,8 +10,8 @@ int mutex = 0;
 
 /* ============== HEADERS ============= */
 void trigger_page_fault();
-// void write_wrapper(char *msg);
-// void write_msg_n_num(char *msg, int num);
+void write_wrapper(char *msg);
+void write_msg_n_num(char *msg, int num);
 void print_stats(struct stats st);
 /* ==================================== */
 
@@ -49,7 +49,7 @@ void func(int i) {
     mutex_unlock(&mutex);
 
     write_wrapper("Func is over\n");
-    exit_thread();
+    // exit_thread();
 }
 
 
@@ -75,6 +75,10 @@ main(void)
     // write_wrapper("A mi SI me deberias ver\n");
     // buffer[1] = 'a'; // Deberia dar page_fault
     // write_wrapper("A mi no me deberias ver el pelo\n");
+
+    // Test create and exit thread
+    // int i = 10;
+    // create_thread((void*)func, (void*)i);
 
     struct game* game = game_new(5);
     if (game == 0) write_wrapper("Error creating game\n");

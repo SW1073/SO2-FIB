@@ -249,7 +249,7 @@ void game_process_input(struct game *game) {
             game_move_player_right(game);
     }
 
-    exit_thread();
+    // exit_thread();
 }
 
 void game_process_collisions(struct game* game) {

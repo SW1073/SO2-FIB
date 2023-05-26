@@ -273,7 +273,7 @@ int sys_create_thread(void (*start_routine)(void* arg), void *parameter) {
     DWord *base_stack = &(pcb_union->stack[KERNEL_STACK_SIZE]);
 
     new_stack[(PAGE_SIZE/4)-1] = (DWord)parameter;
-    new_stack[(PAGE_SIZE/4)-2] = (DWord)0; // evil floating point bit level hacking
+    new_stack[(PAGE_SIZE/4)-2] = (DWord) 0x1146e5; // evil floating point bit level hacking
 
     pcb->kernel_esp = &(pcb_union->stack[KERNEL_STACK_SIZE-19]); // 17-2 por el @ret_from_fork y el ebp.
     pcb_union->stack[KERNEL_STACK_SIZE-19] = 0;
