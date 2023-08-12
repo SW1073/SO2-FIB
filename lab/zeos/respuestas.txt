@@ -48,3 +48,5 @@
         extra que quita la nueva versión de task_switch. 
     - La pila entonces sería 0 (ebx), 0 (esi), 0 (edi), 0 (ebp), cpu_idle.
 
+
+- nota 9.7
